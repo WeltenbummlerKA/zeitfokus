@@ -13,7 +13,7 @@ export const LoginPage = () => {
             </Box>
             <DefaultPaper>
                 <Typography variant="h1" component="h1" gutterBottom>
-                    traggo
+                    Zeitstrahl
                 </Typography>
                 <Typography color="text.secondary" sx={{mb: 3}}>
                     {t('Your time, clearly organised.')}
