@@ -912,4 +912,40 @@ export const messages: Record<string, {en: string; de: string}> = {
         en: 'All values of tag {name} are used',
         de: 'Alle Werte von Tag {name} werden bereits verwendet',
     },
+    'Time tracking': {
+        en: 'Time tracking',
+        de: 'Zeiterfassung',
+    },
+    'Keep your work in view. Start a timer or record time afterwards.': {
+        en: 'Keep your work in view. Start a timer or record time afterwards.',
+        de: 'Behalte deine Arbeit im Blick. Starte einen Timer oder trage Zeiten nach.',
+    },
+    'New entry': {
+        en: 'New entry',
+        de: 'Neue Zeiterfassung',
+    },
+    'Entry mode': {
+        en: 'Entry mode',
+        de: 'Erfassungsart',
+    },
+    'Elapsed time': {
+        en: 'Elapsed time',
+        de: 'Bisherige Dauer',
+    },
+    'Entry options': {
+        en: 'Entry options',
+        de: 'Eintragsoptionen',
+    },
+    'Your entries': {
+        en: 'Your entries',
+        de: 'Deine Zeiteinträge',
+    },
+    'No completed entries yet': {
+        en: 'No completed entries yet',
+        de: 'Noch keine abgeschlossenen Einträge',
+    },
+    'Stop a running timer or add a manual entry to start your log.': {
+        en: 'Stop a running timer or add a manual entry to start your log.',
+        de: 'Stoppe einen laufenden Timer oder trage eine Zeit manuell ein.',
+    },
 };

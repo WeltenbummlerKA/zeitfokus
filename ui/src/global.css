@@ -123,3 +123,107 @@ input:focus-visible {
         scroll-behavior: auto !important;
     }
 }
+
+/* Recording workspace: the live timer is the single visual focal point. */
+.workspace-navigation {
+    padding: 8px 12px 24px;
+}
+.workspace-navigation > .MuiDivider-root {
+    display: none;
+}
+.workspace-navigation .MuiList-root {
+    padding-bottom: 18px;
+}
+.workspace-navigation .MuiListSubheader-root {
+    background: transparent;
+    line-height: 36px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+}
+.workspace-navigation .MuiListItemButton-root {
+    border-radius: 10px;
+    margin: 3px 0;
+}
+.workspace-navigation .MuiListItemButton-root[aria-current='page'] {
+    border-inline-start: 0;
+    background: rgba(71, 137, 218, 0.18);
+}
+.workspace-navigation .MuiListItemText-primary {
+    font-size: 0.9375rem;
+}
+.composer-heading {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+}
+.composer-heading .MuiToggleButton-root {
+    text-transform: none;
+    min-height: 44px;
+    padding: 8px 18px;
+}
+.time-workspace .tracker-composer {
+    gap: 20px;
+}
+.time-workspace .tracker-tags {
+    flex-basis: 360px;
+}
+.time-workspace .time-entry-running {
+    padding: 24px !important;
+    border-radius: 16px;
+    border-inline-start: 4px solid #438bea;
+}
+.running-duration {
+    margin-bottom: 16px;
+}
+.running-duration .running-clock {
+    font-size: 2.25rem;
+    font-weight: 600;
+    letter-spacing: -0.04em;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.3;
+}
+.running-duration-secondary {
+    display: none !important;
+}
+.history-day .time-entry-completed {
+    margin: 0 !important;
+    padding: 16px 24px !important;
+    border: 0;
+    border-radius: 0;
+    border-bottom: 1px solid rgba(128, 128, 128, 0.2);
+    background: transparent;
+}
+.history-day .time-entry-completed:last-child {
+    border-bottom: 0;
+}
+.entry-duration {
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+}
+@media (max-width: 600px) {
+    .time-workspace .tracker-tags {
+        flex-basis: 100%;
+    }
+    .time-workspace .time-entry-running {
+        padding: 20px 16px !important;
+    }
+    .history-day .time-entry-completed {
+        padding: 16px !important;
+    }
+    .running-duration .running-clock {
+        font-size: 2rem;
+    }
+}
+@media (prefers-contrast: more) {
+    .workspace-navigation .MuiListItemButton-root[aria-current='page'] {
+        outline: 2px solid currentColor;
+    }
+    .time-entry-running {
+        border-inline-start-width: 6px !important;
+    }
+}

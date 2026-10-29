@@ -1,7 +1,6 @@
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
 const fs = require("fs");
 const { spawn } = require("child_process");
-const os = require("os");
 (async () => {
   const root = fs.mkdtempSync("/private/tmp/traggo-webqa-");
   const proc = spawn(
@@ -82,6 +81,16 @@ const os = require("os");
         });
         return r.json();
       }, query);
+    await gql('mutation{createTag(key:"project",color:"#2f6edb"){key}}');
+    const completedStart = new Date(Date.now() - 95 * 60000).toISOString();
+    const completedEnd = new Date(Date.now() - 35 * 60000).toISOString();
+    await gql(
+      'mutation{createTimeSpan(start:"' +
+        completedStart +
+        '",end:"' +
+        completedEnd +
+        '",tags:[{key:"project",value:"Web-UI"}],note:"Design review"){id}}',
+    );
     let result = await gql("{userSettings{interfaceLanguage} timers{id}}");
     if (
       result.data.userSettings.interfaceLanguage !== "English" ||
@@ -90,6 +99,70 @@ const os = require("os");
       throw Error(
         "Language persistence/timer failed " + JSON.stringify(result),
       );
+    const runningStart = new Date(Date.now() - 23 * 60000).toISOString();
+    await gql(
+      "mutation{updateTimeSpan(id:" +
+        result.data.timers[0].id +
+        ',start:"' +
+        runningStart +
+        '",tags:[{key:"project",value:"Traggo"}],note:""){id}}',
+    );
+    await page.reload();
+    await page
+      .getByRole("button", { name: "Start timer", exact: true })
+      .waitFor();
+    await page.screenshot({
+      path: root + "/workspace-running-dark.png",
+      fullPage: true,
+    });
+    await gql(
+      "mutation{setUserSettings(settings:{theme:MaterialLight,dateLocale:German,firstDayOfTheWeek:Monday,dateTimeInputStyle:Fancy}){theme}}",
+    );
+    await page.reload();
+    await page
+      .getByRole("button", { name: "Start timer", exact: true })
+      .waitFor();
+    await page.screenshot({
+      path: root + "/workspace-running-light.png",
+      fullPage: true,
+    });
+    await page
+      .getByRole("combobox", { name: "Interface language" })
+      .selectOption("de");
+    await page
+      .getByRole("heading", { name: "Zeiterfassung", level: 2, exact: true })
+      .waitFor();
+    await page.screenshot({
+      path: root + "/workspace-running-de.png",
+      fullPage: true,
+    });
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page
+      .getByRole("button", { name: "Manueller Eintrag", exact: true })
+      .click();
+    await page
+      .getByRole("button", { name: "Zeiteintrag hinzufügen", exact: true })
+      .waitFor();
+    if (
+      await page.evaluate(
+        () => document.documentElement.scrollWidth > innerWidth + 1,
+      )
+    ) {
+      throw Error("Recording workspace overflow");
+    }
+    await page.screenshot({
+      path: root + "/workspace-manual-mobile-de.png",
+      fullPage: true,
+    });
+    await page.getByRole("button", { name: "Timer", exact: true }).click();
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await page
+      .getByRole("combobox", { name: "Oberflächensprache" })
+      .selectOption("en");
+    await page
+      .getByRole("heading", { name: "Time tracking", level: 2, exact: true })
+      .waitFor();
+
     await gql(
       "mutation{stopTimeSpan(id:" +
         result.data.timers[0].id +

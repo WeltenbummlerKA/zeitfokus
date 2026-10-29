@@ -6,7 +6,7 @@ import * as gqlTag from '../gql/tags';
 import {TrackersQuery, TagsQuery} from '../gql/__generated__';
 import {TimeSpan} from './TimeSpan';
 import {toTimeSpanProps} from './timespanutils';
-import {Typography} from '@mui/material';
+import {Box, Typography} from '@mui/material';
 
 export const ActiveTrackers = () => {
     useI18n();
@@ -33,13 +33,13 @@ export const ActiveTrackers = () => {
     }
 
     return (
-        <>
-            <Typography align="center" variant="h5" style={{marginTop: 10}}>
+        <Box component="section" className="running-section" sx={{mt: 4}}>
+            <Typography component="h3" variant="h4" sx={{mb: 2}}>
                 {t('Active Timers')}
             </Typography>
             {values.map((value) => {
                 return <TimeSpan key={value.id} {...value} />;
             })}
-        </>
+        </Box>
     );
 };

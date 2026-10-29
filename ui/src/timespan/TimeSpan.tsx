@@ -197,6 +197,7 @@ export const TimeSpan: React.FC<TimeSpanProps> = React.memo(
         return (
             <Paper
                 elevation={elevation}
+                className={to ? 'time-entry time-entry-completed' : 'time-entry time-entry-running'}
                 style={{
                     display: 'flex',
                     flexDirection: 'column',
@@ -205,6 +206,14 @@ export const TimeSpan: React.FC<TimeSpanProps> = React.memo(
                     opacity: wasMoved ? 0.5 : 1,
                     width: '100%',
                 }}>
+                {!to && (
+                    <div className="running-duration">
+                        <Typography color="text.secondary">{t('Elapsed time')}</Typography>
+                        <Typography component="div" className="running-clock">
+                            <RelativeToNow from={from} />
+                        </Typography>
+                    </div>
+                )}
                 <div className={styles.innerTimespan}>
                     <div className={styles.tagInput}>
                         <TagSelector
@@ -298,6 +307,7 @@ export const TimeSpan: React.FC<TimeSpanProps> = React.memo(
                                 />
                             ) : (
                                 <Button
+                                    variant="outlined"
                                     onClick={() => {
                                         stopTimer({variables: {id, end: inUserTz(moment()).format()}}).then(stopped);
                                     }}>
@@ -306,7 +316,9 @@ export const TimeSpan: React.FC<TimeSpanProps> = React.memo(
                             )}
                         </div>
 
-                        <div style={{alignItems: 'center', display: 'flex'}}>
+                        <div
+                            className={to ? 'entry-duration' : 'running-duration-secondary'}
+                            style={{alignItems: 'center', display: 'flex'}}>
                             <Typography
                                 variant="subtitle1"
                                 // Matches the start/end pickers' MUI standard-variant input, which has
@@ -321,6 +333,7 @@ export const TimeSpan: React.FC<TimeSpanProps> = React.memo(
                     </div>
 
                     <IconButton
+                        aria-label={t('Entry options')}
                         className={styles.showMoreButton}
                         onClick={(e: React.MouseEvent<HTMLElement>) => setOpenMenu(e.currentTarget)}
                         size="large">

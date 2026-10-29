@@ -1,4 +1,4 @@
-import {useI18n} from '../i18n';
+import {t, useI18n} from '../i18n';
 import * as React from 'react';
 import {useQuery} from '@apollo/client';
 import * as gqlTimeSpan from '../gql/timeSpan';
@@ -7,7 +7,7 @@ import {TimeSpan, TimeSpanProps} from './TimeSpan';
 import {TagsQuery, TimeSpansQuery, TimeSpansQueryVariables} from '../gql/__generated__';
 import {useInterval} from '../utils/hooks';
 import moment from 'moment';
-import {Typography} from '@mui/material';
+import {Box, Paper, Typography} from '@mui/material';
 import {GroupedTimeSpanProps, toGroupedTimeSpanProps} from './timespanutils';
 import {TagSelectorEntry} from '../tag/tagSelectorEntry';
 import {isSameDate} from '../utils/time';
@@ -106,12 +106,23 @@ export const DoneTrackers: React.FC<DoneTrackersProps> = ({addTagsToTracker}) =>
     })();
 
     return (
-        <div style={{marginTop: 10}}>
+        <Box component="section" className="history-section" sx={{mt: 4}}>
+            <Typography component="h3" variant="h4" sx={{mb: 2}}>
+                {t('Your entries')}
+            </Typography>
+            {!trackersResult.loading && !trackersResult.error && values.length === 0 && (
+                <Paper sx={{p: 4, borderRadius: '18px'}}>
+                    <Typography variant="h6">{t('No completed entries yet')}</Typography>
+                    <Typography color="text.secondary" sx={{mt: 1}}>
+                        {t('Stop a running timer or add a manual entry to start your log.')}
+                    </Typography>
+                </Paper>
+            )}
             {values.map(({key, timeSpans}) => (
                 <DatedTimeSpans key={key} name={key} timeSpans={timeSpans} addTagsToTracker={addTagsToTracker} />
             ))}
             <div ref={loadMoreRef} />
-        </div>
+        </Box>
     );
 };
 
@@ -122,13 +133,13 @@ const DatedTimeSpans: React.FC<
     } & DoneTrackersProps
 > = ({name, timeSpans, addTagsToTracker}) => {
     return (
-        <div key={name}>
-            <Typography key={name} align="center" variant={'h5'}>
+        <Paper className="history-day" key={name} sx={{mb: 3, borderRadius: '18px', overflow: 'hidden'}}>
+            <Typography component="h4" sx={{px: 3, py: 2, fontWeight: 600, borderBottom: 1, borderColor: 'divider'}}>
                 {name}
             </Typography>
             {timeSpans.map((timeSpanProps) => (
                 <TimeSpan key={timeSpanProps.id} {...timeSpanProps} addTagsToTracker={addTagsToTracker} />
             ))}
-        </div>
+        </Paper>
     );
 };

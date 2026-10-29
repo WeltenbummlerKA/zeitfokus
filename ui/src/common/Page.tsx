@@ -45,7 +45,7 @@ const routerLink = (to: string): any => {
 };
 
 const staticPageTitles: Array<{path: string; title: string}> = [
-    {path: '/timesheet/list', title: 'Timesheet / List'},
+    {path: '/timesheet/list', title: 'Time tracking'},
     {path: '/timesheet/calendar', title: 'Timesheet / Calendar'},
     {path: '/user/settings', title: 'User / Settings'},
     {path: '/user/devices', title: 'User / Devices'},
@@ -102,7 +102,7 @@ export const Page: React.FC<React.PropsWithChildren> = ({children}) => {
     const pageTitle = getPageTitle(location.pathname, dashboards);
 
     const drawer = (
-        <div>
+        <div className="workspace-navigation">
             <Box sx={{p: 3, minHeight: 104}}>
                 <HrefLink href="https://github.com/traggo" underline="none" target="_blank">
                     <Typography variant="h5" align="center" color="textPrimary">
@@ -110,7 +110,7 @@ export const Page: React.FC<React.PropsWithChildren> = ({children}) => {
                     </Typography>
                 </HrefLink>
                 <HrefLink href="https://github.com/traggo/server/releases" underline="none" target="_blank">
-                    <Typography variant="subtitle2" align="center" color="textPrimary">
+                    <Typography variant="caption" align="center" color="textPrimary">
                         {version.name}@{version.commit.slice(0, 8)}
                     </Typography>
                 </HrefLink>
