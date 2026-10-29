@@ -84,6 +84,7 @@ export const DateTimeSelector: React.FC<DateTimeSelectorProps> = React.memo(
                     isEditing.current = true;
                 }}
                 onClose={() => {
+                    isEditing.current = false;
                     popoverOpen(false);
                     setOpen(false);
                 }}
