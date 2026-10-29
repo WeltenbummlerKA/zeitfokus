@@ -24,7 +24,7 @@ The companion repository `WeltenbummlerKA/traggo-client-docker` adds favorites s
 
 ## Validation and deployment boundary
 
-Run `yarn install --frozen-lockfile --ignore-scripts`, `yarn generate`, TypeScript checking, ESLint, Vitest and Vite in `ui/`. Generate Go models with gqlgen v0.17.85 under Go 1.25.14, then run `go test -race ./...` and `go vet ./...`.
+Run `yarn install --frozen-lockfile --ignore-scripts`, `yarn generate`, TypeScript checking, ESLint, Vitest and Vite in `ui/`. Generate Go models with gqlgen v0.17.85 under its compatible Go 1.25.14 toolchain, then switch to Go 1.27.3 for `go test -race ./...`, `go vet ./...` and the released binaries. The older toolchain is isolated to generation; it is not shipped in the runtime image. The inherited upstream release workflow is restricted to the upstream repository; this fork uses its own candidate validation workflow.
 
 Before deployment, stop the production stack and take a consistent backup of the complete persistent data volume, including the SQLite database and favorites JSON. Test a separate copy with separate ports and a separate volume. Never run the original and candidate servers against the same live database concurrently.
 

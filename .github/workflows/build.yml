@@ -3,6 +3,7 @@ on: [push, pull_request]
 
 jobs:
   build:
+    if: github.repository == 'traggo/server'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/setup-go@v6
