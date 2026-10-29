@@ -20,6 +20,8 @@ import {
     TrackersQuery,
     StartTimerMutation,
     StartTimerMutationVariables,
+    AddTimeSpanMutation,
+    AddTimeSpanMutationVariables,
 } from '../gql/__generated__';
 import * as gqlTimeSpan from '../gql/timeSpan';
 import IconButton from '@mui/material/IconButton';
@@ -30,6 +32,7 @@ import {useStateAndDelegateWithDelayOnChange} from '../utils/hooks';
 import {isSameDate} from '../utils/time';
 import {addTimeSpanToCache, removeFromTrackersCache} from '../gql/utils';
 import {RelativeTime, RelativeToNow} from '../common/RelativeTime';
+import {useSnackbar} from 'notistack';
 
 interface Range {
     from: moment.Moment;
@@ -100,6 +103,7 @@ const useStyles = makeStyles(() => ({
     },
 }));
 
+// This component coordinates several independent entry actions and their dialogs.
 export const TimeSpan: React.FC<TimeSpanProps> = React.memo(
     ({
         range: {from, to, oldFrom},
@@ -113,8 +117,10 @@ export const TimeSpan: React.FC<TimeSpanProps> = React.memo(
         continued = () => {},
         elevation = 1,
         addTagsToTracker,
+        // eslint-disable-next-line complexity
     }) => {
         useI18n();
+        const {enqueueSnackbar} = useSnackbar();
         const styles = useStyles();
         const [showNotes, toggleShowingNotes] = React.useState(initialNote !== '');
         const [editOpen, setEditOpen] = React.useState(false);
@@ -142,6 +148,10 @@ export const TimeSpan: React.FC<TimeSpanProps> = React.memo(
         const [startTimer] = useMutation<StartTimerMutation, StartTimerMutationVariables>(gqlTimeSpan.StartTimer, {
             refetchQueries: [{query: gqlTimeSpan.Trackers}],
         });
+        const [addTimeSpan, {loading: duplicating}] = useMutation<AddTimeSpanMutation, AddTimeSpanMutationVariables>(
+            gqlTimeSpan.AddTimeSpan,
+            {refetchQueries: [{query: gqlTimeSpan.TimeSpans}]}
+        );
         const [updateTimeSpan] = useMutation<UpdateTimeSpanMutation, UpdateTimeSpanMutationVariables>(gqlTimeSpan.UpdateTimeSpan);
         const noteAwareUpdateTimeSpan = ({variables}: {variables: Omit<UpdateTimeSpanMutationVariables, 'note'>}) => {
             clearTimeout(note.current.handle);
@@ -366,6 +376,28 @@ export const TimeSpan: React.FC<TimeSpanProps> = React.memo(
                                     }).then(() => continued());
                                 }}>
                                 {t('Continue')}
+                            </MenuItem>
+                        ) : null}
+                        {to ? (
+                            <MenuItem
+                                disabled={duplicating}
+                                onClick={() => {
+                                    setOpenMenu(null);
+                                    const duration = Math.max(60, to.diff(from, 'seconds'));
+                                    const duplicateStart = moment();
+                                    const duplicateEnd = duplicateStart.clone().add(duration, 'seconds');
+                                    void addTimeSpan({
+                                        variables: {
+                                            start: inUserTz(duplicateStart).format(),
+                                            end: inUserTz(duplicateEnd).format(),
+                                            tags: toInputTags(selectedEntries),
+                                            note: note.current.value,
+                                        },
+                                    }).catch(() =>
+                                        enqueueSnackbar(t('Could not duplicate this entry. Please retry.'), {variant: 'error'})
+                                    );
+                                }}>
+                                {t('Duplicate')}
                             </MenuItem>
                         ) : null}
                         {addTagsToTracker ? (

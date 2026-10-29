@@ -999,6 +999,11 @@ export const messages: Record<string, {en: string; de: string}> = {
             de: 'Eine spätere KI-Auswertung bleibt optional, beschränkt sich auf deine Zeitdaten und kann einen lokalen oder ausdrücklich gewählten Anbieter nutzen. Einträge werden niemals automatisch geändert.',
         },
     'Current keyboard hint': {en: 'Current keyboard hint', de: 'Aktuelles Tastaturkürzel'},
+    Duplicate: {en: 'Duplicate', de: 'Duplizieren'},
+    'Could not duplicate this entry. Please retry.': {
+        en: 'Could not duplicate this entry. Please retry.',
+        de: 'Der Eintrag konnte nicht dupliziert werden. Bitte erneut versuchen.',
+    },
     'Submit the new entry': {en: 'Submit the new entry', de: 'Neuen Eintrag übermitteln'},
     'Edit time entry': {en: 'Edit time entry', de: 'Zeiteintrag bearbeiten'},
     'Could not save changes. Please retry.': {
