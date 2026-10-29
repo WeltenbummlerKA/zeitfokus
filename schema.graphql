@@ -47,6 +47,9 @@ type RootMutation {
     setUserSettings(settings: InputUserSettings!): UserSettings! @hasRole(role: USER)
     setInterfaceLanguage(language: InterfaceLanguage!): UserSettings! @hasRole(role: USER)
     setWorkTargetProfile(profile: InputWorkTargetProfile!): UserSettings! @hasRole(role: USER)
+    createFavorite(input: InputFavorite!): Favorite! @hasRole(role: USER)
+    updateFavorite(id: Int!, input: InputFavorite!): Favorite! @hasRole(role: USER)
+    removeFavorite(id: Int!): Favorite! @hasRole(role: USER)
 }
 
 type RootQuery {
@@ -65,6 +68,22 @@ type RootQuery {
     version: Version!
     dashboards: [Dashboard!] @hasRole(role: USER)
     userSettings: UserSettings!
+    favorites: [Favorite!]! @hasRole(role: USER)
+}
+
+input InputFavorite {
+    title: String!
+    note: String!
+    tags: [InputTimeSpanTag!]
+    position: Int!
+}
+
+type Favorite {
+    id: Int!
+    title: String!
+    note: String!
+    tags: [TimeSpanTag!]!
+    position: Int!
 }
 
 input InputUserSettings {

@@ -33,6 +33,7 @@ import {isSameDate} from '../utils/time';
 import {addTimeSpanToCache, removeFromTrackersCache} from '../gql/utils';
 import {RelativeTime, RelativeToNow} from '../common/RelativeTime';
 import {useSnackbar} from 'notistack';
+import {shortcutAria, shortcutLabel} from '../keyboard/shortcuts';
 
 interface Range {
     from: moment.Moment;
@@ -136,17 +137,21 @@ export const TimeSpan: React.FC<TimeSpanProps> = React.memo(
         const [openMenu, setOpenMenu] = useStateAndDelegateWithDelayOnChange<null | HTMLElement>(null, (o) =>
             dateSelectorOpen(!!o)
         );
-        const [stopTimer] = useMutation<StopTimerMutation, StopTimerMutationVariables>(gqlTimeSpan.StopTimer, {
-            refetchQueries: ['History'],
-            awaitRefetchQueries: true,
-            update: (cache, {data}) => {
-                if (!data || !data.stopTimeSpan) {
-                    return;
-                }
-                removeFromTrackersCache(cache, data);
-                addTimeSpanToCache(cache, data.stopTimeSpan);
-            },
-        });
+        const pendingStop = React.useRef(false);
+        const [stopTimer, {loading: stopping}] = useMutation<StopTimerMutation, StopTimerMutationVariables>(
+            gqlTimeSpan.StopTimer,
+            {
+                refetchQueries: ['History'],
+                awaitRefetchQueries: true,
+                update: (cache, {data}) => {
+                    if (!data || !data.stopTimeSpan) {
+                        return;
+                    }
+                    removeFromTrackersCache(cache, data);
+                    addTimeSpanToCache(cache, data.stopTimeSpan);
+                },
+            }
+        );
         const [startTimer] = useMutation<StartTimerMutation, StartTimerMutationVariables>(gqlTimeSpan.StartTimer, {
             refetchQueries: [{query: gqlTimeSpan.Trackers}],
             awaitRefetchQueries: true,
@@ -341,8 +346,23 @@ export const TimeSpan: React.FC<TimeSpanProps> = React.memo(
                             ) : (
                                 <Button
                                     variant="outlined"
+                                    data-stop-timer
+                                    aria-keyshortcuts={shortcutAria('S')}
+                                    title={shortcutLabel('S')}
+                                    disabled={stopping}
                                     onClick={() => {
-                                        stopTimer({variables: {id, end: inUserTz(moment()).format()}}).then(stopped);
+                                        if (pendingStop.current) {
+                                            return;
+                                        }
+                                        pendingStop.current = true;
+                                        void stopTimer({variables: {id, end: inUserTz(moment()).format()}})
+                                            .then(stopped)
+                                            .catch(() =>
+                                                enqueueSnackbar(t('Could not stop this timer. Please retry.'), {variant: 'error'})
+                                            )
+                                            .finally(() => {
+                                                pendingStop.current = false;
+                                            });
                                     }}>
                                     {t('Stop')}
                                 </Button>

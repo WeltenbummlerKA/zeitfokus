@@ -1051,4 +1051,23 @@ export const messages: Record<string, {en: string; de: string}> = {
         en: 'Could not delete this entry. Please retry.',
         de: 'Der Eintrag konnte nicht gelöscht werden. Bitte erneut versuchen.',
     },
+    'Could not stop this timer. Please retry.': {
+        en: 'Could not stop this timer. Please retry.',
+        de: 'Der Timer konnte nicht gestoppt werden. Bitte erneut versuchen.',
+    },
+    'Focus new description': {en: 'Focus new description', de: 'Neue Beschreibung fokussieren'},
+    'Keyboard commands work outside text fields, menus and dialogs. Use Ctrl + Alt on Windows/Linux or Command + Option on Mac. Holding a key does not repeat an action.':
+        {
+            en: 'Keyboard commands work outside text fields, menus and dialogs. Use Ctrl + Alt on Windows/Linux or Command + Option on Mac. Holding a key does not repeat an action.',
+            de: 'Globale Tastaturbefehle funktionieren außerhalb von Textfeldern, Menüs und Dialogen. Verwende Strg + Alt unter Windows/Linux oder Befehl + Option auf dem Mac. Gedrückthalten wiederholt keine Aktion.',
+        },
+    'Ctrl/Cmd + Enter submits from the description or empty tag field. Start and stop shortcuts work in the time tracking view; if several timers are running, Stop focuses a timer for you to choose.':
+        {
+            en: 'Ctrl/Cmd + Enter submits from the description or empty tag field. Start and stop shortcuts work in the time tracking view; if several timers are running, Stop focuses a timer for you to choose.',
+            de: 'Strg/Cmd + Enter erfasst aus der Beschreibung oder dem leeren Tag-Feld. Start- und Stopp-Kürzel gelten in der Zeiterfassung. Bei mehreren laufenden Timern fokussiert Stopp einen Timer zur Auswahl.',
+        },
+    'All commands are also available as buttons or links, including on touch devices.': {
+        en: 'All commands are also available as buttons or links, including on touch devices.',
+        de: 'Alle Befehle sind auch als Schaltflächen oder Links erreichbar, einschließlich auf Touch-Geräten.',
+    },
 };

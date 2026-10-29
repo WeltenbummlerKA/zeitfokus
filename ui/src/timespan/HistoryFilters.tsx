@@ -5,6 +5,7 @@ import Search from '@mui/icons-material/Search';
 import {t, useI18n} from '../i18n';
 import {TagSelector} from '../tag/TagSelector';
 import {emptyHistoryDraft, HistoryFilterDraft, isValidHistoryDateRange} from './historyFilterUtils';
+import {shortcutAria} from '../keyboard/shortcuts';
 
 interface HistoryFiltersProps {
     onApply: (draft: HistoryFilterDraft) => void;
@@ -38,7 +39,7 @@ export const HistoryFilters: React.FC<HistoryFiltersProps> = ({onApply}) => {
                     placeholder={t('Description or tag')}
                     value={draft.query}
                     onChange={(event) => update('query', event.target.value)}
-                    inputProps={{maxLength: 500, 'data-history-search': true}}
+                    inputProps={{maxLength: 500, 'data-history-search': true, 'aria-keyshortcuts': shortcutAria('F')}}
                 />
                 <TextField
                     fullWidth

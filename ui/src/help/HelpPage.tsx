@@ -1,7 +1,8 @@
 import {t, useI18n} from '../i18n';
 import * as React from 'react';
-import {Accordion, AccordionDetails, AccordionSummary, Alert, Box, Chip, Paper, Stack, Typography} from '@mui/material';
+import {Accordion, AccordionDetails, AccordionSummary, Alert, Box, Paper, Stack, Typography} from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import {shortcutLabel} from '../keyboard/shortcuts';
 
 const topics = [
     {
@@ -14,7 +15,7 @@ const topics = [
     },
     {
         title: 'Keyboard shortcuts',
-        body: 'Ctrl/Cmd + Enter submits the new entry when the tag selector is focused. More shortcuts will be added with the search and filter workspace.',
+        body: 'Keyboard commands work outside text fields, menus and dialogs. Use Ctrl + Alt on Windows/Linux or Command + Option on Mac. Holding a key does not repeat an action.',
     },
     {
         title: 'Exports and reports',
@@ -56,9 +57,43 @@ export const HelpPage: React.FC = () => {
                     <Typography variant="subtitle1" fontWeight={600} gutterBottom>
                         {t('Current keyboard hint')}
                     </Typography>
-                    <Chip label="Ctrl / Cmd + Enter" size="small" sx={{mr: 1}} />
-                    <Typography component="span" variant="body2" color="text.secondary">
-                        {t('Submit the new entry')}
+                    <Box
+                        component="dl"
+                        sx={{
+                            m: 0,
+                            display: 'grid',
+                            gridTemplateColumns: {xs: 'minmax(0, 1fr)', sm: 'max-content minmax(0, 1fr)'},
+                            columnGap: 3,
+                            rowGap: 1.5,
+                            '& dd': {m: 0},
+                        }}>
+                        {[
+                            ['T', 'Start timer'],
+                            ['S', 'Stop'],
+                            ['N', 'Focus new description'],
+                            ['F', 'Search all entries'],
+                            ['1', 'List'],
+                            ['2', 'Calendar'],
+                            [',', 'Settings'],
+                            ['H', 'Help'],
+                        ].map(([key, label]) => (
+                            <React.Fragment key={key}>
+                                <Typography component="dt" variant="body2">
+                                    <kbd>{shortcutLabel(key)}</kbd>
+                                </Typography>
+                                <Typography component="dd" variant="body2">
+                                    {t(label)}
+                                </Typography>
+                            </React.Fragment>
+                        ))}
+                    </Box>
+                    <Typography variant="body2" color="text.secondary" sx={{mt: 2}}>
+                        {t(
+                            'Ctrl/Cmd + Enter submits from the description or empty tag field. Start and stop shortcuts work in the time tracking view; if several timers are running, Stop focuses a timer for you to choose.'
+                        )}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary" display="block" sx={{mt: 1}}>
+                        {t('All commands are also available as buttons or links, including on touch devices.')}
                     </Typography>
                 </Paper>
             </Stack>

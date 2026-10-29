@@ -36,6 +36,8 @@ import {useMutation, useQuery} from '@apollo/client';
 import {LogoutMutation, VersionQuery, CurrentUserQuery, DashboardsQuery} from '../gql/__generated__';
 import * as gqlDashboard from '../gql/dashboard';
 import {Dashboard} from '../gql/types';
+import {KeyboardShortcuts} from '../keyboard/KeyboardShortcuts';
+import {shortcutAria, shortcutLabel} from '../keyboard/shortcuts';
 
 const drawerWidth = 240;
 
@@ -46,6 +48,8 @@ const routerLink = (to: string): any => {
 };
 
 const staticPageTitles: Array<{path: string; title: string}> = [
+    {path: '/help', title: 'Help'},
+    {path: '/about', title: 'About'},
     {path: '/timesheet/list', title: 'Time tracking'},
     {path: '/timesheet/calendar', title: 'Timesheet / Calendar'},
     {path: '/user/settings', title: 'User / Settings'},
@@ -203,6 +207,7 @@ export const Page: React.FC<React.PropsWithChildren> = ({children}) => {
     }, [pageTitle]);
     return (
         <Box sx={{display: 'flex', minHeight: '100%'}}>
+            <KeyboardShortcuts />
             <CssBaseline />
             <a className="skip-link" href="#main-content">
                 {t('Skip to content')}
@@ -229,6 +234,13 @@ export const Page: React.FC<React.PropsWithChildren> = ({children}) => {
                         {pageTitle}
                     </Typography>
                     <LanguageSwitcher />
+                    <IconButton
+                        component={routerLink('/help')}
+                        aria-label={t('Help')}
+                        aria-keyshortcuts={shortcutAria('H')}
+                        title={`${t('Help')} (${shortcutLabel('H')})`}>
+                        <HelpOutlineIcon />
+                    </IconButton>
                     <Button
                         color="inherit"
                         sx={{color: 'text.primary'}}

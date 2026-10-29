@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/traggo/server/dashboard"
+	"github.com/traggo/server/favorite"
 	"github.com/traggo/server/setting"
 
 	"github.com/jinzhu/copier"
@@ -40,6 +41,7 @@ func NewResolver(db *gorm.DB, passStrength int, version model.Version) gqlschema
 		ResolverForSettings: setting.ResolverForSettings{
 			DB: db,
 		},
+		ResolverForFavorite:  favorite.ResolverForFavorite{DB: db},
 		ResolverForDashboard: dashboard.NewResolverForDashboard(db),
 		version:              version,
 	}
@@ -53,6 +55,7 @@ type resolver struct {
 	statistics.ResolverForStatistics
 	version model.Version
 	setting.ResolverForSettings
+	favorite.ResolverForFavorite
 	dashboard.ResolverForDashboard
 }
 

@@ -16,6 +16,7 @@ import Input from '@mui/material/Input';
 import {useStateAndDelegateWithDelayOnChange} from '../utils/hooks';
 import {TagChip} from '../common/TagChip';
 import {Theme} from '@mui/material/styles';
+import {isSubmitShortcut} from '../keyboard/shortcuts';
 
 import makeStyles from '@mui/styles/makeStyles';
 
@@ -160,13 +161,14 @@ export const TagSelector: React.FC<TagSelectorProps> = ({
             event.preventDefault();
             setHighlightedIndex(highlightedIndex === suggestions.length - 1 ? 0 : highlightedIndex + 1);
         }
+        if (!currentValue && isSubmitShortcut(event) && onCtrlEnter) {
+            event.preventDefault();
+            onCtrlEnter();
+            return;
+        }
         if (event.key === 'Enter' && highlightedIndex < suggestions.length) {
             event.preventDefault();
-            if (!currentValue && event.ctrlKey && onCtrlEnter) {
-                onCtrlEnter();
-            } else {
-                trySubmit(suggestions[highlightedIndex]);
-            }
+            trySubmit(suggestions[highlightedIndex]);
         }
         if (event.key === 'Escape' && input.current) {
             event.preventDefault();

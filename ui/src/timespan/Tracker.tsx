@@ -19,6 +19,8 @@ import {useSnackbar} from 'notistack';
 import {inUserTz} from './timeutils';
 import {handleError} from '../utils/errors';
 import {addTimeSpanToCache} from '../gql/utils';
+import {FavoritePicker} from '../favorite/FavoritePicker';
+import {isSubmitShortcut, shortcutAria, shortcutLabel} from '../keyboard/shortcuts';
 
 enum Type {
     Tracker,
@@ -43,6 +45,7 @@ export const Tracker: React.FC<TrackerProps> = ({selectedEntries, onSelectedEntr
     const [showDate, setShowDate] = React.useState(false);
     const [note, setNote] = React.useState('');
     const [recentNotes, setRecentNotes] = React.useState<string[]>([]);
+    const pendingSubmit = React.useRef(false);
     const [startTimer, {loading: starting}] = useMutation<StartTimerMutation, StartTimerMutationVariables>(
         gqlTimeSpan.StartTimer,
         {
@@ -73,9 +76,10 @@ export const Tracker: React.FC<TrackerProps> = ({selectedEntries, onSelectedEntr
     }, [showDate, from, to]);
 
     const submit = () => {
-        if (starting || adding) {
+        if (starting || adding || pendingSubmit.current) {
             return;
         }
+        pendingSubmit.current = true;
         const tags = selectedEntries.map((entry: TagSelectorEntry): InputTimeSpanTag => ({
             key: entry.tag.key,
             value: entry.value,
@@ -91,7 +95,10 @@ export const Tracker: React.FC<TrackerProps> = ({selectedEntries, onSelectedEntr
                     }
                     enqueueSnackbar(t('tracker started'), {variant: 'success'});
                 })
-                .catch(handleError(t('Start timer'), enqueueSnackbar));
+                .catch(handleError(t('Start timer'), enqueueSnackbar))
+                .finally(() => {
+                    pendingSubmit.current = false;
+                });
         } else {
             const cleanNote = note.trim();
             addTimeSpan({variables: {start: inUserTz(from).format(), end: inUserTz(to).format(), tags, note: cleanNote}})
@@ -103,7 +110,10 @@ export const Tracker: React.FC<TrackerProps> = ({selectedEntries, onSelectedEntr
                     }
                     enqueueSnackbar(t('time span added'), {variant: 'success'});
                 })
-                .catch(handleError(t('Add time entry'), enqueueSnackbar));
+                .catch(handleError(t('Add time entry'), enqueueSnackbar))
+                .finally(() => {
+                    pendingSubmit.current = false;
+                });
         }
     };
 
@@ -140,7 +150,13 @@ export const Tracker: React.FC<TrackerProps> = ({selectedEntries, onSelectedEntr
                 placeholder={t('What are you working on?')}
                 value={note}
                 onChange={(event) => setNote(event.target.value)}
-                inputProps={{maxLength: 500}}
+                onKeyDown={(event) => {
+                    if (isSubmitShortcut(event)) {
+                        event.preventDefault();
+                        submit();
+                    }
+                }}
+                inputProps={{maxLength: 500, 'data-new-description': true, 'aria-keyshortcuts': shortcutAria('N')}}
                 sx={{mb: 2}}
             />
             {recentNotes.length > 0 ? (
@@ -153,6 +169,14 @@ export const Tracker: React.FC<TrackerProps> = ({selectedEntries, onSelectedEntr
                     ))}
                 </Stack>
             ) : null}
+            <FavoritePicker
+                note={note}
+                tags={selectedEntries}
+                onSelect={(description, entries) => {
+                    setNote(description);
+                    setSelectedEntries(entries);
+                }}
+            />
             {type === Type.Manual ? (
                 <div>
                     <DateTimeSelector
@@ -193,7 +217,13 @@ export const Tracker: React.FC<TrackerProps> = ({selectedEntries, onSelectedEntr
                     />
                 </div>
             ) : null}
-            <Button variant="contained" disabled={starting || adding} onClick={submit}>
+            <Button
+                variant="contained"
+                disabled={starting || adding}
+                data-start-timer={type === Type.Tracker ? true : undefined}
+                aria-keyshortcuts={type === Type.Tracker ? shortcutAria('T') : undefined}
+                title={type === Type.Tracker ? shortcutLabel('T') : undefined}
+                onClick={submit}>
                 {t(type === Type.Manual ? 'Add time entry' : 'Start timer')}
             </Button>
         </Paper>
