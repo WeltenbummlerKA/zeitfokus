@@ -47,11 +47,14 @@ export const Tracker: React.FC<TrackerProps> = ({selectedEntries, onSelectedEntr
         gqlTimeSpan.StartTimer,
         {
             refetchQueries: [{query: gqlTimeSpan.Trackers}],
+            awaitRefetchQueries: true,
         }
     );
     const [addTimeSpan, {loading: adding}] = useMutation<AddTimeSpanMutation, AddTimeSpanMutationVariables>(
         gqlTimeSpan.AddTimeSpan,
         {
+            refetchQueries: ['History'],
+            awaitRefetchQueries: true,
             update: (cache, {data}) => {
                 if (!data || !data.createTimeSpan) {
                     return;

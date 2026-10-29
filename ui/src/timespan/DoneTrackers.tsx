@@ -1,16 +1,18 @@
 import {t, useI18n} from '../i18n';
 import * as React from 'react';
-import {useQuery} from '@apollo/client';
-import * as gqlTimeSpan from '../gql/timeSpan';
+import {NetworkStatus, useQuery} from '@apollo/client';
+import {History} from '../gql/history';
 import * as gqlTag from '../gql/tags';
 import {TimeSpan, TimeSpanProps} from './TimeSpan';
-import {TagsQuery, TimeSpansQuery, TimeSpansQueryVariables} from '../gql/__generated__';
-import {useInterval} from '../utils/hooks';
+import {HistoryQuery, HistoryQueryVariables, InputHistoryFilter, TagsQuery} from '../gql/__generated__';
 import moment from 'moment';
-import {Box, Paper, Typography} from '@mui/material';
-import {GroupedTimeSpanProps, toGroupedTimeSpanProps} from './timespanutils';
+import {Alert, Box, Button, LinearProgress, Paper, Stack, Typography} from '@mui/material';
+import Refresh from '@mui/icons-material/Refresh';
+import {toGroupedTimeSpanProps} from './timespanutils';
 import {TagSelectorEntry} from '../tag/tagSelectorEntry';
-import {isSameDate} from '../utils/time';
+import {HistoryFilters} from './HistoryFilters';
+import {formatHistoryDuration, historyFilterFromDraft} from './historyFilterUtils';
+import {HistoryCsvExport} from '../history/HistoryCsvExport';
 
 interface DoneTrackersProps {
     addTagsToTracker?: (entries: TagSelectorEntry[]) => void;
@@ -18,128 +20,162 @@ interface DoneTrackersProps {
 
 export const DoneTrackers: React.FC<DoneTrackersProps> = ({addTagsToTracker}) => {
     useI18n();
-    const trackersResult = useQuery<TimeSpansQuery, TimeSpansQueryVariables>(gqlTimeSpan.TimeSpans, {
-        variables: {cursor: {pageSize: 30}},
+    const [filter, setFilter] = React.useState<InputHistoryFilter>({});
+    const [pageError, setPageError] = React.useState(false);
+    const history = useQuery<HistoryQuery, HistoryQueryVariables>(History, {
+        variables: {filter, cursor: {pageSize: 30}},
+        notifyOnNetworkStatusChange: true,
+        fetchPolicy: 'cache-and-network',
     });
-    const loading = React.useRef(false);
-    const tagsResult = useQuery<TagsQuery>(gqlTag.Tags);
-    const [currentDate, setCurrentDate] = React.useState(moment());
-    const loadMoreRef = React.useRef<HTMLDivElement | null>(null);
-    useInterval(
-        () => {
-            if (!isSameDate(currentDate, moment())) {
-                setCurrentDate(moment());
-            }
-        },
-        1000,
-        true
-    );
-
-    const fetchMore = React.useCallback(() => {
-        if (!trackersResult || !trackersResult.data || trackersResult.loading || loading.current) {
+    const tags = useQuery<TagsQuery>(gqlTag.Tags);
+    const fetchingMore = history.networkStatus === NetworkStatus.fetchMore;
+    const busy = history.loading || tags.loading;
+    const result = history.data?.history;
+    const visible = !!result && (!history.loading || fetchingMore) && !history.error && !tags.error;
+    const values = visible ? toGroupedTimeSpanProps(result.timeSpans, tags.data?.tags || [], moment()) : [];
+    const refresh = () => {
+        setPageError(false);
+        void history.refetch({filter, cursor: {pageSize: 30}}).catch(() => {});
+    };
+    const loadMore = () => {
+        if (!result || busy || !result.cursor.hasMore) {
             return;
         }
-        loading.current = true;
-        const {offset, pageSize, startId} = trackersResult.data.timeSpans.cursor;
-        trackersResult
+        setPageError(false);
+        void history
             .fetchMore({
                 variables: {
-                    cursor: {
-                        startId,
-                        offset,
-                        pageSize,
-                    },
+                    filter,
+                    cursor: {startId: result.cursor.startId, offset: result.cursor.offset, pageSize: result.cursor.pageSize},
                 },
-                updateQuery: (prev, {fetchMoreResult}): TimeSpansQuery => {
+                updateQuery: (previous, {fetchMoreResult}) => {
                     if (!fetchMoreResult) {
-                        return prev;
+                        return previous;
                     }
-
+                    const combined = [...previous.history.timeSpans, ...fetchMoreResult.history.timeSpans];
                     return {
-                        timeSpans: {
-                            __typename: 'PagedTimeSpans',
-                            timeSpans: [...prev.timeSpans.timeSpans, ...fetchMoreResult.timeSpans.timeSpans],
-                            cursor: fetchMoreResult.timeSpans.cursor,
+                        history: {
+                            ...fetchMoreResult.history,
+                            timeSpans: [...new Map(combined.map((entry) => [entry.id, entry])).values()],
                         },
                     };
                 },
             })
-            .finally(() => {
-                loading.current = false;
-            });
-    }, [trackersResult]);
-
-    // Loads the next page once the sentinel div at the bottom of the list scrolls into view,
-    // replacing react-infinite's windowed/virtualized approach - this list is a personal time
-    // log, not large enough to need DOM virtualization.
-    React.useEffect(() => {
-        const target = loadMoreRef.current;
-        if (!target) {
-            return;
-        }
-        const observer = new IntersectionObserver(
-            (entries) => {
-                if (entries[0].isIntersecting) {
-                    fetchMore();
-                }
-            },
-            {rootMargin: '2000px 0px'}
-        );
-        observer.observe(target);
-        return () => observer.disconnect();
-    }, [fetchMore]);
-
-    const values: GroupedTimeSpanProps = (() => {
-        if (
-            trackersResult.error ||
-            trackersResult.loading ||
-            !trackersResult.data ||
-            trackersResult.data.timeSpans === null ||
-            tagsResult.error ||
-            tagsResult.loading ||
-            !tagsResult.data ||
-            tagsResult.data.tags == null
-        ) {
-            return [];
-        }
-        return toGroupedTimeSpanProps(trackersResult.data.timeSpans.timeSpans, tagsResult.data.tags, currentDate);
-    })();
-
+            .catch(() => setPageError(true));
+    };
     return (
-        <Box component="section" className="history-section" sx={{mt: 4}}>
-            <Typography component="h3" variant="h4" sx={{mb: 2}}>
-                {t('Your entries')}
-            </Typography>
-            {!trackersResult.loading && !trackersResult.error && values.length === 0 && (
-                <Paper sx={{p: 4, borderRadius: '18px'}}>
-                    <Typography variant="h6">{t('No completed entries yet')}</Typography>
+        <Box component="section" className="history-section" sx={{mt: 4}} aria-labelledby="history-heading">
+            <Stack direction="row" sx={{justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1, mb: 2}}>
+                <Typography id="history-heading" component="h3" variant="h4">
+                    {t('Your entries')}
+                </Typography>
+                <Button startIcon={<Refresh />} disabled={busy} onClick={refresh}>
+                    {t('Refresh history')}
+                </Button>
+            </Stack>
+            <Paper sx={{p: {xs: 2, sm: 3}, mb: 3, borderRadius: '18px'}}>
+                <HistoryFilters
+                    onApply={(draft) => {
+                        setPageError(false);
+                        setFilter(historyFilterFromDraft(draft));
+                    }}
+                />
+                <Box sx={{mt: 2}}>
+                    <HistoryCsvExport filter={filter} disabled={!visible} />
+                </Box>
+                <Typography variant="body2" color="text.secondary" sx={{mt: 2}}>
+                    {t(
+                        'Dates use your browser time zone. Totals include completed entries and are clipped to the selected period.'
+                    )}
+                </Typography>
+                {busy && <LinearProgress aria-label={t('Loading history')} sx={{mt: 2}} />}
+                {visible && (
+                    <Box
+                        role="status"
+                        aria-live="polite"
+                        sx={{mt: 3, display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', gap: 2}}>
+                        <Typography variant="h4" component="p" sx={{fontVariantNumeric: 'tabular-nums'}}>
+                            {formatHistoryDuration(result.totalSeconds)}{' '}
+                            <Typography component="span" variant="body2">
+                                {t('hours')}
+                            </Typography>
+                        </Typography>
+                        <Typography color="text.secondary">
+                            {t('{count} matching entries', {count: result.matchingCount})}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                            {t('Total across all matching entries')}
+                        </Typography>
+                    </Box>
+                )}
+            </Paper>
+            {(history.error || tags.error) && (
+                <Alert
+                    severity="error"
+                    action={
+                        <Button
+                            color="inherit"
+                            onClick={() => {
+                                refresh();
+                                void tags.refetch().catch(() => {});
+                            }}>
+                            {t('Retry')}
+                        </Button>
+                    }
+                    sx={{mb: 2}}>
+                    {t('Could not load history. Please retry.')}
+                </Alert>
+            )}
+            {visible && result.matchingCount === 0 && (
+                <Paper sx={{p: 4, mb: 3, borderRadius: '18px'}}>
+                    <Typography variant="h6">{t('No matching entries')}</Typography>
                     <Typography color="text.secondary" sx={{mt: 1}}>
-                        {t('Stop a running timer or add a manual entry to start your log.')}
+                        {t('Change or reset the filters, or add a completed entry.')}
                     </Typography>
                 </Paper>
             )}
             {values.map(({key, timeSpans}) => (
-                <DatedTimeSpans key={key} name={key} timeSpans={timeSpans} addTagsToTracker={addTagsToTracker} />
+                <DatedTimeSpans
+                    key={key}
+                    name={key}
+                    timeSpans={timeSpans}
+                    addTagsToTracker={addTagsToTracker}
+                    onChanged={refresh}
+                />
             ))}
-            <div ref={loadMoreRef} />
+            {pageError && (
+                <Alert severity="error" sx={{mb: 2}}>
+                    {t('Could not load more entries. Please retry.')}
+                </Alert>
+            )}
+            {visible && result.cursor.hasMore && (
+                <Button variant="outlined" disabled={busy} onClick={loadMore}>
+                    {fetchingMore ? t('Loading history') : t('Load more entries')}
+                </Button>
+            )}
         </Box>
     );
 };
 
-const DatedTimeSpans: React.FC<
-    {
-        name: string;
-        timeSpans: TimeSpanProps[];
-    } & DoneTrackersProps
-> = ({name, timeSpans, addTagsToTracker}) => {
-    return (
-        <Paper className="history-day" key={name} sx={{mb: 3, borderRadius: '18px', overflow: 'hidden'}}>
-            <Typography component="h4" sx={{px: 3, py: 2, fontWeight: 600, borderBottom: 1, borderColor: 'divider'}}>
-                {name}
-            </Typography>
-            {timeSpans.map((timeSpanProps) => (
-                <TimeSpan key={timeSpanProps.id} {...timeSpanProps} addTagsToTracker={addTagsToTracker} />
-            ))}
-        </Paper>
-    );
-};
+const DatedTimeSpans: React.FC<{name: string; timeSpans: TimeSpanProps[]; onChanged: () => void} & DoneTrackersProps> = ({
+    name,
+    timeSpans,
+    addTagsToTracker,
+    onChanged,
+}) => (
+    <Paper className="history-day" sx={{mb: 3, borderRadius: '18px', overflow: 'hidden'}}>
+        <Typography component="h4" sx={{px: 3, py: 2, fontWeight: 600, borderBottom: 1, borderColor: 'divider'}}>
+            {name}
+        </Typography>
+        {timeSpans.map((props) => (
+            <TimeSpan
+                key={props.id}
+                {...props}
+                addTagsToTracker={addTagsToTracker}
+                rangeChange={onChanged}
+                deleted={onChanged}
+                stopped={onChanged}
+            />
+        ))}
+    </Paper>
+);

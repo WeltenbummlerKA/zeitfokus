@@ -1,4 +1,36 @@
 export const messages: Record<string, {en: string; de: string}> = {
+    hours: {en: 'hours', de: 'Stunden'},
+    'Search all entries': {en: 'Search all entries', de: 'Alle Einträge durchsuchen'},
+    'Description or tag': {en: 'Description or tag', de: 'Beschreibung oder Tag'},
+    'To (inclusive)': {en: 'To (inclusive)', de: 'Bis einschließlich'},
+    'Choose a valid date range.': {en: 'Choose a valid date range.', de: 'Bitte einen gültigen Zeitraum wählen.'},
+    'Tag filters': {en: 'Tag filters', de: 'Tagfilter'},
+    'Require all selected tags': {en: 'Require all selected tags', de: 'Alle ausgewählten Tags einschließen'},
+    'Exclude selected tags': {en: 'Exclude selected tags', de: 'Ausgewählte Tags ausschließen'},
+    'Apply filters': {en: 'Apply filters', de: 'Filter anwenden'},
+    'Reset filters': {en: 'Reset filters', de: 'Filter zurücksetzen'},
+    'Refresh history': {en: 'Refresh history', de: 'Verlauf aktualisieren'},
+    'Dates use your browser time zone. Totals include completed entries and are clipped to the selected period.': {
+        en: 'Dates use your browser time zone. Totals include completed entries and are clipped to the selected period.',
+        de: 'Datumsgrenzen gelten in deiner Browser-Zeitzone. Die Summe umfasst abgeschlossene Einträge und nur deren Anteil im gewählten Zeitraum.',
+    },
+    'Loading history': {en: 'Loading history', de: 'Verlauf wird geladen'},
+    '{count} matching entries': {en: '{count} matching entries', de: '{count} passende Einträge'},
+    'Total across all matching entries': {en: 'Total across all matching entries', de: 'Gesamtsumme aller passenden Einträge'},
+    'Could not load history. Please retry.': {
+        en: 'Could not load history. Please retry.',
+        de: 'Der Verlauf konnte nicht geladen werden. Bitte erneut versuchen.',
+    },
+    'No matching entries': {en: 'No matching entries', de: 'Keine passenden Einträge'},
+    'Change or reset the filters, or add a completed entry.': {
+        en: 'Change or reset the filters, or add a completed entry.',
+        de: 'Ändere die Filter, setze sie zurück oder füge einen abgeschlossenen Eintrag hinzu.',
+    },
+    'Could not load more entries. Please retry.': {
+        en: 'Could not load more entries. Please retry.',
+        de: 'Weitere Einträge konnten nicht geladen werden. Bitte erneut versuchen.',
+    },
+    'Load more entries': {en: 'Load more entries', de: 'Weitere Einträge laden'},
     'Active Timers': {
         en: 'Active Timers',
         de: 'Laufende Timer',

@@ -137,6 +137,8 @@ export const TimeSpan: React.FC<TimeSpanProps> = React.memo(
             dateSelectorOpen(!!o)
         );
         const [stopTimer] = useMutation<StopTimerMutation, StopTimerMutationVariables>(gqlTimeSpan.StopTimer, {
+            refetchQueries: ['History'],
+            awaitRefetchQueries: true,
             update: (cache, {data}) => {
                 if (!data || !data.stopTimeSpan) {
                     return;
@@ -147,12 +149,19 @@ export const TimeSpan: React.FC<TimeSpanProps> = React.memo(
         });
         const [startTimer] = useMutation<StartTimerMutation, StartTimerMutationVariables>(gqlTimeSpan.StartTimer, {
             refetchQueries: [{query: gqlTimeSpan.Trackers}],
+            awaitRefetchQueries: true,
         });
         const [addTimeSpan, {loading: duplicating}] = useMutation<AddTimeSpanMutation, AddTimeSpanMutationVariables>(
             gqlTimeSpan.AddTimeSpan,
-            {refetchQueries: [{query: gqlTimeSpan.TimeSpans}]}
+            {refetchQueries: ['History'], awaitRefetchQueries: true}
         );
-        const [updateTimeSpan] = useMutation<UpdateTimeSpanMutation, UpdateTimeSpanMutationVariables>(gqlTimeSpan.UpdateTimeSpan);
+        const [updateTimeSpan] = useMutation<UpdateTimeSpanMutation, UpdateTimeSpanMutationVariables>(
+            gqlTimeSpan.UpdateTimeSpan,
+            {
+                refetchQueries: ['History'],
+                awaitRefetchQueries: true,
+            }
+        );
         const noteAwareUpdateTimeSpan = ({variables}: {variables: Omit<UpdateTimeSpanMutationVariables, 'note'>}) => {
             clearTimeout(note.current.handle);
             return updateTimeSpan({variables: {...variables, note: note.current.value}});
@@ -160,6 +169,8 @@ export const TimeSpan: React.FC<TimeSpanProps> = React.memo(
         const [removeTimeSpan] = useMutation<RemoveTimeSpanMutation, RemoveTimeSpanMutationVariables>(
             gqlTimeSpan.RemoveTimeSpan,
             {
+                refetchQueries: ['History'],
+                awaitRefetchQueries: true,
                 update: (cache, {data}) => {
                     let oldData: TimeSpansQuery | null = null;
                     try {

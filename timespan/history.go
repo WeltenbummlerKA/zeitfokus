@@ -24,7 +24,7 @@ func (r *ResolverForTimeSpan) History(ctx context.Context, filter *gqlmodel.Inpu
 		snapshot = *page.StartID
 	} else {
 		var maxID int
-		if err := r.DB.Model(new(model.TimeSpan)).Where("user_id = ?", user.ID).Select("max(id)").Row().Scan(&maxID); err != nil {
+		if err := r.DB.Model(new(model.TimeSpan)).Where("user_id = ?", user.ID).Select("coalesce(max(id), 0)").Row().Scan(&maxID); err != nil {
 			return nil, err
 		}
 		snapshot = maxID
