@@ -7,9 +7,12 @@ Notizen und Beschreibungen werden absichtlich nicht in die Zusammenfassung
 übernommen. Zeitzonen werden für Tagesgrenzen berücksichtigt, die Dauer bleibt
 eine echte Zeitdifferenz.
 
-Die Modellanbindung ist bewusst noch nicht aktiviert. Für die nächste Stufe
-soll ausschließlich ein administrativ konfigurierter lokaler Ollama-Endpunkt
-mit festem Modell erlaubt werden. Benutzer dürfen keine beliebigen URLs oder
-Prompts als Serverziel vorgeben. Standardmäßig werden nur Aggregatwerte
-gesendet; Beschreibungen erfordern eine ausdrückliche Einstellung. Es werden
-keine KI-Ergebnisse gespeichert oder automatisch Zeitdaten verändert.
+Die Provider-Schicht unterstützt administrativ konfigurierte lokale Ollama-
+Endpunkte (`/api/chat`) und LM-Studio/OpenAI-kompatible Endpunkte
+(`/v1/chat/completions`). Akzeptiert werden nur HTTP-Endpunkte im lokalen oder
+privaten Netz; URLs mit Zugangsdaten, Querystring oder öffentlichen Hosts werden
+abgelehnt. Der Aufruf läuft ausschließlich im Backend mit Timeout. Standardmäßig
+werden nur Aggregatwerte gesendet; Beschreibungen sind nicht Bestandteil des
+Payloads. Es werden keine KI-Ergebnisse gespeichert oder automatisch Zeitdaten
+verändert. Die GraphQL/UI-Aktivierung kann darauf aufbauen, ohne Providerzugang
+an den Browser zu geben.
