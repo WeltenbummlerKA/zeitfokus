@@ -237,6 +237,9 @@ export const Page: React.FC<React.PropsWithChildren> = ({children}) => {
                         <MenuItem component={routerLink('/user/settings')} onClick={() => setUserMenuOpen(null)}>
                             {t('Settings')}
                         </MenuItem>
+                        <MenuItem component={routerLink('/about')} onClick={() => setUserMenuOpen(null)}>
+                            {t('About')}
+                        </MenuItem>
                         <MenuItem
                             onClick={() => {
                                 setUserMenuOpen(null);

@@ -19,6 +19,7 @@ import {DashboardsPage} from './dashboard/DashboardsPage';
 import {TagPage} from './tag/TagPage';
 import {SettingsPage} from './setting/SettingsPage';
 import {CalendarPage} from './timespan/calendar/CalendarPage';
+import {AboutPage} from './about/AboutPage';
 
 export const Router = () => {
     useI18n();
@@ -48,6 +49,7 @@ export const Router = () => {
                                 <Route path="user/settings" element={<SettingsPage />} />
                                 <Route path="user/devices" element={<DevicesPage />} />
                                 <Route path="user/tags" element={<TagPage />} />
+                                <Route path="about" element={<AboutPage />} />
                                 {admin ? <Route path="admin/users" element={<UsersPage />} /> : null}
                                 <Route path="/" element={<Navigate to="/timesheet/list" replace />} />
                             </Routes>

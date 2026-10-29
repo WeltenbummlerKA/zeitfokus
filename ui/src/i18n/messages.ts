@@ -948,4 +948,28 @@ export const messages: Record<string, {en: string; de: string}> = {
         en: 'Stop a running timer or add a manual entry to start your log.',
         de: 'Stoppe einen laufenden Timer oder trage eine Zeit manuell ein.',
     },
+    About: {en: 'About', de: 'Über diese Anwendung'},
+    'A focused, private time tracker for your workday.': {
+        en: 'A focused, private time tracker for your workday.',
+        de: 'Eine fokussierte, private Zeiterfassung für deinen Arbeitstag.',
+    },
+    'Source code': {en: 'Source code', de: 'Quellcode'},
+    Description: {en: 'Description', de: 'Beschreibung'},
+    'What are you working on?': {en: 'What are you working on?', de: 'Woran arbeitest du?'},
+    'Recent descriptions': {en: 'Recent descriptions', de: 'Zuletzt verwendete Beschreibungen'},
+    Recent: {en: 'Recent', de: 'Zuletzt'},
+    'Edit time entry': {en: 'Edit time entry', de: 'Zeiteintrag bearbeiten'},
+    'Could not save changes. Please retry.': {
+        en: 'Could not save changes. Please retry.',
+        de: 'Änderungen konnten nicht gespeichert werden. Bitte erneut versuchen.',
+    },
+    'Delete time entry?': {en: 'Delete time entry?', de: 'Zeiteintrag löschen?'},
+    'This action cannot be undone.': {
+        en: 'This action cannot be undone.',
+        de: 'Diese Aktion kann nicht rückgängig gemacht werden.',
+    },
+    'Could not delete this entry. Please retry.': {
+        en: 'Could not delete this entry. Please retry.',
+        de: 'Der Eintrag konnte nicht gelöscht werden. Bitte erneut versuchen.',
+    },
 };

@@ -5,7 +5,7 @@ import {TagSelector} from '../tag/TagSelector';
 import moment from 'moment';
 import Paper from '@mui/material/Paper';
 import {DateTimeSelector} from '../common/DateTimeSelector';
-import {Button, TextField, Typography} from '@mui/material';
+import {Alert, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Typography} from '@mui/material';
 import makeStyles from '@mui/styles/makeStyles';
 import {inUserTz} from './timeutils';
 import {useMutation} from '@apollo/client';
@@ -117,6 +117,13 @@ export const TimeSpan: React.FC<TimeSpanProps> = React.memo(
         useI18n();
         const styles = useStyles();
         const [showNotes, toggleShowingNotes] = React.useState(initialNote !== '');
+        const [editOpen, setEditOpen] = React.useState(false);
+        const [editNote, setEditNote] = React.useState(initialNote);
+        const [editError, setEditError] = React.useState('');
+        const [editSaving, setEditSaving] = React.useState(false);
+        const [deleteOpen, setDeleteOpen] = React.useState(false);
+        const [deleteError, setDeleteError] = React.useState('');
+        const [deleteSaving, setDeleteSaving] = React.useState(false);
         const note = React.useRef<{value: string; handle?: number}>({value: initialNote});
 
         const [selectedEntries, setSelectedEntries] = React.useState<TagSelectorEntry[]>(initialTags);
@@ -373,6 +380,15 @@ export const TimeSpan: React.FC<TimeSpanProps> = React.memo(
                         <MenuItem
                             onClick={() => {
                                 setOpenMenu(null);
+                                setEditNote(note.current.value);
+                                setEditError('');
+                                setEditOpen(true);
+                            }}>
+                            {t('Edit')}
+                        </MenuItem>
+                        <MenuItem
+                            onClick={() => {
+                                setOpenMenu(null);
                                 toggleShowingNotes(!showNotes);
                             }}>
                             {t('Show Notes')}
@@ -380,7 +396,8 @@ export const TimeSpan: React.FC<TimeSpanProps> = React.memo(
                         <MenuItem
                             onClick={() => {
                                 setOpenMenu(null);
-                                removeTimeSpan({variables: {id}}).then(() => deleted());
+                                setDeleteError('');
+                                setDeleteOpen(true);
                             }}>
                             {t('Delete')}
                         </MenuItem>
@@ -397,6 +414,91 @@ export const TimeSpan: React.FC<TimeSpanProps> = React.memo(
                         />
                     </div>
                 ) : null}
+                <Dialog open={editOpen} onClose={() => !editSaving && setEditOpen(false)} fullWidth maxWidth="sm">
+                    <DialogTitle>{t('Edit time entry')}</DialogTitle>
+                    <DialogContent>
+                        {editError ? (
+                            <Alert severity="error" sx={{mb: 2}}>
+                                {editError}
+                            </Alert>
+                        ) : null}
+                        <TextField
+                            autoFocus
+                            fullWidth
+                            multiline
+                            minRows={3}
+                            label={t('Description')}
+                            value={editNote}
+                            onChange={(event) => setEditNote(event.target.value)}
+                            inputProps={{maxLength: 500}}
+                            sx={{mt: 1}}
+                        />
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={() => setEditOpen(false)} disabled={editSaving}>
+                            {t('Cancel')}
+                        </Button>
+                        <Button
+                            variant="contained"
+                            disabled={editSaving}
+                            onClick={() => {
+                                setEditSaving(true);
+                                setEditError('');
+                                updateTimeSpan({
+                                    variables: {
+                                        id,
+                                        oldStart: oldFrom,
+                                        start: inUserTz(from).format(),
+                                        end: to && inUserTz(to).format(),
+                                        tags: toInputTags(selectedEntries),
+                                        note: editNote.trim(),
+                                    },
+                                })
+                                    .then(() => {
+                                        note.current.value = editNote.trim();
+                                        setEditSaving(false);
+                                        setEditOpen(false);
+                                    })
+                                    .catch(() => {
+                                        setEditSaving(false);
+                                        setEditError(t('Could not save changes. Please retry.'));
+                                    });
+                            }}>
+                            {t('Save')}
+                        </Button>
+                    </DialogActions>
+                </Dialog>
+                <Dialog open={deleteOpen} onClose={() => !deleteSaving && setDeleteOpen(false)}>
+                    <DialogTitle>{t('Delete time entry?')}</DialogTitle>
+                    <DialogContent>
+                        {deleteError ? <Alert severity="error">{deleteError}</Alert> : null}
+                        <Typography>{t('This action cannot be undone.')}</Typography>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={() => setDeleteOpen(false)} disabled={deleteSaving}>
+                            {t('Cancel')}
+                        </Button>
+                        <Button
+                            color="error"
+                            variant="contained"
+                            disabled={deleteSaving}
+                            onClick={() => {
+                                setDeleteSaving(true);
+                                removeTimeSpan({variables: {id}})
+                                    .then(() => {
+                                        setDeleteSaving(false);
+                                        setDeleteOpen(false);
+                                        deleted();
+                                    })
+                                    .catch(() => {
+                                        setDeleteSaving(false);
+                                        setDeleteError(t('Could not delete this entry. Please retry.'));
+                                    });
+                            }}>
+                            {t('Delete')}
+                        </Button>
+                    </DialogActions>
+                </Dialog>
             </Paper>
         );
     }

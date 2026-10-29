@@ -3,7 +3,7 @@ import * as React from 'react';
 import {TagSelectorEntry} from '../tag/tagSelectorEntry';
 import {TagSelector} from '../tag/TagSelector';
 import moment from 'moment-timezone';
-import {Box, Button, Typography, ToggleButton, ToggleButtonGroup} from '@mui/material';
+import {Box, Button, Typography, ToggleButton, ToggleButtonGroup, TextField, Chip, Stack} from '@mui/material';
 import Paper from '@mui/material/Paper';
 import {DateTimeSelector} from '../common/DateTimeSelector';
 import {useMutation} from '@apollo/client';
@@ -41,6 +41,8 @@ export const Tracker: React.FC<TrackerProps> = ({selectedEntries, onSelectedEntr
     const [from, setFrom] = React.useState<moment.Moment>(moment().subtract(15, 'minute'));
     const [to, setTo] = React.useState<moment.Moment>(moment());
     const [showDate, setShowDate] = React.useState(false);
+    const [note, setNote] = React.useState('');
+    const [recentNotes, setRecentNotes] = React.useState<string[]>([]);
     const [startTimer, {loading: starting}] = useMutation<StartTimerMutation, StartTimerMutationVariables>(
         gqlTimeSpan.StartTimer,
         {
@@ -76,16 +78,26 @@ export const Tracker: React.FC<TrackerProps> = ({selectedEntries, onSelectedEntr
             value: entry.value,
         }));
         if (type === Type.Tracker) {
-            startTimer({variables: {start: inUserTz(moment()).format(), tags, note: ''}})
+            const cleanNote = note.trim();
+            startTimer({variables: {start: inUserTz(moment()).format(), tags, note: cleanNote}})
                 .then(() => {
                     setSelectedEntries([]);
+                    setNote('');
+                    if (cleanNote) {
+                        setRecentNotes((previous) => [cleanNote, ...previous.filter((item) => item !== cleanNote)].slice(0, 5));
+                    }
                     enqueueSnackbar(t('tracker started'), {variant: 'success'});
                 })
                 .catch(handleError(t('Start timer'), enqueueSnackbar));
         } else {
-            addTimeSpan({variables: {start: inUserTz(from).format(), end: inUserTz(to).format(), tags, note: ''}})
+            const cleanNote = note.trim();
+            addTimeSpan({variables: {start: inUserTz(from).format(), end: inUserTz(to).format(), tags, note: cleanNote}})
                 .then(() => {
                     setSelectedEntries([]);
+                    setNote('');
+                    if (cleanNote) {
+                        setRecentNotes((previous) => [cleanNote, ...previous.filter((item) => item !== cleanNote)].slice(0, 5));
+                    }
                     enqueueSnackbar(t('time span added'), {variant: 'success'});
                 })
                 .catch(handleError(t('Add time entry'), enqueueSnackbar));
@@ -119,6 +131,25 @@ export const Tracker: React.FC<TrackerProps> = ({selectedEntries, onSelectedEntr
                     onCtrlEnter={submit}
                 />
             </div>
+            <TextField
+                fullWidth
+                label={t('Description')}
+                placeholder={t('What are you working on?')}
+                value={note}
+                onChange={(event) => setNote(event.target.value)}
+                inputProps={{maxLength: 500}}
+                sx={{mb: 2}}
+            />
+            {recentNotes.length > 0 ? (
+                <Stack direction="row" spacing={1} sx={{mb: 2, flexWrap: 'wrap', gap: 1}} aria-label={t('Recent descriptions')}>
+                    <Typography variant="caption" color="text.secondary" sx={{alignSelf: 'center'}}>
+                        {t('Recent')}
+                    </Typography>
+                    {recentNotes.map((recent) => (
+                        <Chip key={recent} label={recent} size="small" onClick={() => setNote(recent)} />
+                    ))}
+                </Stack>
+            ) : null}
             {type === Type.Manual ? (
                 <div>
                     <DateTimeSelector
