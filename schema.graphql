@@ -46,6 +46,7 @@ type RootMutation {
 
     setUserSettings(settings: InputUserSettings!): UserSettings! @hasRole(role: USER)
     setInterfaceLanguage(language: InterfaceLanguage!): UserSettings! @hasRole(role: USER)
+    setWorkTargetProfile(profile: InputWorkTargetProfile!): UserSettings! @hasRole(role: USER)
 }
 
 type RootQuery {
@@ -80,10 +81,23 @@ enum InterfaceLanguage {
 
 type UserSettings {
     interfaceLanguage: InterfaceLanguage
+    workTargetProfile: WorkTargetProfile
     theme: Theme!
     dateLocale: DateLocale!
     firstDayOfTheWeek: WeekDay!
     dateTimeInputStyle: DateTimeInputStyle!
+}
+
+input InputWorkTargetProfile {
+    enabled: Boolean!
+    weeklyHours: Float!
+    workDays: [WeekDay!]!
+}
+
+type WorkTargetProfile {
+    enabled: Boolean!
+    weeklyHours: Float!
+    workDays: [WeekDay!]!
 }
 
 enum WeekDay {

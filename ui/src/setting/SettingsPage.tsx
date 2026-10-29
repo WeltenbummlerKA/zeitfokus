@@ -19,6 +19,7 @@ import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/NativeSelect';
 import {useSnackbar} from 'notistack';
 import {handleError} from '../utils/errors';
+import {WorkTargetSettings} from './WorkTargetSettings';
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -177,6 +178,7 @@ export const SettingsPage: React.FC = () => {
                     ))}
                 </Select>
             </FormControl>
+            <WorkTargetSettings />
         </Paper>
     );
 };

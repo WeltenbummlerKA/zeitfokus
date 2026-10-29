@@ -16,12 +16,13 @@ func (r *ResolverForSettings) SetUserSettings(ctx context.Context, settings gqlm
 		return nil, err
 	}
 	internal := model.UserSetting{
-		InterfaceLanguage:  current.InterfaceLanguage,
-		Theme:              toInternalTheme(settings.Theme),
-		FirstDayOfTheWeek:  toInternalWeekday(settings.FirstDayOfTheWeek).String(),
-		UserID:             auth.GetUser(ctx).ID,
-		DateLocale:         toInternalDateLocale(settings.DateLocale),
-		DateTimeInputStyle: toInternalDateTimeInputStyle(settings.DateTimeInputStyle),
+		InterfaceLanguage:     current.InterfaceLanguage,
+		WorkTargetProfileJSON: current.WorkTargetProfileJSON,
+		Theme:                 toInternalTheme(settings.Theme),
+		FirstDayOfTheWeek:     toInternalWeekday(settings.FirstDayOfTheWeek).String(),
+		UserID:                auth.GetUser(ctx).ID,
+		DateLocale:            toInternalDateLocale(settings.DateLocale),
+		DateTimeInputStyle:    toInternalDateTimeInputStyle(settings.DateTimeInputStyle),
 	}
 
 	save := r.DB.Save(internal)
@@ -38,6 +39,7 @@ func (r *ResolverForSettings) UserSettings(ctx context.Context) (*gqlmodel.UserS
 func toExternal(internal model.UserSetting) *gqlmodel.UserSettings {
 	return &gqlmodel.UserSettings{
 		InterfaceLanguage:  externalInterfaceLanguage(internal.InterfaceLanguage),
+		WorkTargetProfile:  externalWorkTargetProfile(internal.WorkTargetProfileJSON),
 		Theme:              toExternalTheme(internal.Theme),
 		DateLocale:         toExternalDateLocale(internal.DateLocale),
 		FirstDayOfTheWeek:  toExternalWeekday(internal.FirstDayOfTheWeekTimeWeekday()),

@@ -7,6 +7,7 @@ import {ActiveTrackers} from './ActiveTrackers';
 import {DoneTrackers} from './DoneTrackers';
 import {TagSelectorEntry} from '../tag/tagSelectorEntry';
 import {RefreshTimeSpans} from './RefreshTimespans';
+import {WorkTargetSummary} from '../setting/WorkTargetSummary';
 
 export const DailyPage = () => {
     useI18n();
@@ -26,6 +27,7 @@ export const DailyPage = () => {
             </Box>
             <Tracker selectedEntries={selectedEntries} onSelectedEntriesChanged={setSelectedEntries} />
             <ActiveTrackers />
+            <WorkTargetSummary />
             <DoneTrackers
                 addTagsToTracker={
                     selectedEntries.length === 0 ? (entries) => setSelectedEntries(selectedEntries.concat(entries)) : undefined

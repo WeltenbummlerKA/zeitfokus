@@ -6,6 +6,11 @@ export const Settings = gql`
     query Settings {
         userSettings {
             interfaceLanguage
+            workTargetProfile {
+                enabled
+                weeklyHours
+                workDays
+            }
             theme
             dateLocale
             firstDayOfTheWeek
@@ -29,6 +34,7 @@ const defaultSettings = {
     firstDayOfTheWeek: WeekDay.Monday,
     dateTimeInputStyle: DateTimeInputStyle.Fancy,
     interfaceLanguage: null,
+    workTargetProfile: null,
 } as const;
 
 export const useSettings = (): {done: boolean} & Omit<SettingsQueryResponse['userSettings'], '__typename'> => {
@@ -48,6 +54,18 @@ export const SetInterfaceLanguage = gql`
             dateLocale
             firstDayOfTheWeek
             dateTimeInputStyle
+        }
+    }
+`;
+
+export const SetWorkTargetProfile = gql`
+    mutation SetWorkTargetProfile($profile: InputWorkTargetProfile!) {
+        setWorkTargetProfile(profile: $profile) {
+            workTargetProfile {
+                enabled
+                weeklyHours
+                workDays
+            }
         }
     }
 `;
