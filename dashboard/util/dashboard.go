@@ -39,3 +39,18 @@ func FindDashboardEntry(db *gorm.DB, entryID int) (model.DashboardEntry, error) 
 
 	return dashboardEntry, find.Error
 }
+
+// FindOwnedDashboardRange prevents references to another user's or dashboard's range.
+func FindOwnedDashboardRange(db *gorm.DB, userID, dashboardID, rangeID int) (model.DashboardRange, error) {
+	value, err := FindDashboardRange(db, rangeID)
+	if err != nil {
+		return value, err
+	}
+	if value.DashboardID != dashboardID {
+		return model.DashboardRange{}, errors.New("dashboard range does not exist")
+	}
+	if _, err := FindDashboard(db, userID, value.DashboardID); err != nil {
+		return model.DashboardRange{}, err
+	}
+	return value, nil
+}

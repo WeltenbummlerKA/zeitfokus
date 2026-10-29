@@ -34,7 +34,7 @@ func TestDatabaseLogger_Success(t *testing.T) {
 		Placeholder: "hello there",
 	})
 
-	expected := `SQL: INSERT INTO "tests" ("password","null_value","placeholder","date","number") VALUES ('<binary>',NULL,'hello there','2017-01-02 00:00:00','1')`
+	expected := `SQL statement completed`
 
 	fakeLog.AssertCount(1)
 	fakeLog.AssertEntryExists(test.Entry{Level: zerolog.DebugLevel, Message: expected})
@@ -51,7 +51,7 @@ func TestDatabaseLogger_Error(t *testing.T) {
 	// column id doesn't exists
 	db.Model(new(Test)).Where("id = ?", 5).Update("number", 6)
 
-	expectedOne := `SQL: UPDATE "tests" SET "number" = '6'  WHERE (id = '5')`
+	expectedOne := `SQL statement completed`
 	expectedTwo := `Database error`
 
 	fakeLog.AssertCount(2)
@@ -89,7 +89,7 @@ func TestDatabaseLogger_LogWithoutError(t *testing.T) {
 	databaseLogger := logger.DatabaseLogger{}
 	databaseLogger.Print("log", "somefile", "my log message")
 
-	expected := `my log message`
+	expected := `Database diagnostic`
 
 	fakeLog.AssertCount(1)
 	fakeLog.AssertEntryExists(test.Entry{Level: zerolog.DebugLevel, Message: expected})

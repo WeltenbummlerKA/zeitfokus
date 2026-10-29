@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -25,8 +26,13 @@ func Start(mux *mux.Router, port int) error {
 
 func startServer(mux *mux.Router, port int) (*http.Server, chan error) {
 	srv := &http.Server{
-		Addr:    fmt.Sprintf(":%d", port),
-		Handler: mux,
+		Addr:              fmt.Sprintf(":%d", port),
+		Handler:           mux,
+		ReadHeaderTimeout: 5 * time.Second,
+		ReadTimeout:       15 * time.Second,
+		WriteTimeout:      30 * time.Second,
+		IdleTimeout:       60 * time.Second,
+		MaxHeaderBytes:    32 << 10,
 	}
 
 	shutdown := make(chan error)
@@ -39,7 +45,7 @@ func startServer(mux *mux.Router, port int) (*http.Server, chan error) {
 
 func shutdownOnInterruptSignal(server *http.Server, timeout time.Duration, shutdown chan<- error) {
 	interrupt := make(chan os.Signal, 1)
-	notifySignal(interrupt, os.Interrupt)
+	notifySignal(interrupt, os.Interrupt, syscall.SIGTERM)
 
 	go func() {
 		select {

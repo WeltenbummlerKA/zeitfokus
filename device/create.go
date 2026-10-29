@@ -23,6 +23,9 @@ var (
 // Login creates a device.
 func (r *ResolverForDevice) Login(ctx context.Context, username string, pass string, deviceName string, deviceType gqlmodel.DeviceType, cookie bool) (*gqlmodel.Login, error) {
 
+	if !r.allowLogin(username) {
+		return nil, errors.New("too many login attempts; retry after 15 minutes")
+	}
 	user := new(model.User)
 	find := r.DB.Where("name = ?", username).Find(user)
 
@@ -48,13 +51,13 @@ func (r *ResolverForDevice) CreateDevice(ctx context.Context, deviceName string,
 func (r *ResolverForDevice) createDeviceInternal(ctx context.Context, user *model.User, deviceName string, deviceType gqlmodel.DeviceType, cookie bool) (*gqlmodel.Login, error) {
 
 	token := randToken(20)
-	for !r.DB.Where("token = ?", token).Find(new(model.Device)).RecordNotFound() {
+	for !r.DB.Where("token = ? OR token = ?", auth.TokenDigest(token), token).Find(new(model.Device)).RecordNotFound() {
 		token = randToken(20)
 	}
 
 	now := timeNow()
 	device := &model.Device{
-		Token:     token,
+		Token:     auth.TokenDigest(token),
 		UserID:    user.ID,
 		Name:      deviceName,
 		Type:      model.DeviceType(deviceType),

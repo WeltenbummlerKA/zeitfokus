@@ -15,6 +15,9 @@ import (
 
 // Stats groups the time spans by tag key.
 func (r *ResolverForStatistics) Stats(ctx context.Context, ranges []*gqlmodel.Range, tags []string, excludeTags []*gqlmodel.InputTimeSpanTag, requireTags []*gqlmodel.InputTimeSpanTag) ([]*gqlmodel.RangedStatisticsEntries, error) {
+	if len(ranges) > 50000 {
+		return nil, errors.New("too many ranges")
+	}
 	if len(ranges) == 0 {
 		return nil, errors.New("ranges may not be empty")
 	}

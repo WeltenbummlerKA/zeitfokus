@@ -48,7 +48,7 @@ func main() {
 	if exit {
 		os.Exit(1)
 	}
-	log.Debug().Interface("config", conf).Msg("Using")
+	log.Debug().Int("port", conf.Port).Str("databaseDialect", conf.DatabaseDialect).Msg("Configuration loaded")
 
 	db := initDatabase(conf)
 
@@ -67,10 +67,9 @@ func initRouter(db *gorm.DB, conf config.Config, version model.Version) *mux.Rou
 	gqlHandler := graphql.Handler(
 		"/graphql",
 		graphql.NewResolver(db, conf.PassStrength, version),
-		graphql.NewDirective())
+		graphql.NewDirective(), auth.Middleware(db, conf.CookieSecure))
 
 	router := mux.NewRouter()
-	router.Use(auth.Middleware(db))
 	router.HandleFunc("/graphql", gqlHandler)
 	ui.Register(router)
 	return router
@@ -83,6 +82,9 @@ func initDatabase(conf config.Config) *gorm.DB {
 	}
 	c := new(int)
 	if db.Model(new(model.User)).Count(c); *c == 0 {
+		if len(conf.DefaultUserPass) < 12 || conf.DefaultUserPass == "change-me" || conf.DefaultUserPass == "admin" {
+			log.Fatal().Msg("Set TRAGGO_DEFAULT_USER_PASS to a unique password of at least 12 characters before initializing an empty database")
+		}
 		log.Info().Msg("Creating default user.")
 		db.Create(&model.User{
 			Name:  conf.DefaultUserName,

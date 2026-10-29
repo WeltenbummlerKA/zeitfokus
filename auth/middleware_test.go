@@ -52,6 +52,7 @@ func TestMiddleware_query_validToken_authenticates(t *testing.T) {
 	assert.Equal(t, &user, GetUser(ctx))
 
 	device.ActiveAt = now
+	device.Token = TokenDigest(device.Token)
 	assert.Equal(t, &device, GetDevice(ctx))
 }
 
@@ -89,6 +90,7 @@ func TestMiddleware_header_validToken_authenticates(t *testing.T) {
 	assert.Equal(t, &user, GetUser(ctx))
 
 	device.ActiveAt = now
+	device.Token = TokenDigest(device.Token)
 	assert.Equal(t, &device, GetDevice(ctx))
 }
 
@@ -148,6 +150,7 @@ func TestMiddleware_cookie_validToken_authenticates(t *testing.T) {
 	assert.Equal(t, &user, GetUser(ctx))
 
 	device.ActiveAt = now
+	device.Token = TokenDigest(device.Token)
 	assert.Equal(t, &device, GetDevice(ctx))
 }
 
@@ -164,7 +167,7 @@ func TestMiddleware_createSession_setsCookie(t *testing.T) {
 	GetCreateSession(ctx)("new token", 60)
 
 	cookieHeader := recorder.Header().Get("Set-Cookie")
-	assert.Equal(t, `traggo="new token"; Max-Age=60`, cookieHeader)
+	assert.Equal(t, `traggo="new token"; Path=/; Max-Age=60; HttpOnly; SameSite=Lax`, cookieHeader)
 }
 
 func TestMiddleware_noCallbackExecuted_noCookieSet(t *testing.T) {
@@ -193,7 +196,7 @@ func TestMiddleware_destroySession_destroysCookie(t *testing.T) {
 	GetDestroySession(ctx)()
 
 	cookieHeader := recorder.Header().Get("Set-Cookie")
-	assert.Equal(t, "traggo=; Max-Age=0", cookieHeader)
+	assert.Equal(t, "traggo=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax", cookieHeader)
 }
 
 func TestMiddleware_impersonate_no_admin(t *testing.T) {
@@ -304,6 +307,7 @@ func TestMiddleware_impersonate_happy(t *testing.T) {
 	assert.Equal(t, &user, GetUser(ctx))
 
 	admin_device.ActiveAt = now
+	admin_device.Token = TokenDigest(admin_device.Token)
 	assert.Equal(t, &admin_device, GetDevice(ctx))
 }
 

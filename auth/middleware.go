@@ -25,20 +25,23 @@ var (
 )
 
 // Middleware is the auth middleware which sets user and device context parameters.
-func Middleware(db *gorm.DB) mux.MiddlewareFunc {
+func Middleware(db *gorm.DB, secureCookie ...bool) mux.MiddlewareFunc {
 	return func(handler http.Handler) http.Handler {
 		return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-			handler.ServeHTTP(writer, sessionCallbacks(reqisterUser(request, writer, db), writer))
+			secure := request.TLS != nil || (len(secureCookie) > 0 && secureCookie[0])
+			handler.ServeHTTP(writer, sessionCallbacks(reqisterUser(request, writer, db, secure), writer, secure))
 		})
 	}
 }
 
-func sessionCallbacks(request *http.Request, writer http.ResponseWriter) *http.Request {
+func sessionCallbacks(request *http.Request, writer http.ResponseWriter, secureCookie ...bool) *http.Request {
+	secure := request.TLS != nil || (len(secureCookie) > 0 && secureCookie[0])
 	createSession := func(token string, maxAge int) {
 		http.SetCookie(writer, &http.Cookie{
 			Name:   traggoSession,
 			Value:  token,
 			MaxAge: maxAge,
+			Path:   "/", HttpOnly: true, Secure: secure, SameSite: http.SameSiteLaxMode,
 		})
 	}
 	destroySession := func() {
@@ -46,26 +49,44 @@ func sessionCallbacks(request *http.Request, writer http.ResponseWriter) *http.R
 			Name:   traggoSession,
 			Value:  "",
 			MaxAge: -1,
+			Path:   "/", HttpOnly: true, Secure: secure, SameSite: http.SameSiteLaxMode,
 		})
 	}
 	return request.WithContext(WithDestroySession(WithCreateSession(request.Context(), createSession), destroySession))
 }
 
-func reqisterUser(request *http.Request, writer http.ResponseWriter, db *gorm.DB) *http.Request {
+func reqisterUser(request *http.Request, writer http.ResponseWriter, db *gorm.DB, secureCookie ...bool) *http.Request {
 	token, err := getToken(request)
 	if err != nil {
 		return request
 	}
 
 	device := &model.Device{}
-	if db.Where("token = ?", token).Find(device).RecordNotFound() {
-		log.Debug().Str("token", token).Msg("No device with token found")
+	// Never accept a stored verifier itself as a bearer credential.
+	if strings.HasPrefix(token, "sha256:") {
+		return request
+	}
+	digest := TokenDigest(token)
+	if result := db.Where("token = ? OR token = ?", digest, token).Find(device); result.Error != nil {
+		log.Debug().Msg("No device with token found")
 		return request
 	}
 
+	if device.Type != model.TypeNoExpiry && (device.Type.Valid() != nil || !device.ActiveAt.Add(time.Duration(device.Type.Seconds())*time.Second).After(timeNow())) {
+		return request
+	}
+
+	// Convert existing tokens on successful use, preserving native client credentials.
+	if device.Token != digest {
+		if err := db.Model(device).Where("token = ?", token).UpdateColumn("token", digest).Error; err != nil {
+			return request
+		}
+		device.Token = digest
+	}
+
 	user := &model.User{}
-	if db.Find(user, device.UserID).RecordNotFound() {
-		log.Panic().Int("userID", device.UserID).Int("deviceID", device.ID).Msg("User not found")
+	if db.Find(user, device.UserID).Error != nil {
+		return request
 	}
 	log.Debug().Int("userid", device.UserID).Str("username", user.Name).Msg("User found")
 
@@ -89,13 +110,17 @@ func reqisterUser(request *http.Request, writer http.ResponseWriter, db *gorm.DB
 		log.Info().Str("username", user.Name).Msg("Impersonation user")
 	}
 
-	if device.ActiveAt.Before(time.Now().Add(5 * -time.Minute)) {
+	if device.ActiveAt.Before(timeNow().Add(5 * -time.Minute)) {
 		log.Debug().Int("deviceId", device.ID).Str("deviceName", device.Name).Msg("update device activeAt")
 		device.ActiveAt = timeNow()
 		db.Save(device)
 
 		if cookie, err := request.Cookie(traggoSession); err == nil && cookie != nil {
 			cookie.MaxAge = device.Type.Seconds()
+			cookie.Path = "/"
+			cookie.HttpOnly = true
+			cookie.Secure = request.TLS != nil || (len(secureCookie) > 0 && secureCookie[0])
+			cookie.SameSite = http.SameSiteLaxMode
 			http.SetCookie(writer, cookie)
 		}
 	}

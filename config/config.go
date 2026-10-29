@@ -24,7 +24,8 @@ type Config struct {
 	Port               int      `default:"3030"`
 	LogLevel           LogLevel `default:"info" split_words:"true"`
 	DefaultUserName    string   `default:"admin" split_words:"true"`
-	DefaultUserPass    string   `default:"admin" split_words:"true"`
+	DefaultUserPass    string   `default:"" split_words:"true"`
+	CookieSecure       bool     `default:"false" split_words:"true"`
 	PassStrength       int      `default:"10" split_words:"true"`
 	DatabaseDialect    string   `default:"sqlite3" split_words:"true"`
 	DatabaseConnection string   `default:"data/traggo.db" split_words:"true"`

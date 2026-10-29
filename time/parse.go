@@ -33,6 +33,13 @@ func ParseRange(now time.Time, r RelativeRange, interval model.Interval, startOf
 		return nil, fmt.Errorf("range to: %s", err)
 	}
 
+	if from.After(to) {
+		return nil, fmt.Errorf("range start must be before range end")
+	}
+	// Bound expansion before allocating: at most five years of hourly ranges.
+	if interval != model.IntervalSingle && to.Sub(from) > 5*366*24*time.Hour {
+		return nil, fmt.Errorf("range exceeds five-year limit")
+	}
 	return ranges(from, to, interval), nil
 }
 

@@ -28,6 +28,9 @@ func (t DeviceType) Value() (driver.Value, error) {
 
 // Scan for db
 func (t *DeviceType) Scan(value interface{}) error {
+	if text, ok := value.(string); ok {
+		value = []byte(text)
+	}
 	s, ok := value.([]byte)
 	if !ok {
 		return fmt.Errorf("expected []byte but was %#v", value)
