@@ -108,7 +108,7 @@ export const Page: React.FC<React.PropsWithChildren> = ({children}) => {
                     <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1.25}}>
                         <Box component="img" src="/favicon.ico" alt="" aria-hidden="true" sx={{width: 30, height: 30}} />
                         <Typography variant="h5" align="center" color="textPrimary">
-                            Zeitstrahl
+                            Zeitfokus
                         </Typography>
                     </Box>
                 </HrefLink>
@@ -198,7 +198,7 @@ export const Page: React.FC<React.PropsWithChildren> = ({children}) => {
     );
 
     React.useEffect(() => {
-        document.title = `${pageTitle} · Zeitstrahl`;
+        document.title = `${pageTitle} · Zeitfokus`;
     }, [pageTitle]);
     return (
         <Box sx={{display: 'flex', minHeight: '100%'}}>
