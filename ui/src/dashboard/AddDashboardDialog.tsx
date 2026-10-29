@@ -1,3 +1,4 @@
+import {t, useI18n} from '../i18n';
 import * as React from 'react';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
@@ -17,6 +18,7 @@ interface AddTagDialogProps {
 }
 
 export const AddDashboardDialog: React.FC<AddTagDialogProps> = ({close, open}) => {
+    useI18n();
     const [name, setName] = React.useState('');
     const {enqueueSnackbar} = useSnackbar();
 
@@ -27,22 +29,22 @@ export const AddDashboardDialog: React.FC<AddTagDialogProps> = ({close, open}) =
         e.preventDefault();
         addUser({variables: {name}})
             .then(() => {
-                enqueueSnackbar('Dashboard created', {variant: 'success'});
+                enqueueSnackbar(t('Dashboard created'), {variant: 'success'});
                 close();
             })
-            .catch(handleError('Create Dashboard', enqueueSnackbar));
+            .catch(handleError(t('Create Dashboard'), enqueueSnackbar));
     };
 
     return (
         <Dialog open={open} onClose={close} aria-labelledby="form-dialog-title" fullWidth>
             <form onSubmit={submit} noValidate autoComplete="off">
-                <DialogTitle id="form-dialog-title">Create Dashboard</DialogTitle>
+                <DialogTitle id="form-dialog-title">{t('Create Dashboard')}</DialogTitle>
                 <DialogContent>
                     <TextField
                         autoFocus
                         margin="dense"
                         id="name"
-                        label="Name"
+                        label={t('Name')}
                         type="text"
                         fullWidth
                         value={name}
@@ -51,10 +53,10 @@ export const AddDashboardDialog: React.FC<AddTagDialogProps> = ({close, open}) =
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={close} color="primary">
-                        Cancel
+                        {t('Cancel')}
                     </Button>
                     <Button type="submit" onClick={submit} color="primary">
-                        Create Dashboard
+                        {t('Create Dashboard')}
                     </Button>
                 </DialogActions>
             </form>

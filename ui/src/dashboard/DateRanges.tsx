@@ -1,3 +1,4 @@
+import {t, useI18n} from '../i18n';
 import * as React from 'react';
 import {useMutation} from '@apollo/client';
 import * as gqlDashboard from '../gql/dashboard';
@@ -29,6 +30,7 @@ interface Props {
 }
 
 export const DateRanges: React.FC<Props> = ({changeMode, dashboard, ranges, setRanges}) => {
+    useI18n();
     const saveRef = React.useRef<number | null>(null);
     const [editedRanges, setEditedRanges] = React.useState<Record<number, Range>>({});
     const [editedNames, setEditedNames] = React.useState<Record<number, string>>({});
@@ -177,7 +179,7 @@ export const DateRanges: React.FC<Props> = ({changeMode, dashboard, ranges, setR
                                                 }
                                                 setOpenMenu(null);
                                             }}>
-                                            Delete
+                                            {t('Delete')}
                                         </MenuItem>
                                         <MenuItem
                                             onClick={() => {

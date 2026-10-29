@@ -1,3 +1,4 @@
+import {t, useI18n} from '../i18n';
 import * as React from 'react';
 import {useMutation, useQuery} from '@apollo/client';
 import * as gqlDashboard from '../gql/dashboard';
@@ -84,6 +85,7 @@ const newEntry = (): DashboardItem => {
 };
 
 export const DashboardPage: React.FC = () => {
+    useI18n();
     const {id} = useParams<{id: string}>();
     const navigate = useNavigate();
     const [addRef, setAddRef] = React.useState<null | HTMLElement>(null);
@@ -110,19 +112,19 @@ export const DashboardPage: React.FC = () => {
         return <CenteredSpinner />;
     }
     if (error || !data) {
-        return <span>error</span>;
+        return <span>{t('error')}</span>;
     }
 
     const dashboards = data.dashboards || [];
 
     if (!id) {
-        enqueueSnackbar('id parameter is missing in url', {variant: 'warning'});
+        enqueueSnackbar(t('id parameter is missing in url'), {variant: 'warning'});
         navigate('/dashboards');
         return <></>;
     }
     const dashboard = dashboards.find((db) => '' + db.id === id);
     if (!dashboard) {
-        enqueueSnackbar('dashboard does not exist', {variant: 'warning'});
+        enqueueSnackbar(t('dashboard does not exist'), {variant: 'warning'});
         navigate('/dashboards');
         return <></>;
     }
@@ -184,7 +186,7 @@ export const DashboardPage: React.FC = () => {
                             }}
                             variant={'outlined'}
                             style={{marginRight: 10}}>
-                            Add Entry
+                            {t('Add Entry')}
                         </Button>
                     ) : null}
                     <Button
@@ -248,7 +250,7 @@ export const DashboardPage: React.FC = () => {
                                 <DashboardEntry ranges={indexedRanges} key="uff" entry={addEntry} />
                             ) : (
                                 <Paper style={{width: '100%', height: '100%'}}>
-                                    <Center>New Entry</Center>
+                                    <Center>{t('New Entry')}</Center>
                                 </Paper>
                             )}
 

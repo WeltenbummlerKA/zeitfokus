@@ -1,3 +1,4 @@
+import {t} from '../i18n';
 import {Tracker, Tag, TimeSpanItem} from '../gql/types';
 import {toTagSelectorEntry} from '../tag/tagSelectorEntry';
 import moment from 'moment';
@@ -29,9 +30,9 @@ const group =
         const startTime = moment(current.oldStart || current.start);
         let date = `${startTime.format('dddd')}, ${startTime.format('LL')}`;
         if (startTime.isBetween(startOfToday, startOfTomorrow)) {
-            date = `${date} (today)`;
+            date = `${date} (${t('today')})`;
         } else if (startTime.isBetween(startOfYesterday, startOfToday)) {
-            date = `${date} (yesterday)`;
+            date = `${date} (${t('yesterday')})`;
         }
         a[date] = [...(a[date] || []), current];
         return a;

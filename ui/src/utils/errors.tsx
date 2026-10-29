@@ -1,11 +1,15 @@
+import {t} from '../i18n';
 import * as React from 'react';
 import {ProviderContext} from 'notistack';
 import {ApolloError} from '@apollo/client';
 
 export const handleError = (prefix: string, enqueue: ProviderContext['enqueueSnackbar']): ((error: ApolloError) => void) => {
     return (error) => {
+        if (error.networkError) {
+            enqueue(`${prefix}: ${t('Connection failed')}`, {variant: 'error'});
+        }
         error.graphQLErrors.forEach((gqlError) => {
-            enqueue(`${prefix}: ${gqlError.message}`, {variant: 'warning'});
+            enqueue(`${prefix}: ${t(gqlError.message)}`, {variant: 'warning'});
         });
     };
 };

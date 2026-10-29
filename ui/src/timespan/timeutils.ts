@@ -3,7 +3,7 @@ import prettyMs from 'pretty-ms';
 
 export const timeRunning = (date: moment.Moment, now: moment.Moment) => {
     const d = inUserTz(now).unix() - inUserTz(date).unix();
-    return prettyMs(d * 1000, {unitCount: 2}).substring(1);
+    return prettyMs(Math.max(0, d) * 1000, {unitCount: 2}).replace(/^~/, '');
 };
 
 export const timeRunningCalendar = (date: moment.Moment, now: moment.Moment) => {
@@ -13,7 +13,7 @@ export const timeRunningCalendar = (date: moment.Moment, now: moment.Moment) => 
         return '<1m';
     }
 
-    return prettyMs(d * 1000, {unitCount: d < 60 * 24 ? 1 : 2}).substring(1);
+    return prettyMs(d * 1000, {unitCount: d < 60 * 60 * 24 ? 1 : 2}).replace(/^~/, '');
 };
 
 export const uglyConvertToLocalTime = (m: moment.Moment): moment.Moment => {

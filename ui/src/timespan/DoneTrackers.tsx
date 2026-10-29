@@ -1,3 +1,4 @@
+import {useI18n} from '../i18n';
 import * as React from 'react';
 import {useQuery} from '@apollo/client';
 import * as gqlTimeSpan from '../gql/timeSpan';
@@ -16,6 +17,7 @@ interface DoneTrackersProps {
 }
 
 export const DoneTrackers: React.FC<DoneTrackersProps> = ({addTagsToTracker}) => {
+    useI18n();
     const trackersResult = useQuery<TimeSpansQuery, TimeSpansQueryVariables>(gqlTimeSpan.TimeSpans, {
         variables: {cursor: {pageSize: 30}},
     });
@@ -87,7 +89,7 @@ export const DoneTrackers: React.FC<DoneTrackersProps> = ({addTagsToTracker}) =>
         return () => observer.disconnect();
     }, [fetchMore]);
 
-    const values: GroupedTimeSpanProps = React.useMemo(() => {
+    const values: GroupedTimeSpanProps = (() => {
         if (
             trackersResult.error ||
             trackersResult.loading ||
@@ -101,7 +103,7 @@ export const DoneTrackers: React.FC<DoneTrackersProps> = ({addTagsToTracker}) =>
             return [];
         }
         return toGroupedTimeSpanProps(trackersResult.data.timeSpans.timeSpans, tagsResult.data.tags, currentDate);
-    }, [trackersResult, tagsResult, currentDate]);
+    })();
 
     return (
         <div style={{marginTop: 10}}>

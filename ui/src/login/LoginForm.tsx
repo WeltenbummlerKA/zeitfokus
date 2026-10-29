@@ -1,3 +1,4 @@
+import {t, useI18n} from '../i18n';
 import * as React from 'react';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
@@ -18,8 +19,9 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export const LoginForm = () => {
+    useI18n();
     const classes = useStyles();
-    const [login] = useMutation<LoginMutation, LoginMutationVariables>(gqlUser.Login, {
+    const [login, {loading}] = useMutation<LoginMutation, LoginMutationVariables>(gqlUser.Login, {
         update: (cache, {data}) => {
             cache.writeQuery({query: gqlUser.CurrentUser, data: {user: data && data.login && data.login.user}});
         },
@@ -32,6 +34,9 @@ export const LoginForm = () => {
     const [remember, setRemember] = React.useState(false);
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
+        if (loading) {
+            return;
+        }
         login({
             variables: {
                 name: username,
@@ -39,16 +44,17 @@ export const LoginForm = () => {
                 deviceType: remember ? DeviceType.LongExpiry : DeviceType.ShortExpiry,
             },
         })
-            .then(() => enqueueSnackbar('Login successful', {variant: 'success'}))
-            .catch(handleError('Login failed', enqueueSnackbar));
+            .then(() => enqueueSnackbar(t('Login successful'), {variant: 'success'}))
+            .catch(handleError(t('Login failed'), enqueueSnackbar));
     };
     return (
-        <form noValidate autoComplete="off" onSubmit={submit}>
+        <form onSubmit={submit}>
             <TextField
                 required
                 margin="dense"
                 variant="outlined"
-                label="username"
+                label={t('username')}
+                autoComplete="username"
                 autoFocus
                 fullWidth
                 onChange={(e) => setUsername(e.target.value)}
@@ -56,26 +62,27 @@ export const LoginForm = () => {
             <TextField
                 required
                 type="password"
+                autoComplete="current-password"
                 margin="dense"
                 variant="outlined"
-                label="password"
+                label={t('password')}
                 fullWidth
                 onChange={(e) => setPassword(e.target.value)}
             />
             <FormControlLabel
-                style={{float: 'right'}}
+                sx={{my: 1}}
                 control={<Checkbox checked={remember} onChange={(e) => setRemember(e.target.checked)} />}
-                label="Remember Me"
+                label={t('Remember Me')}
             />
             <Button
                 type="submit"
                 className={classes.button}
                 fullWidth
                 size="large"
-                onClick={submit}
+                disabled={loading || !username || !password}
                 variant="contained"
                 color="primary">
-                Login
+                {t('Login')}
             </Button>
         </form>
     );

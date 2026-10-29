@@ -1,3 +1,4 @@
+import {t, useI18n} from '../i18n';
 import * as React from 'react';
 import Paper from '@mui/material/Paper';
 import {useMutation, useQuery} from '@apollo/client';
@@ -46,6 +47,7 @@ const useStyles = makeStyles((theme) => ({
 const NoEdit = [-1, ''] as const;
 
 export const DashboardsPage = () => {
+    useI18n();
     const classes = useStyles();
     const {loading, data} = useQuery<DashboardsQuery>(gqlDashboard.Dashboards);
     const [addDashboard, setAddDashboard] = React.useState(false);
@@ -67,7 +69,7 @@ export const DashboardsPage = () => {
     const onClickDelete = () => {
         if (removeDashboardConfirm) {
             removeDashboard({variables: {id: removeDashboardConfirm[0]}}).then(() =>
-                enqueueSnackbar('dashboard deleted', {variant: 'success'})
+                enqueueSnackbar(t('dashboard deleted'), {variant: 'success'})
             );
         }
     };
@@ -80,7 +82,7 @@ export const DashboardsPage = () => {
                     id: editId,
                     name: editName,
                 },
-            }).then(() => enqueueSnackbar('dashboard edited', {variant: 'success'}));
+            }).then(() => enqueueSnackbar(t('dashboard edited'), {variant: 'success'}));
         };
         const isEdited = editId === dashboard.id;
         return (
@@ -105,21 +107,21 @@ export const DashboardsPage = () => {
                 <TableCell align="right">
                     {isEdited ? (
                         <>
-                            <IconButton onClick={onClickSubmit} title="Save" size="large">
+                            <IconButton onClick={onClickSubmit} title={t('Save')} size="large">
                                 <DoneIcon />
                             </IconButton>
-                            <IconButton onClick={() => setEditing(NoEdit)} title="Cancel" size="large">
+                            <IconButton onClick={() => setEditing(NoEdit)} title={t('Cancel')} size="large">
                                 <CloseIcon />
                             </IconButton>
                         </>
                     ) : (
                         <>
-                            <IconButton onClick={() => setEditing([dashboard.id, dashboard.name])} title="Edit" size="large">
+                            <IconButton onClick={() => setEditing([dashboard.id, dashboard.name])} title={t('Edit')} size="large">
                                 <EditIcon />
                             </IconButton>
                             <IconButton
                                 onClick={() => setRemoveDashboardConfirm([dashboard.id, dashboard.name])}
-                                title="Delete"
+                                title={t('Delete')}
                                 size="large">
                                 <DeleteIcon />
                             </IconButton>
@@ -139,14 +141,14 @@ export const DashboardsPage = () => {
                 onClick={() => setAddDashboard(true)}
                 fullWidth
                 style={{marginBottom: 10}}>
-                Create Dashboard
+                {t('Create Dashboard')}
             </Button>
             {addDashboard && <AddDashboardDialog open={true} close={() => setAddDashboard(false)} />}
             <Table>
                 <TableHead>
                     <TableRow>
-                        <TableCell>ID</TableCell>
-                        <TableCell>Name</TableCell>
+                        <TableCell>{t('ID')}</TableCell>
+                        <TableCell>{t('Name')}</TableCell>
                         <TableCell style={{width: 150}} />
                     </TableRow>
                 </TableHead>
@@ -154,10 +156,11 @@ export const DashboardsPage = () => {
             </Table>
             {removeDashboardConfirm ? (
                 <ConfirmDialog
-                    title={`Delete Dashboard ${removeDashboardConfirm[1]}`}
+                    title={t('Delete dashboard {name}?', {name: removeDashboardConfirm[1]})}
                     fClose={() => setRemoveDashboardConfirm(false)}
                     fOnSubmit={onClickDelete}>
-                    <b>This operation cannot be undone.</b> Deleting the dashboard will remove all its dashboard entries.
+                    <b>{t('This operation cannot be undone.')}</b>{' '}
+                    {t('Deleting the dashboard will remove all its dashboard entries.')}
                 </ConfirmDialog>
             ) : null}
         </Paper>

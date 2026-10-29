@@ -45,6 +45,7 @@ type RootMutation {
     removeDashboardEntry(id: Int!): DashboardEntry! @hasRole(role: USER)
 
     setUserSettings(settings: InputUserSettings!): UserSettings! @hasRole(role: USER)
+    setInterfaceLanguage(language: InterfaceLanguage!): UserSettings! @hasRole(role: USER)
 }
 
 type RootQuery {
@@ -71,7 +72,13 @@ input InputUserSettings {
     dateTimeInputStyle: DateTimeInputStyle!
 }
 
+enum InterfaceLanguage {
+    German
+    English
+}
+
 type UserSettings {
+    interfaceLanguage: InterfaceLanguage
     theme: Theme!
     dateLocale: DateLocale!
     firstDayOfTheWeek: WeekDay!

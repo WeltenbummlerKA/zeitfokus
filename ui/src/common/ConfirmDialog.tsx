@@ -1,3 +1,4 @@
+import {t, useI18n} from '../i18n';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
@@ -13,6 +14,7 @@ interface Props {
 }
 
 export const ConfirmDialog: React.FC<React.PropsWithChildren<Props>> = ({children, title, fClose, fOnSubmit}) => {
+    useI18n();
     const submitAndClose = () => {
         fOnSubmit();
         fClose();
@@ -25,10 +27,10 @@ export const ConfirmDialog: React.FC<React.PropsWithChildren<Props>> = ({childre
             </DialogContent>
             <DialogActions>
                 <Button onClick={fClose} className="cancel">
-                    No
+                    {t('No')}
                 </Button>
                 <Button onClick={submitAndClose} autoFocus color="primary" variant="contained" className="confirm">
-                    Yes
+                    {t('Yes')}
                 </Button>
             </DialogActions>
         </Dialog>

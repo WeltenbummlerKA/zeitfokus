@@ -1,3 +1,4 @@
+import {t, useI18n} from '../i18n';
 import * as React from 'react';
 import {TagSelectorEntry} from '../tag/tagSelectorEntry';
 import {TagSelector} from '../tag/TagSelector';
@@ -21,6 +22,7 @@ import {
 } from '../gql/__generated__';
 import {useSnackbar} from 'notistack';
 import {inUserTz} from './timeutils';
+import {handleError} from '../utils/errors';
 import {addTimeSpanToCache} from '../gql/utils';
 
 enum Type {
@@ -39,22 +41,29 @@ interface TrackerProps {
 }
 
 export const Tracker: React.FC<TrackerProps> = ({selectedEntries, onSelectedEntriesChanged: setSelectedEntries}) => {
+    useI18n();
     const [openMenu, setOpenMenu] = React.useState<null | HTMLElement>(null);
     const [type, setType] = React.useState<Type>(Type.Tracker);
     const [from, setFrom] = React.useState<moment.Moment>(moment().subtract(15, 'minute'));
     const [to, setTo] = React.useState<moment.Moment>(moment());
     const [showDate, setShowDate] = React.useState(false);
-    const [startTimer] = useMutation<StartTimerMutation, StartTimerMutationVariables>(gqlTimeSpan.StartTimer, {
-        refetchQueries: [{query: gqlTimeSpan.Trackers}],
-    });
-    const [addTimeSpan] = useMutation<AddTimeSpanMutation, AddTimeSpanMutationVariables>(gqlTimeSpan.AddTimeSpan, {
-        update: (cache, {data}) => {
-            if (!data || !data.createTimeSpan) {
-                return;
-            }
-            addTimeSpanToCache(cache, data.createTimeSpan);
-        },
-    });
+    const [startTimer, {loading: starting}] = useMutation<StartTimerMutation, StartTimerMutationVariables>(
+        gqlTimeSpan.StartTimer,
+        {
+            refetchQueries: [{query: gqlTimeSpan.Trackers}],
+        }
+    );
+    const [addTimeSpan, {loading: adding}] = useMutation<AddTimeSpanMutation, AddTimeSpanMutationVariables>(
+        gqlTimeSpan.AddTimeSpan,
+        {
+            update: (cache, {data}) => {
+                if (!data || !data.createTimeSpan) {
+                    return;
+                }
+                addTimeSpanToCache(cache, data.createTimeSpan);
+            },
+        }
+    );
     const {enqueueSnackbar} = useSnackbar();
 
     React.useEffect(() => {
@@ -65,27 +74,34 @@ export const Tracker: React.FC<TrackerProps> = ({selectedEntries, onSelectedEntr
     }, [showDate, from, to]);
 
     const submit = () => {
+        if (starting || adding) {
+            return;
+        }
         const tags = selectedEntries.map((entry: TagSelectorEntry): InputTimeSpanTag => ({
             key: entry.tag.key,
             value: entry.value,
         }));
         if (type === Type.Tracker) {
-            startTimer({variables: {start: inUserTz(moment()).format(), tags, note: ''}}).then(() => {
-                setSelectedEntries([]);
-                enqueueSnackbar('tracker started', {variant: 'success'});
-            });
+            startTimer({variables: {start: inUserTz(moment()).format(), tags, note: ''}})
+                .then(() => {
+                    setSelectedEntries([]);
+                    enqueueSnackbar(t('tracker started'), {variant: 'success'});
+                })
+                .catch(handleError(t('Start timer'), enqueueSnackbar));
         } else {
-            addTimeSpan({variables: {start: inUserTz(from).format(), end: inUserTz(to).format(), tags, note: ''}}).then(() => {
-                setSelectedEntries([]);
-                enqueueSnackbar('time span added', {variant: 'success'});
-            });
+            addTimeSpan({variables: {start: inUserTz(from).format(), end: inUserTz(to).format(), tags, note: ''}})
+                .then(() => {
+                    setSelectedEntries([]);
+                    enqueueSnackbar(t('time span added'), {variant: 'success'});
+                })
+                .catch(handleError(t('Add time entry'), enqueueSnackbar));
         }
     };
 
     return (
         <ClickAwayListener onClickAway={() => setOpenMenu(null)}>
-            <Paper style={{display: 'flex', alignItems: 'center', padding: '10px'}}>
-                <div style={{flex: '1', marginRight: 10}}>
+            <Paper className="tracker-composer">
+                <div className="tracker-tags">
                     <TagSelector
                         selectedEntries={selectedEntries}
                         onSelectedEntriesChanged={setSelectedEntries}
@@ -110,7 +126,7 @@ export const Tracker: React.FC<TrackerProps> = ({selectedEntries, onSelectedEntr
                                 }
                             }}
                             showDate={showDate}
-                            label="start"
+                            label={t('start')}
                         />
                         <DateTimeSelector
                             selectedDate={to}
@@ -128,14 +144,17 @@ export const Tracker: React.FC<TrackerProps> = ({selectedEntries, onSelectedEntr
                                 }
                             }}
                             showDate={showDate}
-                            label="end"
+                            label={t('end')}
                         />
                     </div>
                 ) : null}
-                <Button variant="text" style={{height: 50}} onClick={submit}>
-                    {type === Type.Manual ? 'add' : 'start'}
+                <Button variant="contained" disabled={starting || adding} onClick={submit}>
+                    {t(type === Type.Manual ? 'Add time entry' : 'Start timer')}
                 </Button>
-                <IconButton onClick={(e: React.MouseEvent<HTMLElement>) => setOpenMenu(e.currentTarget)} size="large">
+                <IconButton
+                    aria-label={t('Timer options')}
+                    onClick={(e: React.MouseEvent<HTMLElement>) => setOpenMenu(e.currentTarget)}
+                    size="large">
                     <MoreVert />
                 </IconButton>
                 <Menu aria-haspopup="true" anchorEl={openMenu} open={openMenu !== null}>
@@ -145,7 +164,7 @@ export const Tracker: React.FC<TrackerProps> = ({selectedEntries, onSelectedEntr
                             setOpenMenu(null);
                             setType(Type.Tracker);
                         }}>
-                        Tracker
+                        {t('Tracker')}
                     </MenuItem>
                     <MenuItem
                         selected={type === Type.Manual}
@@ -153,7 +172,7 @@ export const Tracker: React.FC<TrackerProps> = ({selectedEntries, onSelectedEntr
                             setOpenMenu(null);
                             setType(Type.Manual);
                         }}>
-                        Manual
+                        {t('Manual')}
                     </MenuItem>
                 </Menu>
             </Paper>

@@ -1,3 +1,4 @@
+import {t, useI18n} from '../i18n';
 import * as React from 'react';
 import {TagsQuery} from '../gql/__generated__';
 import * as gqlTags from '../gql/tags';
@@ -50,6 +51,7 @@ export const TagSelector: React.FC<TagSelectorProps> = ({
     allowDuplicateKeys = false,
     onlySelectKeys = false,
 }) => {
+    useI18n();
     const classes = useStyles();
     const [tooltipErrorActive, tooltipError, showTooltipError] = useError(4000);
     const [open, setOpen] = React.useState(false);
@@ -200,7 +202,7 @@ export const TagSelector: React.FC<TagSelectorProps> = ({
                             onKeyDown={onKeyDown}
                             disableUnderline={true}
                             onChange={(e) => setCurrentValue(e.target.value)}
-                            placeholder="Enter Tags"
+                            placeholder={t('Enter Tags')}
                             className={classes.inputInput}
                         />
                     </div>
@@ -249,6 +251,7 @@ interface ItemProps {
 }
 
 const Item: React.FC<ItemProps> = ({entry, selected, onlySelectKeys, onClick}) => {
+    useI18n();
     return (
         <MenuItem
             key={entry.tag.key}

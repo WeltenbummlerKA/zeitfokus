@@ -1,3 +1,4 @@
+import {t, useI18n} from '../i18n';
 import * as React from 'react';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
@@ -19,6 +20,7 @@ interface AddTagDialogProps {
 }
 
 export const AddUserDialog: React.FC<AddTagDialogProps> = ({close, open}) => {
+    useI18n();
     const [name, setName] = React.useState('');
     const [pass, setPass] = React.useState('');
     const [admin, setAdmin] = React.useState(false);
@@ -31,22 +33,22 @@ export const AddUserDialog: React.FC<AddTagDialogProps> = ({close, open}) => {
         e.preventDefault();
         addUser({variables: {name, pass, admin}})
             .then(() => {
-                enqueueSnackbar('User created', {variant: 'success'});
+                enqueueSnackbar(t('User created'), {variant: 'success'});
                 close();
             })
-            .catch(handleError('Create User', enqueueSnackbar));
+            .catch(handleError(t('Create User'), enqueueSnackbar));
     };
 
     return (
         <Dialog open={open} onClose={close} aria-labelledby="form-dialog-title" fullWidth>
             <form onSubmit={submit} noValidate autoComplete="off">
-                <DialogTitle id="form-dialog-title">Create User</DialogTitle>
+                <DialogTitle id="form-dialog-title">{t('Create User')}</DialogTitle>
                 <DialogContent>
                     <TextField
                         autoFocus
                         margin="dense"
                         id="name"
-                        label="Name"
+                        label={t('Name')}
                         type="text"
                         fullWidth
                         value={name}
@@ -54,7 +56,7 @@ export const AddUserDialog: React.FC<AddTagDialogProps> = ({close, open}) => {
                     />
                     <TextField
                         margin="dense"
-                        label="Password"
+                        label={t('Password')}
                         type="password"
                         fullWidth
                         value={pass}
@@ -62,15 +64,15 @@ export const AddUserDialog: React.FC<AddTagDialogProps> = ({close, open}) => {
                     />
                     <FormControlLabel
                         control={<Checkbox checked={admin} onChange={(e) => setAdmin(e.target.checked)} />}
-                        label="Admin"
+                        label={t('Admin')}
                     />
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={close} color="primary">
-                        Cancel
+                        {t('Cancel')}
                     </Button>
                     <Button type="submit" onClick={submit} color="primary">
-                        Create User
+                        {t('Create User')}
                     </Button>
                 </DialogActions>
             </form>

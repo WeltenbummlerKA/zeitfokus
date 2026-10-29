@@ -1,3 +1,4 @@
+import {t, useI18n} from '../i18n';
 import * as React from 'react';
 import {TagSelectorEntry, toInputTags} from '../tag/tagSelectorEntry';
 import {TagSelector} from '../tag/TagSelector';
@@ -108,6 +109,7 @@ export const TimeSpan: React.FC<TimeSpanProps> = React.memo(
         elevation = 1,
         addTagsToTracker,
     }) => {
+        useI18n();
         const styles = useStyles();
         const [showNotes, toggleShowingNotes] = React.useState(initialNote !== '');
         const note = React.useRef<{value: string; handle?: number}>({value: initialNote});
@@ -257,7 +259,7 @@ export const TimeSpan: React.FC<TimeSpanProps> = React.memo(
                                     }
                                 }}
                                 showDate={showDate}
-                                label="start"
+                                label={t('start')}
                             />
                             {to !== undefined ? (
                                 <DateTimeSelector
@@ -292,14 +294,14 @@ export const TimeSpan: React.FC<TimeSpanProps> = React.memo(
                                         }
                                     }}
                                     showDate={showDate}
-                                    label="end"
+                                    label={t('end')}
                                 />
                             ) : (
                                 <Button
                                     onClick={() => {
                                         stopTimer({variables: {id, end: inUserTz(moment()).format()}}).then(stopped);
                                     }}>
-                                    Stop
+                                    {t('Stop')}
                                 </Button>
                             )}
                         </div>
@@ -312,7 +314,7 @@ export const TimeSpan: React.FC<TimeSpanProps> = React.memo(
                                 // flex-end lines up the two elements' boxes but not their actual text,
                                 // since this Typography has no padding of its own to account for.
                                 style={{minWidth: '70px', paddingBottom: '5px'}}
-                                title="The amount of time between from and to">
+                                title={t('The amount of time between from and to')}>
                                 {to ? <RelativeTime from={from} to={to} /> : <RelativeToNow from={from} />}
                             </Typography>
                         </div>
@@ -338,7 +340,7 @@ export const TimeSpan: React.FC<TimeSpanProps> = React.memo(
                                         },
                                     }).then(() => continued());
                                 }}>
-                                Continue
+                                {t('Continue')}
                             </MenuItem>
                         ) : null}
                         {addTagsToTracker ? (
@@ -347,7 +349,7 @@ export const TimeSpan: React.FC<TimeSpanProps> = React.memo(
                                     setOpenMenu(null);
                                     addTagsToTracker(selectedEntries);
                                 }}>
-                                Copy tags
+                                {t('Copy tags')}
                             </MenuItem>
                         ) : null}
                         <MenuItem
@@ -355,21 +357,21 @@ export const TimeSpan: React.FC<TimeSpanProps> = React.memo(
                                 setOpenMenu(null);
                                 toggleShowingNotes(!showNotes);
                             }}>
-                            Show Notes
+                            {t('Show Notes')}
                         </MenuItem>
                         <MenuItem
                             onClick={() => {
                                 setOpenMenu(null);
                                 removeTimeSpan({variables: {id}}).then(() => deleted());
                             }}>
-                            Delete
+                            {t('Delete')}
                         </MenuItem>
                     </Menu>
                 </div>
                 {showNotes ? (
                     <div>
                         <TextField
-                            label="Note"
+                            label={t('Note')}
                             fullWidth
                             multiline
                             defaultValue={initialNote}

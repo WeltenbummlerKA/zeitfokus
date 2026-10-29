@@ -1,3 +1,4 @@
+import {t, useI18n} from '../i18n';
 import * as React from 'react';
 import Paper from '@mui/material/Paper';
 import {useMutation, useQuery} from '@apollo/client';
@@ -47,6 +48,7 @@ const useStyles = makeStyles((theme) => ({
 const NoEdit = [-1, '', '', false] as const;
 
 export const UsersPage = () => {
+    useI18n();
     const classes = useStyles();
     const {data, loading} = useQuery<UsersQuery>(gqlUser.Users);
     const [addUser, setAddUser] = React.useState(false);
@@ -63,7 +65,7 @@ export const UsersPage = () => {
     const onClickDelete = () => {
         if (removeUserConfirmation) {
             removeUser({variables: {id: removeUserConfirmation[0]}}).then(() =>
-                enqueueSnackbar('user deleted', {variant: 'success'})
+                enqueueSnackbar(t('user deleted'), {variant: 'success'})
             );
         }
     };
@@ -78,12 +80,12 @@ export const UsersPage = () => {
                     admin: editAdmin,
                     pass: editPass || undefined,
                 },
-            }).then(() => enqueueSnackbar('user edited', {variant: 'success'}));
+            }).then(() => enqueueSnackbar(t('user edited'), {variant: 'success'}));
         };
         const isCurrent = user.id === data.currentUser!.id;
         const isEdited = editId === user.id;
-        const displayName = user.name + (isCurrent ? ' (current)' : '');
-        const adminLabel = user.admin ? 'Yes' : 'No';
+        const displayName = user.name + (isCurrent ? ' (' + t('current') + ')' : '');
+        const adminLabel = t(user.admin ? 'Yes' : 'No');
         return (
             <TableRow selected={isCurrent} key={user.id}>
                 <TableCell>{user.id}</TableCell>
@@ -107,7 +109,7 @@ export const UsersPage = () => {
                     {isEdited ? (
                         <TextField
                             value={editPass}
-                            placeholder={'use old password'}
+                            placeholder={t('use old password')}
                             type="password"
                             onChange={(e) => setEditing([editId, editName, e.target.value, editAdmin])}
                         />
@@ -125,10 +127,10 @@ export const UsersPage = () => {
                 <TableCell align="right">
                     {isEdited ? (
                         <>
-                            <IconButton onClick={onClickSubmit} title="Save" size="large">
+                            <IconButton onClick={onClickSubmit} title={t('Save')} size="large">
                                 <DoneIcon />
                             </IconButton>
-                            <IconButton onClick={() => setEditing(NoEdit)} title="Cancel" size="large">
+                            <IconButton onClick={() => setEditing(NoEdit)} title={t('Cancel')} size="large">
                                 <CloseIcon />
                             </IconButton>
                         </>
@@ -136,13 +138,13 @@ export const UsersPage = () => {
                         <>
                             <IconButton
                                 onClick={() => setEditing([user.id, user.name, '', user.admin])}
-                                title="Edit"
+                                title={t('Edit')}
                                 size="large">
                                 <EditIcon />
                             </IconButton>
                             <IconButton
                                 onClick={() => setRemoveUserConfirmation([user.id, user.name])}
-                                title="Delete"
+                                title={t('Delete')}
                                 size="large">
                                 <DeleteIcon />
                             </IconButton>
@@ -162,16 +164,16 @@ export const UsersPage = () => {
                 onClick={() => setAddUser(true)}
                 fullWidth
                 style={{marginBottom: 10}}>
-                Create User
+                {t('Create User')}
             </Button>
             {addUser && <AddUserDialog open={true} close={() => setAddUser(false)} />}
             <Table>
                 <TableHead>
                     <TableRow>
-                        <TableCell>ID</TableCell>
-                        <TableCell>Name</TableCell>
-                        <TableCell>Password</TableCell>
-                        <TableCell>Admin</TableCell>
+                        <TableCell>{t('ID')}</TableCell>
+                        <TableCell>{t('Name')}</TableCell>
+                        <TableCell>{t('Password')}</TableCell>
+                        <TableCell>{t('Admin')}</TableCell>
                         <TableCell style={{width: 150}} />
                     </TableRow>
                 </TableHead>
@@ -179,11 +181,11 @@ export const UsersPage = () => {
             </Table>
             {removeUserConfirmation ? (
                 <ConfirmDialog
-                    title={`Are you sure you want to delete the user '${removeUserConfirmation[1]}'?`}
+                    title={t('Delete user {name}?', {name: removeUserConfirmation[1]})}
                     fClose={() => setRemoveUserConfirmation(false)}
                     fOnSubmit={onClickDelete}>
-                    <b>This operation cannot be undone.</b> Deleting the user includes deleting dashboards, time spans, tags and
-                    devices of that user.
+                    <b>{t('This operation cannot be undone.')}</b>{' '}
+                    {t('Deleting the user includes deleting dashboards, time spans, tags and devices of that user.')}
                 </ConfirmDialog>
             ) : null}
         </Paper>

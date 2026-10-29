@@ -1,3 +1,4 @@
+import {t, useI18n} from '../../i18n';
 import {TooltipProps, TooltipPayload} from 'recharts';
 import {FInterval} from './dateformat';
 import Paper from '@mui/material/Paper';
@@ -7,6 +8,7 @@ import prettyMs from 'pretty-ms';
 import * as React from 'react';
 
 export const TagTooltip = ({active, payload, dateFormat, total}: TooltipProps & {dateFormat: FInterval; total: boolean}) => {
+    useI18n();
     if (active && payload) {
         const first = payload[0];
         const start = dateFormat(moment(first.payload.start));
@@ -22,7 +24,7 @@ export const TagTooltip = ({active, payload, dateFormat, total}: TooltipProps & 
                 ))}
                 {total ? (
                     <Typography>
-                        Total:
+                        {t('Total:')}
                         {prettyMs(sum(payload) * 1000)}
                     </Typography>
                 ) : undefined}

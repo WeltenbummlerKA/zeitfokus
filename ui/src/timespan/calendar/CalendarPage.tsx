@@ -1,3 +1,7 @@
+import useMediaQuery from '@mui/material/useMediaQuery';
+import {t, useI18n} from '../../i18n';
+import deLocale from '@fullcalendar/core/locales/de';
+import {escapeHtml} from '../../utils/html';
 import * as React from 'react';
 import {Paper, useTheme} from '@mui/material';
 import moment from 'moment';
@@ -55,6 +59,8 @@ declare global {
 const StartTimerId = '-1';
 
 export const CalendarPage: React.FC = () => {
+    const {language} = useI18n();
+    const compact = useMediaQuery('(max-width:600px)');
     const apollo = useApolloClient();
     const theme = useTheme();
     const timeSpansResult = useQuery<TimeSpansInRangeQuery, TimeSpansInRangeQueryVariables>(gqlTimeSpan.TimeSpansInRange, {
@@ -130,7 +136,7 @@ export const CalendarPage: React.FC = () => {
             .sort((a, b) => a.start.toString().localeCompare(b.start.toString()))
             .map((ts) => {
                 const colorKey = ts
-                    .tags!.map((t) => t.key + ':' + t.value)
+                    .tags!.map((tag) => tag.key + ':' + tag.value)
                     .sort((a, b) => a.localeCompare(b))
                     .join(' ');
                 const color = calculateColor(colorKey, ColorMode.Bold, theme.palette.mode);
@@ -144,7 +150,7 @@ export const CalendarPage: React.FC = () => {
                     startEditable: true,
                     id: '' + ts.id,
                     tags: ts.tags!.map(({value, key}) => ({key, value})),
-                    title: ts.tags!.map((t) => t.key + ':' + t.value).join(' '),
+                    title: ts.tags!.map((tag) => tag.key + ':' + tag.value).join(' '),
                     extendedProps: {ts},
                     textColor: theme.palette.getContrastText(color),
                     borderColor,
@@ -197,10 +203,18 @@ export const CalendarPage: React.FC = () => {
     }
 
     return (
-        <Paper style={{padding: 10, bottom: 10, top: 80, position: 'absolute'}} color="red">
+        <Paper
+            sx={{
+                p: {xs: 1, sm: 2},
+                width: '100%',
+                minWidth: 0,
+                overflowX: 'auto',
+                height: {xs: 'calc(100dvh - 184px)', sm: 'calc(100dvh - 136px)'},
+                minHeight: 440,
+            }}>
             <FullCalendarStyling>
                 <FullCalendar
-                    initialView="timeGridWeek"
+                    initialView={compact ? 'timeGridDay' : 'timeGridWeek'}
                     rerenderDelay={30}
                     datesSet={(x) => {
                         const range = {
@@ -218,7 +232,7 @@ export const CalendarPage: React.FC = () => {
                         timeGrid5Day: {
                             type: 'timeGrid',
                             duration: {days: 7},
-                            buttonText: '5 day',
+                            buttonText: language === 'de' ? '5 Tage' : '5 days',
                             hiddenDays: [0, 6],
                         },
                     }}
@@ -230,6 +244,7 @@ export const CalendarPage: React.FC = () => {
                     handleWindowResize={true}
                     height={'parent'}
                     selectMinDistance={20}
+                    locale={language === 'de' ? deLocale : 'en'}
                     now={currentDate.toDate()}
                     defaultTimedEventDuration={{minute: 15}}
                     eventContent={(e) => ({
@@ -317,7 +332,7 @@ const getElementContent = (event: EventApi, stop: () => void): string => {
     }
 
     if (event.id === StartTimerId) {
-        return 'START';
+        return escapeHtml(t('Start timer'));
     }
 
     const start = moment(event.start);
@@ -339,24 +354,24 @@ const getElementContent = (event: EventApi, stop: () => void): string => {
             stop();
             return false;
         };
-        stopButton = `<div class="stop"><a onClick="return window.__TRAGGO_CALENDAR[${id}](event)">STOP ${timeRunningCalendar(
+        stopButton = `<div class="stop"><a onClick="return window.__TRAGGO_CALENDAR[${id}](event)">${escapeHtml(t('Stop'))} ${timeRunningCalendar(
             start,
             end
         )}</a></div>`;
     }
     const clamp = (amount: number) =>
-        `<span class="ellipsis" title="${event.title}" style="-webkit-line-clamp: ${amount}">${event.title}</span>`;
+        `<span class="ellipsis" title="${escapeHtml(event.title)}" style="-webkit-line-clamp: ${amount}">${escapeHtml(event.title)}</span>`;
 
     const running = hasEnd ? `<span style="float: right">${timeRunningCalendar(start, end)}</span>` : '';
-    const date = `${start.format('LT')} - ${hasEnd ? end.format('LT') : 'now'} ${running}`;
+    const date = `${start.format('LT')} - ${hasEnd ? end.format('LT') : t('now')} ${running}`;
     if (lines < 2) {
         return event.title
-            ? `<span class="ellipsis-single" title="${event.title}">${event.title}</span>${stopButton}`
+            ? `<span class="ellipsis-single" title="${escapeHtml(event.title)}">${escapeHtml(event.title)}</span>${stopButton}`
             : `${date}${stopButton}`;
     }
     if (lines === 2) {
         if (hasEnd) {
-            return `${date}<span class="ellipsis-single" title="${event.title}">${event.title}</span>${stopButton}`;
+            return `${date}<span class="ellipsis-single" title="${escapeHtml(event.title)}">${escapeHtml(event.title)}</span>${stopButton}`;
         } else {
             return `${clamp(2)}${stopButton}`;
         }

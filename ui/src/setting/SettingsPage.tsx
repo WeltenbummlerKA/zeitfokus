@@ -1,4 +1,7 @@
+import {t, useI18n} from '../i18n';
 import * as React from 'react';
+import {LanguageSwitcher} from '../i18n/LanguageSwitcher';
+import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
 import {Paper} from '@mui/material';
 import {SetSettings as SetSettingsGQL, Settings as SettingsGQL, useSettings} from '../gql/settings';
@@ -33,17 +36,31 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export const SettingsPage: React.FC = () => {
+    useI18n();
     const classes = useStyles();
-    const {done, ...settings} = useSettings();
+    const allSettings = useSettings();
+    const settings = {
+        theme: allSettings.theme,
+        dateLocale: allSettings.dateLocale,
+        firstDayOfTheWeek: allSettings.firstDayOfTheWeek,
+        dateTimeInputStyle: allSettings.dateTimeInputStyle,
+    };
     const {enqueueSnackbar} = useSnackbar();
-    const [setSettings] = useMutation<SetSettingsMutation, SetSettingsMutationVariables>(SetSettingsGQL, {
+    const [setSettings, {loading: saving}] = useMutation<SetSettingsMutation, SetSettingsMutationVariables>(SetSettingsGQL, {
+        awaitRefetchQueries: true,
         refetchQueries: [{query: SettingsGQL}],
     });
     return (
-        <Paper elevation={1} className={classes.root}>
+        <Paper elevation={0} className={classes.root}>
+            <Typography variant="h6" sx={{mt: 2, mb: 1}}>
+                {t('Interface language')}
+            </Typography>
+            <LanguageSwitcher />
             <FormControl margin={'normal'} fullWidth>
-                <InputLabel>Date Locale</InputLabel>
+                <InputLabel htmlFor="setting-0">{t('Date Locale')}</InputLabel>
                 <Select
+                    disabled={saving}
+                    inputProps={{id: 'setting-0'}}
                     fullWidth
                     value={settings.dateLocale}
                     onChange={(e) => {
@@ -56,48 +73,47 @@ export const SettingsPage: React.FC = () => {
                             },
                         })
                             .then(() => {
-                                enqueueSnackbar('date locale changed', {
+                                enqueueSnackbar(t('date locale changed'), {
                                     variant: 'success',
                                 });
-                                enqueueSnackbar('a reload of the page is required for the new date locale to fully function', {
-                                    variant: 'info',
-                                    preventDuplicate: true,
-                                    persist: true,
-                                });
                             })
-                            .catch(handleError('set date locale', enqueueSnackbar));
+                            .catch(handleError(t('set date locale'), enqueueSnackbar));
                     }}>
                     {Object.values(DateLocale).map((type) => (
                         <option key={type} value={type}>
-                            {type}
+                            {t(type)}
                         </option>
                     ))}
                 </Select>
             </FormControl>
             <FormControl margin={'normal'} fullWidth>
-                <InputLabel>Theme</InputLabel>
+                <InputLabel htmlFor="setting-1">{t('Theme')}</InputLabel>
                 <Select
+                    disabled={saving}
+                    inputProps={{id: 'setting-1'}}
                     fullWidth
                     value={settings.theme}
                     onChange={(e) => {
                         setSettings({variables: {settings: {...settings, theme: e.target.value as Theme}}})
                             .then(() =>
-                                enqueueSnackbar('theme changed', {
+                                enqueueSnackbar(t('theme changed'), {
                                     variant: 'success',
                                 })
                             )
-                            .catch(handleError('set theme', enqueueSnackbar));
+                            .catch(handleError(t('set theme'), enqueueSnackbar));
                     }}>
                     {Object.values(Theme).map((type) => (
                         <option key={type} value={type}>
-                            {type}
+                            {t(type)}
                         </option>
                     ))}
                 </Select>
             </FormControl>
             <FormControl margin={'normal'} fullWidth>
-                <InputLabel>First day of the week</InputLabel>
+                <InputLabel htmlFor="setting-2">{t('First day of the week')}</InputLabel>
                 <Select
+                    disabled={saving}
+                    inputProps={{id: 'setting-2'}}
                     fullWidth
                     value={settings.firstDayOfTheWeek}
                     onChange={(e) => {
@@ -110,11 +126,11 @@ export const SettingsPage: React.FC = () => {
                             },
                         })
                             .then(() =>
-                                enqueueSnackbar('first day of the week changed', {
+                                enqueueSnackbar(t('first day of the week changed'), {
                                     variant: 'success',
                                 })
                             )
-                            .catch(handleError('set first day of the week', enqueueSnackbar));
+                            .catch(handleError(t('set first day of the week'), enqueueSnackbar));
                     }}>
                     {[
                         WeekDay.Sunday,
@@ -126,14 +142,16 @@ export const SettingsPage: React.FC = () => {
                         WeekDay.Saturday,
                     ].map((type) => (
                         <option key={type} value={type}>
-                            {type}
+                            {t(type)}
                         </option>
                     ))}
                 </Select>
             </FormControl>
             <FormControl margin={'normal'} fullWidth>
-                <InputLabel>Datetime input style</InputLabel>
+                <InputLabel htmlFor="setting-3">{t('Datetime input style')}</InputLabel>
                 <Select
+                    disabled={saving}
+                    inputProps={{id: 'setting-3'}}
                     fullWidth
                     value={settings.dateTimeInputStyle}
                     onChange={(e) => {
@@ -146,15 +164,15 @@ export const SettingsPage: React.FC = () => {
                             },
                         })
                             .then(() =>
-                                enqueueSnackbar('datetime input style changed', {
+                                enqueueSnackbar(t('datetime input style changed'), {
                                     variant: 'success',
                                 })
                             )
-                            .catch(handleError('set datetime input style', enqueueSnackbar));
+                            .catch(handleError(t('set datetime input style'), enqueueSnackbar));
                     }}>
                     {[DateTimeInputStyle.Fancy, DateTimeInputStyle.Native].map((type) => (
                         <option key={type} value={type}>
-                            {type}
+                            {t(type)}
                         </option>
                     ))}
                 </Select>

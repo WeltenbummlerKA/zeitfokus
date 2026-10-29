@@ -1,3 +1,4 @@
+import {t, useI18n} from '../../i18n';
 import {DashboardItem, StatEntry} from '../../gql/types';
 import * as React from 'react';
 import {DashboardPieChart} from './DashboardPieChart';
@@ -21,6 +22,7 @@ interface DashboardEntryProps {
 }
 
 export const DashboardEntry = React.forwardRef<HTMLDivElement, DashboardEntryProps>(({entry, ranges}, ref) => {
+    useI18n();
     const range = findRange(
         {...entry.statsSelection, range: entry.statsSelection.range ?? null, rangeId: entry.statsSelection.rangeId ?? null},
         ranges
@@ -31,7 +33,8 @@ export const DashboardEntry = React.forwardRef<HTMLDivElement, DashboardEntryPro
                 {entry.title}
             </Typography>
             <Typography style={{position: 'absolute', right: 10, top: 35, fontSize: 10, color: 'gray'}}>
-                {range.from} to {range.to}
+                {range.from} {t('to')}
+                {range.to}
             </Typography>
             <div style={{height: 'calc(100% - 35px)'}}>
                 <SpecificDashboardEntry range={range} entry={entry} />
@@ -42,6 +45,7 @@ export const DashboardEntry = React.forwardRef<HTMLDivElement, DashboardEntryPro
 
 // tslint:disable-next-line:cyclomatic-complexity mccabe-complexity
 const SpecificDashboardEntry: React.FC<{entry: DashboardItem; range: Range}> = ({entry, range}) => {
+    useI18n();
     const interval = entry.statsSelection.interval;
     const stats = useQuery<Stats2Query, Stats2QueryVariables>(gqlStats.Stats2, {
         variables: {
@@ -63,7 +67,10 @@ const SpecificDashboardEntry: React.FC<{entry: DashboardItem; range: Range}> = (
     if (stats.error) {
         return (
             <Center>
-                <Typography>error: {stats.error.message}</Typography>
+                <Typography>
+                    {t('error:')}
+                    {stats.error.message}
+                </Typography>
             </Center>
         );
     }
@@ -72,7 +79,7 @@ const SpecificDashboardEntry: React.FC<{entry: DashboardItem; range: Range}> = (
     if (firstEntries.length === 0) {
         return (
             <Center>
-                <Typography>no data</Typography>
+                <Typography>{t('no data')}</Typography>
             </Center>
         );
     }

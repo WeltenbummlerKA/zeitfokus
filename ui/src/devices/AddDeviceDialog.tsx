@@ -1,3 +1,4 @@
+import {t, useI18n} from '../i18n';
 import * as React from 'react';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
@@ -23,6 +24,7 @@ interface AddTagDialogProps {
 }
 
 export const AddDeviceDialog: React.FC<AddTagDialogProps> = ({close, open, initialName}) => {
+    useI18n();
     const [token, setToken] = React.useState('');
     const [name, setName] = React.useState(initialName);
     const [deviceType, setDeviceType] = React.useState(DeviceType.NoExpiry);
@@ -36,11 +38,11 @@ export const AddDeviceDialog: React.FC<AddTagDialogProps> = ({close, open, initi
         addDevice({variables: {deviceType, name}})
             .then((result: FetchResult<CreateDeviceMutation>) => {
                 if (result.data && result.data.device) {
-                    enqueueSnackbar('Client created', {variant: 'success'});
+                    enqueueSnackbar(t('Client created'), {variant: 'success'});
                     setToken(result.data.device.token);
                 }
             })
-            .catch(handleError('Create Dialog', enqueueSnackbar));
+            .catch(handleError(t('Create Dialog'), enqueueSnackbar));
     };
 
     return (
@@ -55,21 +57,21 @@ export const AddDeviceDialog: React.FC<AddTagDialogProps> = ({close, open, initi
             fullWidth>
             {token === '' ? (
                 <form onSubmit={submit} noValidate autoComplete="off">
-                    <DialogTitle id="form-dialog-title">Create Device</DialogTitle>
+                    <DialogTitle id="form-dialog-title">{t('Create Device')}</DialogTitle>
                     <DialogContent>
                         <DialogContentText />
                         <TextField
                             autoFocus
                             margin="dense"
                             id="name"
-                            label="Name"
+                            label={t('Name')}
                             type="text"
                             fullWidth
                             value={name}
                             onChange={(e) => setName(e.target.value)}
                         />
                         <FormControl margin={'normal'} fullWidth>
-                            <InputLabel>Expires after</InputLabel>
+                            <InputLabel>{t('Expires after')}</InputLabel>
                             <Select value={deviceType} onChange={(e) => setDeviceType(e.target.value as DeviceType)} fullWidth>
                                 <option value={DeviceType.NoExpiry}>{deviceTypeToString(DeviceType.NoExpiry)}</option>
                                 <option value={DeviceType.ShortExpiry}>{deviceTypeToString(DeviceType.ShortExpiry)}</option>
@@ -79,26 +81,27 @@ export const AddDeviceDialog: React.FC<AddTagDialogProps> = ({close, open, initi
                     </DialogContent>
                     <DialogActions>
                         <Button onClick={close} color="primary">
-                            Cancel
+                            {t('Cancel')}
                         </Button>
                         <Button type="submit" onClick={submit} color="primary">
-                            Create Device
+                            {t('Create Device')}
                         </Button>
                     </DialogActions>
                 </form>
             ) : (
                 <>
-                    <DialogTitle id="form-dialog-title">Device Created</DialogTitle>
+                    <DialogTitle id="form-dialog-title">{t('Device Created')}</DialogTitle>
                     <DialogContent>
                         <DialogContentText>
-                            The device has the following authentication token, copy it and save it somewhere because you cannot
-                            obtain the token after closing this dialog
+                            {t(
+                                'The device has the following authentication token, copy it and save it somewhere because you cannot obtain the token after closing this dialog'
+                            )}
                             <br /> <b>{token}</b>
                         </DialogContentText>
                     </DialogContent>
                     <DialogActions>
                         <Button onClick={close} color="primary">
-                            Close
+                            {t('Close')}
                         </Button>
                     </DialogActions>
                 </>

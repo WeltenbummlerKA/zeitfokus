@@ -1,3 +1,4 @@
+import {t, useI18n} from '../i18n';
 import * as React from 'react';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
@@ -24,6 +25,7 @@ interface AddTagDialogProps {
 }
 
 export const AddTagDialog: React.FC<AddTagDialogProps> = ({close, open, initialName, onAdded = () => {}}) => {
+    useI18n();
     const [name, setName] = React.useState(initialName);
     const [color, setColor] = React.useState('#e6b3b3');
     const {enqueueSnackbar} = useSnackbar();
@@ -40,20 +42,20 @@ export const AddTagDialog: React.FC<AddTagDialogProps> = ({close, open, initialN
                     onAdded(result.data.createTag);
                 }
             })
-            .catch(handleError('Add Tag', enqueueSnackbar));
+            .catch(handleError(t('Add Tag'), enqueueSnackbar));
     };
 
     return (
         <Dialog open={open} onClose={close} aria-labelledby="form-dialog-title" fullWidth>
             <form onSubmit={submit} noValidate autoComplete="off">
-                <DialogTitle id="form-dialog-title">Create Tag</DialogTitle>
+                <DialogTitle id="form-dialog-title">{t('Create Tag')}</DialogTitle>
                 <DialogContent>
                     <DialogContentText />
                     <TextField
                         autoFocus
                         margin="dense"
                         id="name"
-                        label="Name"
+                        label={t('Name')}
                         type="text"
                         fullWidth
                         value={name}
@@ -61,7 +63,7 @@ export const AddTagDialog: React.FC<AddTagDialogProps> = ({close, open, initialN
                     />
                     <FormControl fullWidth margin="dense">
                         <InputLabel htmlFor="color-picker" shrink={true}>
-                            Color
+                            {t('Color')}
                         </InputLabel>
                         <div id="color-picker" style={{marginTop: 25}}>
                             <HexColorPicker onChange={setColor} color={color} />
@@ -70,10 +72,10 @@ export const AddTagDialog: React.FC<AddTagDialogProps> = ({close, open, initialN
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={close} color="primary">
-                        Cancel
+                        {t('Cancel')}
                     </Button>
                     <Button type="submit" onClick={submit} color="primary">
-                        Create Tag
+                        {t('Create Tag')}
                     </Button>
                 </DialogActions>
             </form>

@@ -11,7 +11,12 @@ import (
 
 // SetUserSettings sets the user settings.
 func (r *ResolverForSettings) SetUserSettings(ctx context.Context, settings gqlmodel.InputUserSettings) (*gqlmodel.UserSettings, error) {
+	current, err := Get(ctx, r.DB)
+	if err != nil {
+		return nil, err
+	}
 	internal := model.UserSetting{
+		InterfaceLanguage:  current.InterfaceLanguage,
 		Theme:              toInternalTheme(settings.Theme),
 		FirstDayOfTheWeek:  toInternalWeekday(settings.FirstDayOfTheWeek).String(),
 		UserID:             auth.GetUser(ctx).ID,
@@ -32,6 +37,7 @@ func (r *ResolverForSettings) UserSettings(ctx context.Context) (*gqlmodel.UserS
 
 func toExternal(internal model.UserSetting) *gqlmodel.UserSettings {
 	return &gqlmodel.UserSettings{
+		InterfaceLanguage:  externalInterfaceLanguage(internal.InterfaceLanguage),
 		Theme:              toExternalTheme(internal.Theme),
 		DateLocale:         toExternalDateLocale(internal.DateLocale),
 		FirstDayOfTheWeek:  toExternalWeekday(internal.FirstDayOfTheWeekTimeWeekday()),
@@ -136,4 +142,26 @@ func toInternalDateTimeInputStyle(style gqlmodel.DateTimeInputStyle) string {
 	default:
 		return model.DateTimeInputFancy
 	}
+}
+
+// SetInterfaceLanguage changes only presentation preferences for the authenticated user.
+func (r *ResolverForSettings) SetInterfaceLanguage(ctx context.Context, language gqlmodel.InterfaceLanguage) (*gqlmodel.UserSettings, error) {
+	internal, err := Get(ctx, r.DB)
+	if err != nil {
+		return nil, err
+	}
+	internal.UserID = auth.GetUser(ctx).ID
+	internal.InterfaceLanguage = language.String()
+	if err := r.DB.Save(&internal).Error; err != nil {
+		return nil, err
+	}
+	return toExternal(internal), nil
+}
+
+func externalInterfaceLanguage(value string) *gqlmodel.InterfaceLanguage {
+	language := gqlmodel.InterfaceLanguage(value)
+	if !language.IsValid() {
+		return nil
+	}
+	return &language
 }

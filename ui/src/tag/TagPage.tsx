@@ -1,3 +1,4 @@
+import {t, useI18n} from '../i18n';
 import * as React from 'react';
 import Paper from '@mui/material/Paper';
 import makeStyles from '@mui/styles/makeStyles';
@@ -48,6 +49,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export const TagPage = () => {
+    useI18n();
     const classes = useStyles();
     const {data, loading} = useQuery<TagsQuery>(gqlTag.Tags);
     const [removeTagConfirm, setRemoveTagConfirm] = React.useState('');
@@ -62,8 +64,8 @@ export const TagPage = () => {
     }
     const onClickDelete = () => {
         return removeTag({variables: {key: removeTagConfirm}})
-            .then(() => enqueueSnackbar('tag deleted', {variant: 'success'}))
-            .catch(handleError('Delete Tag', enqueueSnackbar));
+            .then(() => enqueueSnackbar(t('tag deleted'), {variant: 'success'}))
+            .catch(handleError(t('Delete Tag'), enqueueSnackbar));
     };
 
     const tags = data.tags.map((tag) => {
@@ -76,8 +78,8 @@ export const TagPage = () => {
                     color: editColor,
                 },
             })
-                .then(() => enqueueSnackbar('tag edited', {variant: 'success'}))
-                .catch(handleError('Edit Tag', enqueueSnackbar));
+                .then(() => enqueueSnackbar(t('tag edited'), {variant: 'success'}))
+                .catch(handleError(t('Edit Tag'), enqueueSnackbar));
         };
         const isEdited = editKey === tag.key;
         return (
@@ -110,19 +112,19 @@ export const TagPage = () => {
                 <TableCell align="right">
                     {isEdited ? (
                         <>
-                            <IconButton onClick={onClickSubmit} title="Save" size="large">
+                            <IconButton onClick={onClickSubmit} title={t('Save')} size="large">
                                 <DoneIcon />
                             </IconButton>
-                            <IconButton onClick={() => setEditing(['', '', ''])} title="Cancel" size="large">
+                            <IconButton onClick={() => setEditing(['', '', ''])} title={t('Cancel')} size="large">
                                 <CloseIcon />
                             </IconButton>
                         </>
                     ) : (
                         <>
-                            <IconButton onClick={() => setEditing([tag.key, tag.key, tag.color])} title="Edit" size="large">
+                            <IconButton onClick={() => setEditing([tag.key, tag.key, tag.color])} title={t('Edit')} size="large">
                                 <EditIcon />
                             </IconButton>
-                            <IconButton onClick={() => setRemoveTagConfirm(tag.key)} title="Delete" size="large">
+                            <IconButton onClick={() => setRemoveTagConfirm(tag.key)} title={t('Delete')} size="large">
                                 <DeleteIcon />
                             </IconButton>
                         </>
@@ -141,14 +143,14 @@ export const TagPage = () => {
                 onClick={() => setAddActive(true)}
                 fullWidth
                 style={{marginBottom: 10}}>
-                Create Tag
+                {t('Create Tag')}
             </Button>
             <Table>
                 <TableHead>
                     <TableRow>
-                        <TableCell>Key</TableCell>
-                        <TableCell>Color</TableCell>
-                        <TableCell style={{width: 100}}>Usages</TableCell>
+                        <TableCell>{t('Key')}</TableCell>
+                        <TableCell>{t('Color')}</TableCell>
+                        <TableCell style={{width: 100}}>{t('Usages')}</TableCell>
                         <TableCell style={{width: 150}} />
                     </TableRow>
                 </TableHead>
@@ -157,10 +159,11 @@ export const TagPage = () => {
                     {tags}
                     {removeTagConfirm ? (
                         <ConfirmDialog
-                            title={`Delete Tag ${removeTagConfirm}`}
+                            title={t('Delete tag {name}?', {name: removeTagConfirm})}
                             fClose={() => setRemoveTagConfirm('')}
                             fOnSubmit={onClickDelete}>
-                            <b>This operation cannot be undone.</b> Deleting the tag will remove all references in time spans.
+                            <b>{t('This operation cannot be undone.')}</b>{' '}
+                            {t('Deleting the tag will remove all references in time spans.')}
                         </ConfirmDialog>
                     ) : null}
                 </TableBody>

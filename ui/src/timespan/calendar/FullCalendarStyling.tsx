@@ -22,11 +22,13 @@ const useStyle = makeStyles((theme) => {
             },
             '& .fc-toolbar-title': {
                 margin: 0,
-                fontSize: '1.5rem',
+                fontSize: '1.25rem',
             },
             '@media (max-width: 600px)': {
                 '& .fc-toolbar': {
-                    display: 'inherit',
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    gap: 12,
                     justifyContent: 'space-between',
                     alignItems: 'center',
                 },

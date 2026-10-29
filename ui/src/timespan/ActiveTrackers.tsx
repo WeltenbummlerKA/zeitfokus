@@ -1,3 +1,4 @@
+import {t, useI18n} from '../i18n';
 import * as React from 'react';
 import {useQuery} from '@apollo/client';
 import * as gqlTimeSpan from '../gql/timeSpan';
@@ -8,6 +9,7 @@ import {toTimeSpanProps} from './timespanutils';
 import {Typography} from '@mui/material';
 
 export const ActiveTrackers = () => {
+    useI18n();
     const trackersResult = useQuery<TrackersQuery>(gqlTimeSpan.Trackers, {fetchPolicy: 'cache-and-network'});
     const tagsResult = useQuery<TagsQuery>(gqlTag.Tags, {fetchPolicy: 'cache-and-network'});
     const values = React.useMemo(() => {
@@ -33,7 +35,7 @@ export const ActiveTrackers = () => {
     return (
         <>
             <Typography align="center" variant="h5" style={{marginTop: 10}}>
-                Active Timers
+                {t('Active Timers')}
             </Typography>
             {values.map((value) => {
                 return <TimeSpan key={value.id} {...value} />;

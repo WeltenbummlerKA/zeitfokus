@@ -1,3 +1,4 @@
+import {t, useI18n} from '../i18n';
 import * as React from 'react';
 import Paper from '@mui/material/Paper';
 import makeStyles from '@mui/styles/makeStyles';
@@ -48,6 +49,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export const DevicesPage = () => {
+    useI18n();
     const classes = useStyles();
     const {data, loading} = useQuery<DevicesQuery>(gqlDevice.Devices);
     const refetch = {refetchQueries: [{query: gqlDevice.Devices}, {query: gqlUser.CurrentUser}]};
@@ -66,7 +68,7 @@ export const DevicesPage = () => {
 
     const devices = data.devices.map((device) => {
         const onClickDelete = () =>
-            removeDevice({variables: {id: device.id}}).then(() => enqueueSnackbar('device deleted', {variant: 'success'}));
+            removeDevice({variables: {id: device.id}}).then(() => enqueueSnackbar(t('device deleted'), {variant: 'success'}));
         const onClickSubmit = () => {
             setEditing([-1, '', DeviceType.NoExpiry]);
             updateDevice({
@@ -75,11 +77,11 @@ export const DevicesPage = () => {
                     name: editName,
                     deviceType: editDeviceType,
                 },
-            }).then(() => enqueueSnackbar('device edited', {variant: 'success'}));
+            }).then(() => enqueueSnackbar(t('device edited'), {variant: 'success'}));
         };
         const isCurrent = device.id === data.currentDevice!.id;
         const isEdited = editId === device.id;
-        const displayName = device.name + (isCurrent ? ' (current)' : '');
+        const displayName = device.name + (isCurrent ? ' (' + t('current') + ')' : '');
         return (
             <TableRow key={device.id} selected={isCurrent}>
                 <TableCell>{device.id}</TableCell>
@@ -118,10 +120,13 @@ export const DevicesPage = () => {
                 <TableCell align="right">
                     {isEdited ? (
                         <>
-                            <IconButton onClick={onClickSubmit} title="Save" size="large">
+                            <IconButton onClick={onClickSubmit} title={t('Save')} size="large">
                                 <DoneIcon />
                             </IconButton>
-                            <IconButton onClick={() => setEditing([-1, '', DeviceType.NoExpiry])} title="Cancel" size="large">
+                            <IconButton
+                                onClick={() => setEditing([-1, '', DeviceType.NoExpiry])}
+                                title={t('Cancel')}
+                                size="large">
                                 <CloseIcon />
                             </IconButton>
                         </>
@@ -129,11 +134,11 @@ export const DevicesPage = () => {
                         <>
                             <IconButton
                                 onClick={() => setEditing([device.id, device.name, device.type])}
-                                title="Edit"
+                                title={t('Edit')}
                                 size="large">
                                 <EditIcon />
                             </IconButton>
-                            <IconButton onClick={onClickDelete} title="Delete" size="large">
+                            <IconButton onClick={onClickDelete} title={t('Delete')} size="large">
                                 <DeleteIcon />
                             </IconButton>
                         </>
@@ -152,16 +157,16 @@ export const DevicesPage = () => {
                 onClick={() => setAddActive(true)}
                 fullWidth
                 style={{marginBottom: 10}}>
-                Create Device
+                {t('Create Device')}
             </Button>
             <Table>
                 <TableHead>
                     <TableRow>
-                        <TableCell>ID</TableCell>
-                        <TableCell>Name</TableCell>
-                        <TableCell>Created</TableCell>
-                        <TableCell>Expires after</TableCell>
-                        <TableCell>Last Active</TableCell>
+                        <TableCell>{t('ID')}</TableCell>
+                        <TableCell>{t('Name')}</TableCell>
+                        <TableCell>{t('Created')}</TableCell>
+                        <TableCell>{t('Expires after')}</TableCell>
+                        <TableCell>{t('Last Active')}</TableCell>
                         <TableCell style={{width: 150}} />
                     </TableRow>
                 </TableHead>

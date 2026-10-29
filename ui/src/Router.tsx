@@ -1,3 +1,4 @@
+import {t, useI18n} from './i18n';
 import * as React from 'react';
 import {useQuery, ApolloError} from '@apollo/client';
 import {CurrentUserQuery} from './gql/__generated__';
@@ -20,6 +21,7 @@ import {SettingsPage} from './setting/SettingsPage';
 import {CalendarPage} from './timespan/calendar/CalendarPage';
 
 export const Router = () => {
+    useI18n();
     const {loading, error, data, refetch} = useQuery<CurrentUserQuery>(gqlUser.CurrentUser);
     if (loading) {
         return <CenteredSpinner />;
@@ -60,19 +62,20 @@ export const Router = () => {
 };
 
 const ErrorDisplay: React.FC<{error: ApolloError; refetch: () => void}> = ({error, refetch}) => {
+    useI18n();
     return (
         <Grid container direction="row" alignItems="center" justifyContent="center" style={{height: '100%'}}>
             <Grid item>
                 <DefaultPaper>
                     <Typography variant="h3" component="h1" gutterBottom={true}>
-                        Error
+                        {t('Error')}
                     </Typography>
                     <Typography component="p">
                         {error.networkError && error.networkError.name + ': ' + error.networkError.message}
                         {error.graphQLErrors.map((gqlError) => gqlError.message).join(', ')}
                     </Typography>
                     <Button style={{marginTop: 10}} size="large" variant="outlined" onClick={() => refetch()}>
-                        Retry
+                        {t('Retry')}
                     </Button>
                 </DefaultPaper>
             </Grid>
@@ -81,9 +84,10 @@ const ErrorDisplay: React.FC<{error: ApolloError; refetch: () => void}> = ({erro
 };
 
 export const TODO = () => {
+    useI18n();
     return (
         <Typography align="center" variant={'h2'}>
-            TODO
+            {t('TODO')}
         </Typography>
     );
 };

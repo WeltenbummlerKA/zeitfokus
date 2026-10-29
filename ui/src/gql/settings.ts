@@ -5,6 +5,7 @@ import {stripTypename} from '../utils/strip';
 export const Settings = gql`
     query Settings {
         userSettings {
+            interfaceLanguage
             theme
             dateLocale
             firstDayOfTheWeek
@@ -27,6 +28,7 @@ const defaultSettings = {
     dateLocale: DateLocale.American,
     firstDayOfTheWeek: WeekDay.Monday,
     dateTimeInputStyle: DateTimeInputStyle.Fancy,
+    interfaceLanguage: null,
 } as const;
 
 export const useSettings = (): {done: boolean} & Omit<SettingsQueryResponse['userSettings'], '__typename'> => {
@@ -37,3 +39,15 @@ export const useSettings = (): {done: boolean} & Omit<SettingsQueryResponse['use
     }
     return {done: true, ...stripTypename(data.data.userSettings)};
 };
+
+export const SetInterfaceLanguage = gql`
+    mutation SetInterfaceLanguage($language: InterfaceLanguage!) {
+        setInterfaceLanguage(language: $language) {
+            interfaceLanguage
+            theme
+            dateLocale
+            firstDayOfTheWeek
+            dateTimeInputStyle
+        }
+    }
+`;

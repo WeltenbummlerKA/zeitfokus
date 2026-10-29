@@ -12,3 +12,5 @@ yarn-error.log*
 node_modules
 __generated__
 *-packr.go
+
+__pycache__/

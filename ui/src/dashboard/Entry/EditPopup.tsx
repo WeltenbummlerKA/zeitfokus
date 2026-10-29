@@ -1,3 +1,4 @@
+import {t, useI18n} from '../../i18n';
 import * as React from 'react';
 import Popper from '@mui/material/Popper';
 import ClickAwayListener from '@mui/material/ClickAwayListener';
@@ -22,6 +23,7 @@ interface EditPopupProps {
     ranges: Record<number, string>;
 }
 export const EditPopup: React.FC<EditPopupProps> = ({entry, anchorEl, onChange: setEdit, doPreview, preview, ranges}) => {
+    useI18n();
     const [updateEntry] = useMutation<UpdateDashboardEntryMutation, UpdateDashboardEntryMutationVariables>(
         gqlDashboard.UpdateDashboardEntry,
         {
@@ -44,7 +46,7 @@ export const EditPopup: React.FC<EditPopupProps> = ({entry, anchorEl, onChange: 
             <Fade fullyVisible={!preview} opacity={0.2}>
                 <ClickAwayListener onClickAway={() => setEdit(null)}>
                     <Paper style={{padding: 10, maxWidth: 500}}>
-                        <Typography variant="h5">Edit</Typography>
+                        <Typography variant="h5">{t('Edit')}</Typography>
                         <DashboardEntryForm ranges={ranges} entry={entry} onChange={setEdit} disabled={preview} />
                         <div style={{textAlign: 'right', display: 'flex', justifyContent: 'flex-end', paddingTop: 10}}>
                             <Button
@@ -60,7 +62,7 @@ export const EditPopup: React.FC<EditPopupProps> = ({entry, anchorEl, onChange: 
                                 variant={'outlined'}
                                 style={{marginRight: 10}}
                                 onClick={() => setEdit(null)}>
-                                Cancel
+                                {t('Cancel')}
                             </Button>
                             <Button
                                 color={'primary'}
@@ -89,9 +91,9 @@ export const EditPopup: React.FC<EditPopupProps> = ({entry, anchorEl, onChange: 
                                         },
                                     })
                                         .then(() => setEdit(null))
-                                        .catch(handleError('Edit Dashboard Entry', enqueueSnackbar));
+                                        .catch(handleError(t('Edit Dashboard Entry'), enqueueSnackbar));
                                 }}>
-                                Save
+                                {t('Save')}
                             </Button>
                         </div>
                     </Paper>
