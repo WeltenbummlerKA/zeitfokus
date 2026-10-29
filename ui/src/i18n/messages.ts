@@ -958,6 +958,48 @@ export const messages: Record<string, {en: string; de: string}> = {
     'What are you working on?': {en: 'What are you working on?', de: 'Woran arbeitest du?'},
     'Recent descriptions': {en: 'Recent descriptions', de: 'Zuletzt verwendete Beschreibungen'},
     Recent: {en: 'Recent', de: 'Zuletzt'},
+    Help: {en: 'Help', de: 'Hilfe'},
+    'Short, practical guidance for Zeitfokus.': {
+        en: 'Short, practical guidance for Zeitfokus.',
+        de: 'Kurze, praktische Hilfe für Zeitfokus.',
+    },
+    'Zeitfokus keeps your data on your server. The help content describes the current workflow and clearly marks planned features.':
+        {
+            en: 'Zeitfokus keeps your data on your server. The help content describes the current workflow and clearly marks planned features.',
+            de: 'Zeitfokus belässt deine Daten auf deinem Server. Die Hilfe beschreibt den aktuellen Ablauf und kennzeichnet geplante Funktionen klar.',
+        },
+    'Recording time': {en: 'Recording time', de: 'Zeit erfassen'},
+    'Start a timer for the current task or switch to Manual to enter a completed interval. Add a description before saving so the history remains understandable.':
+        {
+            en: 'Start a timer for the current task or switch to Manual to enter a completed interval. Add a description before saving so the history remains understandable.',
+            de: 'Starte einen Timer für die aktuelle Aufgabe oder wechsle zu Manuell für ein abgeschlossenes Intervall. Eine Beschreibung hält den Verlauf verständlich.',
+        },
+    'Finding and correcting entries': {en: 'Finding and correcting entries', de: 'Einträge finden und korrigieren'},
+    'Use the list and calendar views to review your entries. Open the entry menu to edit it explicitly or delete it after confirmation.':
+        {
+            en: 'Use the list and calendar views to review your entries. Open the entry menu to edit it explicitly or delete it after confirmation.',
+            de: 'Prüfe deine Einträge in Liste und Kalender. Über das Eintragsmenü kannst du sie gezielt bearbeiten oder nach Bestätigung löschen.',
+        },
+    'Keyboard shortcuts': {en: 'Keyboard shortcuts', de: 'Tastaturkürzel'},
+    'Ctrl/Cmd + Enter submits the new entry when the tag selector is focused. More shortcuts will be added with the search and filter workspace.':
+        {
+            en: 'Ctrl/Cmd + Enter submits the new entry when the tag selector is focused. More shortcuts will be added with the search and filter workspace.',
+            de: 'Strg/Cmd + Enter übermittelt den neuen Eintrag, wenn die Tag-Auswahl fokussiert ist. Weitere Kürzel folgen mit Suche und Filtern.',
+        },
+    'Exports and reports': {en: 'Exports and reports', de: 'Exporte und Auswertungen'},
+    'CSV export, complete-range totals and saved filters are planned for the reporting workspace. Until then, the calendar remains the visual overview.':
+        {
+            en: 'CSV export, complete-range totals and saved filters are planned for the reporting workspace. Until then, the calendar remains the visual overview.',
+            de: 'CSV-Export, Gesamtsummen für vollständige Zeiträume und gespeicherte Filter sind für den Auswertungsbereich geplant. Bis dahin bleibt der Kalender die visuelle Übersicht.',
+        },
+    'Privacy and AI analysis': {en: 'Privacy and AI analysis', de: 'Datenschutz und KI-Auswertung'},
+    'Any future AI analysis will be opt-in, limited to your own time data and configurable for a local or explicitly chosen provider. It will never change entries automatically.':
+        {
+            en: 'Any future AI analysis will be opt-in, limited to your own time data and configurable for a local or explicitly chosen provider. It will never change entries automatically.',
+            de: 'Eine spätere KI-Auswertung bleibt optional, beschränkt sich auf deine Zeitdaten und kann einen lokalen oder ausdrücklich gewählten Anbieter nutzen. Einträge werden niemals automatisch geändert.',
+        },
+    'Current keyboard hint': {en: 'Current keyboard hint', de: 'Aktuelles Tastaturkürzel'},
+    'Submit the new entry': {en: 'Submit the new entry', de: 'Neuen Eintrag übermitteln'},
     'Edit time entry': {en: 'Edit time entry', de: 'Zeiteintrag bearbeiten'},
     'Could not save changes. Please retry.': {
         en: 'Could not save changes. Please retry.',
