@@ -56,23 +56,28 @@ const useStyles = makeStyles(() => ({
         width: '100%',
         display: 'flex',
         alignItems: 'center',
+        flexWrap: 'wrap',
+        gap: 12,
         textAlign: 'center',
         '@media (max-width: 750px)': {
             flexDirection: 'column',
         },
     },
     tagInput: {
-        width: '100%',
-        flex: '1',
+        minWidth: 0,
+        flex: '1 1 260px',
         marginRight: 10,
         '@media (max-width: 750px)': {
             display: 'flex',
+            flex: 'none',
             width: 'calc(100% - 48px)',
             marginRight: '48px',
         },
     },
     timeSelection: {
         display: 'inline-flex',
+        maxWidth: '100%',
+        flexWrap: 'wrap',
         // flex-end (not center): the start/end pickers have a floating label above their value,
         // making them taller than the plain duration text - centering both as whole boxes leaves
         // the duration vertically centered in the row while the picker's actual value text (below

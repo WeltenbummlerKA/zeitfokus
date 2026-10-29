@@ -40,6 +40,8 @@ export const DateTimeSelector: React.FC<DateTimeSelectorProps> = React.memo(
             return (
                 <input
                     type="datetime-local"
+                    aria-label={label}
+                    style={{maxWidth: '100%', minHeight: 44, font: 'inherit'}}
                     value={selectedDate.format(selectedDate.format('YYYY-MM-DDTHH:mm'))}
                     onChange={(e) => {
                         onSelectDate(moment(e.target.value));
@@ -70,7 +72,8 @@ export const DateTimeSelector: React.FC<DateTimeSelectorProps> = React.memo(
             <DesktopDateTimePicker
                 className="time-picker"
                 sx={{
-                    width: (showDate ? 185 : 105) + (ampm ? 20 : 0),
+                    width: `${(showDate ? 15.5 : 8) + (ampm ? 1.5 : 0)}rem`,
+                    maxWidth: '100%',
                     // The calendar-icon adornment centers itself across the whole labeled field
                     // (label row + value row), while the value text sits lower - offset by the
                     // 12px marginTop MUI puts on the input to make room for the shrunk label

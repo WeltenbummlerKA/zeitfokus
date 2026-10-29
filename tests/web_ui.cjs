@@ -136,6 +136,39 @@ const { spawn } = require("child_process");
       path: root + "/workspace-running-de.png",
       fullPage: true,
     });
+    await page.evaluate(
+      () => (document.documentElement.style.fontSize = "200%"),
+    );
+    await page.waitForTimeout(100);
+    if (
+      await page.evaluate(
+        () => document.documentElement.scrollWidth > innerWidth + 1,
+      )
+    ) {
+      throw Error("Recording 200% text overflow");
+    }
+    const clippedTimes = await page
+      .locator(".time-picker input")
+      .evaluateAll((inputs) =>
+        inputs
+          .filter((input) => {
+            const canvas = document.createElement("canvas");
+            const context = canvas.getContext("2d");
+            context.font = getComputedStyle(input).font;
+            return (
+              context.measureText(input.value).width + 4 > input.clientWidth
+            );
+          })
+          .map((input) => input.value),
+      );
+    if (clippedTimes.length) {
+      throw Error("Clipped time values: " + clippedTimes.join(","));
+    }
+    await page.screenshot({
+      path: root + "/recording-text-200.png",
+      fullPage: true,
+    });
+    await page.evaluate(() => (document.documentElement.style.fontSize = ""));
     await page.setViewportSize({ width: 390, height: 844 });
     await page
       .getByRole("button", { name: "Manueller Eintrag", exact: true })

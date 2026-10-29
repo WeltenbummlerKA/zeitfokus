@@ -227,3 +227,13 @@ input:focus-visible {
         border-inline-start-width: 6px !important;
     }
 }
+
+.workspace-navigation .MuiListItemText-primary {
+    overflow-wrap: anywhere;
+}
+.workspace-navigation .MuiListItemIcon-root {
+    min-width: 2.5em;
+}
+.time-workspace textarea:not([aria-hidden]) {
+    min-height: 2.5em !important;
+}

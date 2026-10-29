@@ -24,7 +24,7 @@ const useStyles = makeStyles((theme: Theme) => ({
         width: '100%',
     },
     inputRoot: {display: 'flex', flexWrap: 'wrap', cursor: 'text', width: '100%'},
-    inputInput: {height: 40, minWidth: 150, flexGrow: 1},
+    inputInput: {height: 'auto', minHeight: 'max(40px, 2.5em)', minWidth: 150, flexGrow: 1},
     paper: {
         position: 'absolute',
         zIndex: 1,
