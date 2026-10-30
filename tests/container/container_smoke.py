@@ -25,7 +25,8 @@ with tempfile.TemporaryDirectory(prefix='zeitfokus-container-test-') as director
         out.write(
             'ZEITFOKUS_DEFAULT_USER_PASS=' + password +
             '\nZEITFOKUS_FAVORITES_TOKEN=' + favorites_token +
-            '\nZEITFOKUS_DATABASE_CONNECTION=/opt/zeitfokus/data/zeitfokus.db\n'
+            '\nZEITFOKUS_DATABASE_CONNECTION=/tmp/zeitfokus.db' +
+            '\nZEITFOKUS_FAVORITES_STORE=/tmp/favorites.json\n'
         )
     os.chmod(envfile, 0o600)
     try:
