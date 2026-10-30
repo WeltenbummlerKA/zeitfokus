@@ -1,0 +1,12 @@
+Zeitfokus
+=========
+
+Zeitfokus is based on the original Traggo server project:
+https://github.com/traggo/server
+
+This repository contains modifications and additional functionality, including
+the Zeitfokus web interface, bilingual help, reporting, and optional local AI
+analysis. The project remains licensed under the GNU General Public License,
+version 3, as provided in LICENSE.
+
+Upstream copyright and license notices in source files remain applicable.
