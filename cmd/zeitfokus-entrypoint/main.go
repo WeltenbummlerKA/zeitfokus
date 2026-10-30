@@ -59,6 +59,7 @@ func main() {
 
 	// The server binary is fixed inside the image; command-line arguments are
 	// forwarded without allowing an environment variable to replace the binary.
+	// #nosec G204 -- arguments are forwarded only to the fixed in-image server binary.
 	cmd := exec.Command("/opt/zeitfokus/zeitfokus", os.Args[1:]...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
