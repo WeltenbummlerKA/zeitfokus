@@ -14,8 +14,8 @@ import (
 	"time"
 )
 
-// ProviderConfig is deliberately server-side configuration. It is never
-// serialized into the browser or accepted from a user request.
+// ProviderConfig is server-side configuration, editable only by administrators.
+// Credentials are not supported; requests are restricted to local/private hosts.
 type ProviderConfig struct {
 	Provider string // disabled, ollama, or lmstudio
 	BaseURL  string
@@ -126,7 +126,8 @@ func Analyze(ctx context.Context, cfg ProviderConfig, summary Summary) (string, 
 		kind = "ollama"
 	} else {
 		body, _ = json.Marshal(openAIRequest{cfg.Model, msg, false})
-		endpoint = strings.TrimRight(cfg.BaseURL, "/") + "/v1/chat/completions"
+		base := strings.TrimSuffix(strings.TrimRight(cfg.BaseURL, "/"), "/v1")
+		endpoint = base + "/v1/chat/completions"
 		kind = "openai"
 	}
 	timeout := cfg.Timeout

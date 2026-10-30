@@ -83,14 +83,17 @@ export const ThemeProvider: React.FC<React.PropsWithChildren> = ({children}) => 
     const {theme} = useSettings();
     const [systemDark, setSystemDark] = React.useState(() => window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false);
     React.useEffect(() => {
-        if (theme !== SettingTheme.System || !window.matchMedia) return;
+        if (theme !== SettingTheme.System || !window.matchMedia) {
+            return;
+        }
         const media = window.matchMedia('(prefers-color-scheme: dark)');
         const update = () => setSystemDark(media.matches);
         update();
         media.addEventListener?.('change', update);
         return () => media.removeEventListener?.('change', update);
     }, [theme]);
-    const resolvedTheme = theme === SettingTheme.System ? (systemDark ? SettingTheme.MaterialDark : SettingTheme.MaterialLight) : theme;
+    const systemTheme = systemDark ? SettingTheme.MaterialDark : SettingTheme.MaterialLight;
+    const resolvedTheme = theme === SettingTheme.System ? systemTheme : theme;
     return (
         <StyledEngineProvider injectFirst>
             <MuiThemeProvider theme={themes[resolvedTheme as Exclude<SettingTheme, SettingTheme.System>]}>

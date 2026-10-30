@@ -67,14 +67,15 @@ Dieses Dokument ist eine Übergabeakte. Es beschreibt verbindlich, was erledigt,
 
 ### 3. KI-Einstellung vervollständigen
 
-Aktuell wird die KI administrativ über Stack-Variablen konfiguriert, nicht über ein frei editierbares Benutzerformular.
+Administratoren wählen unter **Einstellungen → KI-Auswertung** zwischen **Deaktiviert**, **Ollama** und **LM Studio** und speichern Serveradresse, Modell und Zeitlimit. Die Einstellung gilt für die gesamte Instanz, liegt in der vorhandenen Datenbank und bleibt bei Redeploys erhalten. Bis zum ersten Speichern dienen die Stack-Variablen als Vorgabe. Normale Konten dürfen die Verbindung nicht ändern.
 
 - `ZEITFOKUS_AI_PROVIDER`: `disabled`, `ollama` oder `lmstudio`.
 - `ZEITFOKUS_AI_BASE_URL`: erreichbarer Backend-Endpunkt.
 - `ZEITFOKUS_AI_MODEL`: vorhandenes Modell.
 - KI-Auswertung mit echten Zeitdaten testen.
 - Fehler bei nicht erreichbarem Backend verständlich anzeigen.
-- Falls gewünscht, eine Admin-Maske ergänzen; Tokens nicht im Browser speichern.
+- Admin-Maske mit beiden Anbietern prüfen; Zugangsdaten werden nicht unterstützt und nicht im Browser gespeichert.
+- LM Studio akzeptiert die Serveradresse mit oder ohne `/v1`.
 
 ### 4. Start- und Containerlogs
 
@@ -108,7 +109,7 @@ Immer den aktuell laufenden Container öffnen, niemals eine alte Container-ID di
 6. Bestehenden Datenbestand und Anmeldung testen.
 7. System-Thema hell/dunkel testen.
 8. Favicon, Tab-Titel und About-Branding kontrollieren.
-9. KI-Endpunkt konfigurieren und Testauswertung durchführen.
+9. Als Administrator unter Einstellungen den KI-Anbieter, Serveradresse und Modell speichern und eine Testauswertung durchführen.
 10. Erst danach den Stand als abgeschlossen melden.
 
 ## Nicht tun
