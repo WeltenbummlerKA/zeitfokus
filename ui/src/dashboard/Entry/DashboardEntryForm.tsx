@@ -1,29 +1,29 @@
+import {t, useI18n} from '../../i18n';
 import * as React from 'react';
-import TextField from '@material-ui/core/TextField';
-import FormControl from '@material-ui/core/FormControl';
-import InputLabel from '@material-ui/core/InputLabel';
-import Select from '@material-ui/core/NativeSelect/NativeSelect';
-import {useQuery} from 'react-apollo';
-import {Tags} from '../../gql/__generated__/Tags';
+import TextField from '@mui/material/TextField';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import Select from '@mui/material/NativeSelect';
+import {useQuery} from '@apollo/client';
+import {TagsQuery, EntryType, StatsInterval} from '../../gql/__generated__';
 import * as gqlTags from '../../gql/tags';
-import {EntryType, StatsInterval} from '../../gql/__generated__/globalTypes';
 import {toTagSelectorEntry} from '../../tag/tagSelectorEntry';
 import {FormTagSelector} from '../../tag/FormTagSelector';
-import {Dashboards_dashboards_items, Dashboards_dashboards_items_statsSelection_range} from '../../gql/__generated__/Dashboards';
+import {DashboardItem, DashboardItemRange} from '../../gql/types';
 import {RelativeDateTimeSelector} from '../../common/RelativeDateTimeSelector';
 import {parseRelativeTime} from '../../utils/time';
-import {Grid, Typography, Switch} from '@material-ui/core';
+import {Grid, Typography, Switch} from '@mui/material';
 
 interface EditPopupProps {
-    entry: Dashboards_dashboards_items;
-    onChange: (entry: Dashboards_dashboards_items | null) => void;
+    entry: DashboardItem;
+    onChange: (entry: DashboardItem | null) => void;
     disabled?: boolean;
     ranges: Record<string, string>;
 }
 
-export const isValidDashboardEntry = (item: Dashboards_dashboards_items): boolean => {
+export const isValidDashboardEntry = (item: DashboardItem): boolean => {
     return (
-        item.statsSelection.tags !== null &&
+        item.statsSelection.tags != null &&
         item.statsSelection.tags.length > 0 &&
         ((item.statsSelection.range &&
             parseRelativeTime(item.statsSelection.range.from, 'startOf').success &&
@@ -33,9 +33,10 @@ export const isValidDashboardEntry = (item: Dashboards_dashboards_items): boolea
     );
 };
 export const DashboardEntryForm: React.FC<EditPopupProps> = ({entry, onChange: setEntry, disabled = false, ranges}) => {
+    useI18n();
     const [staticRange, setStaticRange] = React.useState(!entry.statsSelection.rangeId);
 
-    const tagsResult = useQuery<Tags>(gqlTags.Tags);
+    const tagsResult = useQuery<TagsQuery>(gqlTags.Tags);
 
     let tagKeys;
     let excludeTags;
@@ -47,7 +48,7 @@ export const DashboardEntryForm: React.FC<EditPopupProps> = ({entry, onChange: s
         includeTags = toTagSelectorEntry(tagsResult.data.tags, entry.statsSelection.includeTags || []);
     }
 
-    const range: Dashboards_dashboards_items_statsSelection_range = entry.statsSelection.range
+    const range: DashboardItemRange = entry.statsSelection.range
         ? entry.statsSelection.range
         : {
               from: 'now/w',
@@ -58,7 +59,7 @@ export const DashboardEntryForm: React.FC<EditPopupProps> = ({entry, onChange: s
     return (
         <>
             <TextField
-                label={'Title'}
+                label={t('Title')}
                 value={entry.title}
                 disabled={disabled}
                 onChange={(e) => {
@@ -68,7 +69,7 @@ export const DashboardEntryForm: React.FC<EditPopupProps> = ({entry, onChange: s
                 fullWidth
             />
             <FormControl margin={'normal'} fullWidth>
-                <InputLabel>Type</InputLabel>
+                <InputLabel>{t('Type')}</InputLabel>
                 <Select
                     fullWidth
                     value={entry.entryType}
@@ -79,13 +80,13 @@ export const DashboardEntryForm: React.FC<EditPopupProps> = ({entry, onChange: s
                     }}>
                     {Object.values(EntryType).map((type) => (
                         <option key={type} value={type}>
-                            {type}
+                            {t(type)}
                         </option>
                     ))}
                 </Select>
             </FormControl>
             <FormControl margin={'normal'} fullWidth>
-                <InputLabel>Interval</InputLabel>
+                <InputLabel>{t('Interval')}</InputLabel>
                 <Select
                     fullWidth
                     disabled={disabled}
@@ -96,15 +97,15 @@ export const DashboardEntryForm: React.FC<EditPopupProps> = ({entry, onChange: s
                     }}>
                     {Object.values(StatsInterval).map((type) => (
                         <option key={type} value={type}>
-                            {type}
+                            {t(type)}
                         </option>
                     ))}
                 </Select>
             </FormControl>
             <Typography component="div">
                 <Grid component="label" container alignItems="center" spacing={1}>
-                    <Grid item>Range: </Grid>
-                    <Grid item>Global</Grid>
+                    <Grid item>{t('Range:')}</Grid>
+                    <Grid item>{t('Global')}</Grid>
                     <Grid item>
                         <Switch
                             checked={staticRange}
@@ -124,13 +125,13 @@ export const DashboardEntryForm: React.FC<EditPopupProps> = ({entry, onChange: s
                             }}
                         />
                     </Grid>
-                    <Grid item>Static</Grid>
+                    <Grid item>{t('Static')}</Grid>
                 </Grid>
             </Typography>
             {staticRange ? (
                 <>
                     <RelativeDateTimeSelector
-                        label={'From'}
+                        label={t('From')}
                         disabled={disabled}
                         value={range.from}
                         onChange={(startDate) => {
@@ -141,7 +142,7 @@ export const DashboardEntryForm: React.FC<EditPopupProps> = ({entry, onChange: s
                         type="startOf"
                     />
                     <RelativeDateTimeSelector
-                        label={'To'}
+                        label={t('To')}
                         disabled={disabled}
                         value={range.to}
                         onChange={(endDate) => {
@@ -165,11 +166,9 @@ export const DashboardEntryForm: React.FC<EditPopupProps> = ({entry, onChange: s
                         entry.statsSelection.range = null;
                         setEntry(entry);
                     }}>
-                    {entry.statsSelection.rangeId ? (
-                        undefined
-                    ) : (
+                    {entry.statsSelection.rangeId ? undefined : (
                         <option key={''} value={''}>
-                            Select a date range
+                            {t('Select a date range')}
                         </option>
                     )}
                     {Object.keys(ranges).map((key) => (
@@ -194,11 +193,9 @@ export const DashboardEntryForm: React.FC<EditPopupProps> = ({entry, onChange: s
                         </Grid>
                     </Grid>
                 </Typography>
-            ) : (
-                undefined
-            )}
+            ) : undefined}
             <FormTagSelector
-                label="Tags"
+                label={t('Tags')}
                 selectedEntries={tagKeys || []}
                 onSelectedEntriesChanged={(tags) => {
                     entry.statsSelection.tags = tags.map((tag) => tag.tag.key);
@@ -209,7 +206,7 @@ export const DashboardEntryForm: React.FC<EditPopupProps> = ({entry, onChange: s
             />
 
             <FormTagSelector
-                label="Exclude"
+                label={t('Exclude')}
                 selectedEntries={excludeTags || []}
                 onSelectedEntriesChanged={(tags) => {
                     entry.statsSelection.excludeTags = tags.map((tag) => ({
@@ -223,7 +220,7 @@ export const DashboardEntryForm: React.FC<EditPopupProps> = ({entry, onChange: s
                 createTags={false}
             />
             <FormTagSelector
-                label="Include"
+                label={t('Include')}
                 selectedEntries={includeTags || []}
                 onSelectedEntriesChanged={(tags) => {
                     entry.statsSelection.includeTags = tags.map((tag) => ({

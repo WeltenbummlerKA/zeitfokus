@@ -1,14 +1,15 @@
-import {Stats_stats} from '../../gql/__generated__/Stats';
+import {t, useI18n} from '../../i18n';
 import * as React from 'react';
-import {StatsInterval} from '../../gql/__generated__/globalTypes';
+import {StatsInterval} from '../../gql/__generated__';
+import {StatsRangeEntries} from '../../gql/types';
 import moment from 'moment';
-import {Table, TableBody, TableCell, TableRow} from '@material-ui/core';
-import TableHead from '@material-ui/core/TableHead';
+import {Table, TableBody, TableCell, TableRow} from '@mui/material';
+import TableHead from '@mui/material/TableHead';
 import {ofInterval} from './dateformat';
 import prettyMs from 'pretty-ms';
 
 interface DashboardTableProps {
-    entries: Stats_stats[];
+    entries: StatsRangeEntries[];
     interval: StatsInterval;
     mode: 'vertical' | 'horizontal';
     total: boolean;
@@ -21,6 +22,7 @@ interface Indexed {
 }
 
 export const DashboardTable: React.FC<DashboardTableProps> = ({entries, interval, mode, total}) => {
+    useI18n();
     const indexedEntries: Indexed[] = entries
         .map((entry) => {
             const result = {
@@ -45,7 +47,7 @@ export const DashboardTable: React.FC<DashboardTableProps> = ({entries, interval
                     <>
                         <TableHead>
                             <TableRow>
-                                <TableCell>Date</TableCell>
+                                <TableCell>{t('Date')}</TableCell>
                                 {keys.map((key) => {
                                     return <TableCell key={key}>{key}</TableCell>;
                                 })}
@@ -68,7 +70,7 @@ export const DashboardTable: React.FC<DashboardTableProps> = ({entries, interval
                     <>
                         <TableHead>
                             <TableRow>
-                                <TableCell>Date</TableCell>
+                                <TableCell>{t('Date')}</TableCell>
                                 {indexedEntries.map((entry) => {
                                     return <TableCell key={entry.start}>{dateFormat(moment(entry.start))}</TableCell>;
                                 })}

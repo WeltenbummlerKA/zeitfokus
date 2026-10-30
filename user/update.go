@@ -23,8 +23,23 @@ func (r *ResolverForUser) UpdateUser(ctx context.Context, id int, name string, p
 		user.Pass = createPassword(*pass, r.PassStrength)
 	}
 
-	update := r.DB.Save(user)
+	tx := r.DB.Begin()
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+	defer tx.Rollback()
+	if err := tx.Save(user).Error; err != nil {
+		return nil, err
+	}
+	if pass != nil {
+		if err := tx.Where("user_id = ?", id).Delete(new(model.Device)).Error; err != nil {
+			return nil, err
+		}
+	}
+	if err := tx.Commit().Error; err != nil {
+		return nil, err
+	}
 	gqlUser := &gqlmodel.User{}
 	copier.Copy(gqlUser, user)
-	return gqlUser, update.Error
+	return gqlUser, nil
 }

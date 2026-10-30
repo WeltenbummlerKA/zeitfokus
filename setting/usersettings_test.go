@@ -66,3 +66,34 @@ func TestShouldHandleInvalidInputs(t *testing.T) {
 	toInternalDateTimeInputStyle("aoeu")
 
 }
+
+func TestInterfaceLanguageIsPerUserAndPreservedByLegacySettings(t *testing.T) {
+	db := test.InMemoryDB(t)
+	defer db.Close()
+	db.User(1)
+	db.User(2)
+	resolver := &ResolverForSettings{DB: db.DB}
+	initial, err := resolver.UserSettings(fake.User(1))
+	require.NoError(t, err)
+	require.Nil(t, initial.InterfaceLanguage)
+	changed, err := resolver.SetInterfaceLanguage(fake.User(1), gqlmodel.InterfaceLanguageGerman)
+	require.NoError(t, err)
+	require.Equal(t, gqlmodel.InterfaceLanguageGerman, *changed.InterfaceLanguage)
+	other, err := resolver.UserSettings(fake.User(2))
+	require.NoError(t, err)
+	require.Nil(t, other.InterfaceLanguage)
+	_, err = resolver.SetUserSettings(fake.User(1), gqlmodel.InputUserSettings{
+		Theme: gqlmodel.ThemeMaterialLight, DateLocale: gqlmodel.DateLocaleBritish,
+		FirstDayOfTheWeek: gqlmodel.WeekDayMonday, DateTimeInputStyle: gqlmodel.DateTimeInputStyleNative,
+	})
+	require.NoError(t, err)
+	saved, err := resolver.UserSettings(fake.User(1))
+	require.NoError(t, err)
+	require.Equal(t, gqlmodel.InterfaceLanguageGerman, *saved.InterfaceLanguage)
+	require.Equal(t, gqlmodel.DateLocaleBritish, saved.DateLocale)
+	changed, err = resolver.SetInterfaceLanguage(fake.User(1), gqlmodel.InterfaceLanguageEnglish)
+	require.NoError(t, err)
+	require.Equal(t, gqlmodel.InterfaceLanguageEnglish, *changed.InterfaceLanguage)
+	require.Equal(t, gqlmodel.ThemeMaterialLight, changed.Theme)
+	require.Equal(t, gqlmodel.DateLocaleBritish, changed.DateLocale)
+}

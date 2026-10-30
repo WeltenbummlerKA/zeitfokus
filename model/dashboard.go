@@ -60,6 +60,9 @@ func (t DashboardType) Value() (driver.Value, error) {
 
 // Scan for db
 func (t *DashboardType) Scan(value interface{}) error {
+	if text, ok := value.(string); ok {
+		value = []byte(text)
+	}
 	s, ok := value.([]byte)
 	if !ok {
 		return fmt.Errorf("expected string but was %#v", value)
@@ -78,6 +81,9 @@ func (t Interval) Value() (driver.Value, error) {
 
 // Scan for db
 func (t *Interval) Scan(value interface{}) error {
+	if text, ok := value.(string); ok {
+		value = []byte(text)
+	}
 	s, ok := value.([]byte)
 	if !ok {
 		return fmt.Errorf("expected string but was %#v", value)

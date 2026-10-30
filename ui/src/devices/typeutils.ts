@@ -1,14 +1,15 @@
-import {DeviceType} from '../gql/__generated__/globalTypes';
+import {t} from '../i18n';
+import {DeviceType} from '../gql/__generated__';
 import {expectNever} from '../utils/never';
 
 export const deviceTypeToString = (type: DeviceType) => {
     switch (type) {
         case DeviceType.LongExpiry:
-            return 'A month of inactivity';
+            return t('A month of inactivity');
         case DeviceType.ShortExpiry:
-            return 'An hour of inactivity';
+            return t('An hour of inactivity');
         case DeviceType.NoExpiry:
-            return 'Never';
+            return t('Never');
         default:
             return expectNever(type);
     }

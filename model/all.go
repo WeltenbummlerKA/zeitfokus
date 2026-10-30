@@ -9,6 +9,7 @@ func All() []interface{} {
 		new(TimeSpan),
 		new(TimeSpanTag),
 		new(UserSetting),
+		new(Favorite),
 		new(Dashboard),
 		new(DashboardEntry),
 		new(DashboardTagFilter),

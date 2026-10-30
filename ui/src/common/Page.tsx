@@ -1,203 +1,200 @@
+import {t, useI18n} from '../i18n';
 import * as React from 'react';
-import AppBar from '@material-ui/core/AppBar';
-import CssBaseline from '@material-ui/core/CssBaseline';
-import Divider from '@material-ui/core/Divider';
-import Drawer from '@material-ui/core/Drawer';
-import Hidden from '@material-ui/core/Hidden';
-import IconButton from '@material-ui/core/IconButton';
-import UsersIcon from '@material-ui/icons/SupervisorAccount';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import DashboardIcon from '@material-ui/icons/Dashboard';
-import MenuIcon from '@material-ui/icons/Menu';
-import SettingsIcon from '@material-ui/icons/Settings';
-import DevicesIcon from '@material-ui/icons/DevicesOther';
-import LabelIcon from '@material-ui/icons/Label';
-import DashboardManageIcon from '@material-ui/icons/ListAlt';
-import TimeLineIcon from '@material-ui/icons/Timeline';
-import CalendarIcon from '@material-ui/icons/CalendarToday';
-import Toolbar from '@material-ui/core/Toolbar';
-import Typography from '@material-ui/core/Typography';
-import {ListSubheader, Menu} from '@material-ui/core';
-import HrefLink from '@material-ui/core/Link';
+import AppBar from '@mui/material/AppBar';
+import CssBaseline from '@mui/material/CssBaseline';
+import Divider from '@mui/material/Divider';
+import Drawer from '@mui/material/Drawer';
+import Box from '@mui/material/Box';
+import ListItemButton from '@mui/material/ListItemButton';
+import {LanguageSwitcher} from '../i18n/LanguageSwitcher';
+import IconButton from '@mui/material/IconButton';
+import UsersIcon from '@mui/icons-material/SupervisorAccount';
+import List from '@mui/material/List';
+
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import MenuIcon from '@mui/icons-material/Menu';
+import SettingsIcon from '@mui/icons-material/Settings';
+import DevicesIcon from '@mui/icons-material/DevicesOther';
+import LabelIcon from '@mui/icons-material/Label';
+import DashboardManageIcon from '@mui/icons-material/ListAlt';
+import TimeLineIcon from '@mui/icons-material/Timeline';
+import CalendarIcon from '@mui/icons-material/CalendarToday';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
+import {ListSubheader, Menu} from '@mui/material';
+import HrefLink from '@mui/material/Link';
 import * as gqlUser from '../gql/user';
 import * as gqlVersion from '../gql/version';
-import Button from '@material-ui/core/Button';
-import AccountCircle from '@material-ui/icons/AccountCircle';
-import {Link} from 'react-router-dom';
-import MenuItem from '@material-ui/core/MenuItem';
-import {useMutation, useQuery} from '@apollo/react-hooks';
-import {Logout} from '../gql/__generated__/Logout';
-import {Version} from '../gql/__generated__/Version';
-import {CurrentUser} from '../gql/__generated__/CurrentUser';
+import Button from '@mui/material/Button';
+import AccountCircle from '@mui/icons-material/AccountCircle';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
+import {NavLink, matchPath, useLocation} from 'react-router-dom';
+import MenuItem from '@mui/material/MenuItem';
+import {useMutation, useQuery} from '@apollo/client';
+import {LogoutMutation, VersionQuery, CurrentUserQuery, DashboardsQuery} from '../gql/__generated__';
 import * as gqlDashboard from '../gql/dashboard';
-import {Dashboards} from '../gql/__generated__/Dashboards';
-import makeStyles from '@material-ui/core/styles/makeStyles';
-import {Route, RouteChildrenProps, Switch} from 'react-router';
+import {Dashboard} from '../gql/types';
+import {KeyboardShortcuts} from '../keyboard/KeyboardShortcuts';
+import {shortcutAria, shortcutLabel} from '../keyboard/shortcuts';
 
 const drawerWidth = 240;
 
-const useStyles = makeStyles((theme) => ({
-    root: {
-        display: 'flex',
-        height: '100%',
-    },
-    drawer: {
-        [theme.breakpoints.up('md')]: {
-            width: drawerWidth,
-            flexShrink: 0,
-        },
-    },
-    appBar: {
-        marginLeft: drawerWidth,
-        [theme.breakpoints.up('md')]: {
-            width: `calc(100% - ${drawerWidth}px)`,
-        },
-    },
-    menuButton: {
-        marginRight: 20,
-        [theme.breakpoints.up('md')]: {
-            display: 'none',
-        },
-    },
-    toolbar: {
-        ...theme.mixins.toolbar,
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-    },
-    drawerPaper: {
-        width: drawerWidth,
-    },
-    content: {
-        flexGrow: 1,
-        paddingTop: theme.spacing(2),
-        paddingBottom: theme.spacing(2),
-        paddingLeft: theme.spacing(1),
-        paddingRight: theme.spacing(1),
-    },
-    grow: {
-        flexGrow: 1,
-    },
-    sectionDesktop: {
-        display: 'none',
-        [theme.breakpoints.up('xs')]: {
-            display: 'flex',
-        },
-    },
-    sectionMobile: {
-        display: 'flex',
-        [theme.breakpoints.up('xs')]: {
-            display: 'none',
-        },
-    },
-}));
-
-// tslint:disable-next-line:no-any
+// MUI's `component` prop isn't polymorphism-typed against an arbitrary forwardRef component.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const routerLink = (to: string): any => {
-    return React.forwardRef<HTMLAnchorElement>((props, ref) => <Link innerRef={ref} to={to} {...props} />);
+    return React.forwardRef<HTMLAnchorElement>((props, ref) => <NavLink ref={ref} to={to} {...props} />);
 };
 
-export const Page: React.FC = ({children}) => {
-    const classes = useStyles();
-    const {data} = useQuery<CurrentUser>(gqlUser.CurrentUser);
+const staticPageTitles: Array<{path: string; title: string}> = [
+    {path: '/help', title: 'Help'},
+    {path: '/about', title: 'About'},
+    {path: '/timesheet/list', title: 'Time tracking'},
+    {path: '/timesheet/calendar', title: 'Timesheet / Calendar'},
+    {path: '/user/settings', title: 'User / Settings'},
+    {path: '/user/devices', title: 'User / Devices'},
+    {path: '/user/tags', title: 'User / Tags'},
+    {path: '/admin/users', title: 'Admin / Users'},
+    {path: '/dashboards', title: 'Dashboards / Manage'},
+];
+
+const getPageTitle = (pathname: string, dashboards: Dashboard[]): string => {
+    for (const {path, title} of staticPageTitles) {
+        if (matchPath(path, pathname)) {
+            return t(title);
+        }
+    }
+    const dashboardMatch = matchPath('/dashboard/:id/*', pathname);
+    if (dashboardMatch && dashboardMatch.params.id) {
+        const db = dashboards.find((dashboard) => dashboard.id === parseInt(dashboardMatch.params.id!, 10));
+        return t('Dashboards') + ' / ' + (db ? db.name : '...');
+    }
+    return '';
+};
+
+export const Page: React.FC<React.PropsWithChildren> = ({children}) => {
+    useI18n();
+
+    const {data} = useQuery<CurrentUserQuery>(gqlUser.CurrentUser);
 
     const [mobileOpen, setMobileOpen] = React.useState(false);
+    const headerRef = React.useRef<HTMLElement>(null);
+    const [headerHeight, setHeaderHeight] = React.useState(80);
+    React.useLayoutEffect(() => {
+        const header = headerRef.current;
+        if (!header) {
+            return;
+        }
+        const measure = () => setHeaderHeight(header.getBoundingClientRect().height);
+        measure();
+        const observer = new ResizeObserver(measure);
+        observer.observe(header);
+        return () => observer.disconnect();
+    }, []);
     const [userMenuOpen, setUserMenuOpen] = React.useState<null | HTMLElement>(null);
-    const [logout] = useMutation<Logout>(gqlUser.Logout, {refetchQueries: [{query: gqlUser.CurrentUser}]});
-    const {data: {version = gqlVersion.VersionDefault.version} = gqlVersion.VersionDefault} = useQuery<Version>(
+    const [logout] = useMutation<LogoutMutation>(gqlUser.Logout, {refetchQueries: [{query: gqlUser.CurrentUser}]});
+    const {data: {version = gqlVersion.VersionDefault.version} = gqlVersion.VersionDefault} = useQuery<VersionQuery>(
         gqlVersion.Version
     );
-    const dashboardsQuery = useQuery<Dashboards>(gqlDashboard.Dashboards);
+    const dashboardsQuery = useQuery<DashboardsQuery>(gqlDashboard.Dashboards);
     const dashboards = (dashboardsQuery.data && dashboardsQuery.data.dashboards) || [];
 
     const username = (data && data.user && data.user.name) || 'unknown';
     const admin = data && data.user && data.user.admin;
 
+    const location = useLocation();
+    const pageTitle = getPageTitle(location.pathname, dashboards);
+
     const drawer = (
-        <div>
-            <div className={classes.toolbar}>
+        <div className="workspace-navigation">
+            <Box sx={{p: 3, minHeight: 104}}>
                 <HrefLink href="https://github.com/traggo" underline="none" target="_blank">
-                    <Typography variant="h5" align="center" color="textPrimary">
-                        traggo
-                    </Typography>
+                    <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1.25}}>
+                        <Box component="img" src="/favicon.ico" alt="" aria-hidden="true" sx={{width: 30, height: 30}} />
+                        <Typography variant="h5" align="center" color="textPrimary">
+                            Zeitfokus
+                        </Typography>
+                    </Box>
                 </HrefLink>
                 <HrefLink href="https://github.com/traggo/server/releases" underline="none" target="_blank">
-                    <Typography variant="subtitle2" align="center" color="textPrimary">
+                    <Typography variant="caption" align="center" color="textPrimary">
                         {version.name}@{version.commit.slice(0, 8)}
                     </Typography>
                 </HrefLink>
-            </div>
+            </Box>
             <Divider />
-            <List subheader={<ListSubheader>Dashboards</ListSubheader>} dense={true}>
+            <List subheader={<ListSubheader>{t('Timesheet')}</ListSubheader>} dense={true}>
+                <ListItemButton role="link" onClick={() => setMobileOpen(false)} component={routerLink('/timesheet/list')}>
+                    <ListItemIcon>
+                        <TimeLineIcon />
+                    </ListItemIcon>
+                    <ListItemText primary={t('List')} />
+                </ListItemButton>
+                <ListItemButton role="link" onClick={() => setMobileOpen(false)} component={routerLink('/timesheet/calendar')}>
+                    <ListItemIcon>
+                        <CalendarIcon />
+                    </ListItemIcon>
+                    <ListItemText primary={t('Calendar')} />
+                </ListItemButton>
+            </List>
+            <Divider />
+            <List subheader={<ListSubheader>{t('Dashboards')}</ListSubheader>} dense={true}>
                 {dashboards.map(({id, name}) => (
-                    <ListItem key={id} button component={routerLink(`/dashboard/${id}/${encodeURIComponent(name)}`)}>
+                    <ListItemButton
+                        role="link"
+                        key={id}
+                        onClick={() => setMobileOpen(false)}
+                        component={routerLink(`/dashboard/${id}/${encodeURIComponent(name)}`)}>
                         <ListItemIcon>
                             <DashboardIcon />
                         </ListItemIcon>
                         <ListItemText primary={name} />
-                    </ListItem>
+                    </ListItemButton>
                 ))}
                 {dashboards.length === 0 ? (
-                    <ListItem button dense={true} disabled={true}>
-                        <ListItemText primary={'no dashboards added'} />
-                    </ListItem>
+                    <ListItemButton disabled={true}>
+                        <ListItemText primary={t('no dashboards added')} />
+                    </ListItemButton>
                 ) : null}
-                <ListItem button component={routerLink(`/dashboards`)}>
+                <ListItemButton role="link" onClick={() => setMobileOpen(false)} component={routerLink(`/dashboards`)}>
                     <ListItemIcon>
                         <DashboardManageIcon />
                     </ListItemIcon>
-                    <ListItemText primary={'Manage'} />
-                </ListItem>
+                    <ListItemText primary={t('Manage')} />
+                </ListItemButton>
             </List>
             <Divider />
-            <List subheader={<ListSubheader>Timesheet</ListSubheader>} dense={true}>
-                <ListItem button component={routerLink('/timesheet/list')}>
-                    <ListItemIcon>
-                        <TimeLineIcon />
-                    </ListItemIcon>
-                    <ListItemText primary="List" />
-                </ListItem>
-                <ListItem button component={routerLink('/timesheet/calendar')}>
-                    <ListItemIcon>
-                        <CalendarIcon />
-                    </ListItemIcon>
-                    <ListItemText primary="Calendar" />
-                </ListItem>
-            </List>
-            <Divider />
-            <List subheader={<ListSubheader>User</ListSubheader>} dense={true}>
-                <ListItem button component={routerLink('/user/tags')}>
+            <List subheader={<ListSubheader>{t('User')}</ListSubheader>} dense={true}>
+                <ListItemButton role="link" onClick={() => setMobileOpen(false)} component={routerLink('/user/tags')}>
                     <ListItemIcon>
                         <LabelIcon />
                     </ListItemIcon>
-                    <ListItemText primary="Tags" />
-                </ListItem>
-                <ListItem button component={routerLink('/user/devices')}>
+                    <ListItemText primary={t('Tags')} />
+                </ListItemButton>
+                <ListItemButton role="link" onClick={() => setMobileOpen(false)} component={routerLink('/user/devices')}>
                     <ListItemIcon>
                         <DevicesIcon />
                     </ListItemIcon>
-                    <ListItemText primary="Devices" />
-                </ListItem>
-                <ListItem button component={routerLink('/user/settings')}>
+                    <ListItemText primary={t('Devices')} />
+                </ListItemButton>
+                <ListItemButton role="link" onClick={() => setMobileOpen(false)} component={routerLink('/user/settings')}>
                     <ListItemIcon>
                         <SettingsIcon />
                     </ListItemIcon>
-                    <ListItemText primary="Settings" />
-                </ListItem>
+                    <ListItemText primary={t('Settings')} />
+                </ListItemButton>
             </List>
             {admin ? (
                 <>
                     <Divider />
-                    <List subheader={<ListSubheader>Admin</ListSubheader>} dense={true}>
-                        <ListItem button component={routerLink('/admin/users')}>
+                    <List subheader={<ListSubheader>{t('Admin')}</ListSubheader>} dense={true}>
+                        <ListItemButton role="link" onClick={() => setMobileOpen(false)} component={routerLink('/admin/users')}>
                             <ListItemIcon>
                                 <UsersIcon />
                             </ListItemIcon>
-                            <ListItemText primary="Users" />
-                        </ListItem>
+                            <ListItemText primary={t('Users')} />
+                        </ListItemButton>
                     </List>
                 </>
             ) : null}
@@ -205,104 +202,101 @@ export const Page: React.FC = ({children}) => {
         </div>
     );
 
+    React.useEffect(() => {
+        document.title = `${pageTitle} · Zeitfokus`;
+    }, [pageTitle]);
     return (
-        <div className={classes.root}>
+        <Box sx={{display: 'flex', minHeight: '100%'}}>
+            <KeyboardShortcuts />
             <CssBaseline />
-            <AppBar position="fixed" className={classes.appBar}>
-                <Toolbar>
+            <a className="skip-link" href="#main-content">
+                {t('Skip to content')}
+            </a>
+            <AppBar
+                ref={headerRef}
+                position="fixed"
+                color="default"
+                elevation={0}
+                sx={{
+                    ml: {md: `${drawerWidth}px`},
+                    width: {md: `calc(100% - ${drawerWidth}px)`},
+                    borderBottom: 1,
+                    borderColor: 'divider',
+                }}>
+                <Toolbar sx={{gap: 1, flexWrap: 'wrap', py: 1}}>
                     <IconButton
-                        color="inherit"
-                        aria-label="Open drawer"
+                        aria-label={t('Open drawer')}
                         onClick={() => setMobileOpen(!mobileOpen)}
-                        className={classes.menuButton}>
+                        sx={{display: {md: 'none'}}}>
                         <MenuIcon />
                     </IconButton>
-                    <Typography variant="h6" color="inherit" noWrap>
-                        <Switch>
-                            <Route exact path="/timesheet/list">
-                                Timesheet / List
-                            </Route>
-                            <Route exact path="/timesheet/calendar">
-                                Timesheet / Calendar
-                            </Route>
-                            <Route exact path="/user/settings">
-                                User / Settings
-                            </Route>
-                            <Route exact path="/user/devices">
-                                User / Devices
-                            </Route>
-                            <Route exact path="/user/tags">
-                                User / Tags
-                            </Route>
-                            <Route exact path="/admin/users">
-                                Admin / Users
-                            </Route>
-                            <Route exact path="/dashboards">
-                                Dashboards / Manage
-                            </Route>
-                            <Route exact path="/dashboard/:id/:name">
-                                {(props: RouteChildrenProps<{id: string}>) => {
-                                    const db = dashboards.find(
-                                        (dashboard) => dashboard.id === parseInt(props.match!.params.id, 10)
-                                    );
-                                    return 'Dashboards / ' + (db ? db.name : '...');
-                                }}
-                            </Route>
-                        </Switch>
+                    <Typography component="h1" variant="h6" sx={{flex: '1 1 140px'}}>
+                        {pageTitle}
                     </Typography>
-                    <div className={classes.grow} />
-                    <div className={classes.sectionDesktop}>
-                        <Button color="inherit" onClick={(e) => setUserMenuOpen(e.currentTarget)}>
-                            <AccountCircle />
-                            &nbsp;{username}
-                        </Button>
-                        <Menu
-                            anchorEl={userMenuOpen}
-                            anchorOrigin={{vertical: 'top', horizontal: 'right'}}
-                            transformOrigin={{vertical: 'top', horizontal: 'right'}}
-                            open={!!userMenuOpen}
-                            onClose={() => setUserMenuOpen(null)}>
-                            <MenuItem onClick={() => setUserMenuOpen(null)} component={routerLink('/user/settings')}>
-                                Settings
-                            </MenuItem>
-                            <MenuItem
-                                onClick={() => {
-                                    setUserMenuOpen(null);
-                                    logout();
-                                }}>
-                                Logout
-                            </MenuItem>
-                        </Menu>
-                    </div>
+                    <LanguageSwitcher />
+                    <IconButton
+                        component={routerLink('/help')}
+                        aria-label={t('Help')}
+                        aria-keyshortcuts={shortcutAria('H')}
+                        title={`${t('Help')} (${shortcutLabel('H')})`}>
+                        <HelpOutlineIcon />
+                    </IconButton>
+                    <Button
+                        color="inherit"
+                        sx={{color: 'text.primary'}}
+                        aria-haspopup="menu"
+                        onClick={(e) => setUserMenuOpen(e.currentTarget)}
+                        startIcon={<AccountCircle />}>
+                        {username}
+                    </Button>
+                    <Menu anchorEl={userMenuOpen} open={!!userMenuOpen} onClose={() => setUserMenuOpen(null)}>
+                        <MenuItem component={routerLink('/user/settings')} onClick={() => setUserMenuOpen(null)}>
+                            {t('Settings')}
+                        </MenuItem>
+                        <MenuItem component={routerLink('/about')} onClick={() => setUserMenuOpen(null)}>
+                            {t('About')}
+                        </MenuItem>
+                        <MenuItem component={routerLink('/help')} onClick={() => setUserMenuOpen(null)}>
+                            <HelpOutlineIcon fontSize="small" sx={{mr: 1}} />
+                            {t('Help')}
+                        </MenuItem>
+                        <MenuItem
+                            onClick={() => {
+                                setUserMenuOpen(null);
+                                void logout();
+                            }}>
+                            {t('Logout')}
+                        </MenuItem>
+                    </Menu>
                 </Toolbar>
             </AppBar>
-            <nav className={classes.drawer}>
-                <Hidden mdUp implementation="js">
-                    <Drawer
-                        variant="temporary"
-                        open={mobileOpen}
-                        onClose={() => setMobileOpen(false)}
-                        classes={{
-                            paper: classes.drawerPaper,
-                        }}>
-                        {drawer}
-                    </Drawer>
-                </Hidden>
-                <Hidden smDown implementation="js">
-                    <Drawer
-                        classes={{
-                            paper: classes.drawerPaper,
-                        }}
-                        variant="permanent"
-                        open>
-                        {drawer}
-                    </Drawer>
-                </Hidden>
-            </nav>
-            <main className={classes.content}>
-                <div className={classes.toolbar} />
+            <Box component="nav" aria-label={t('Main navigation')} sx={{width: {md: drawerWidth}, flexShrink: {md: 0}}}>
+                <Drawer
+                    variant="temporary"
+                    open={mobileOpen}
+                    onClose={() => setMobileOpen(false)}
+                    sx={{display: {xs: 'block', md: 'none'}, '& .MuiDrawer-paper': {width: drawerWidth}}}>
+                    {drawer}
+                </Drawer>
+                <Drawer
+                    variant="permanent"
+                    sx={{display: {xs: 'none', md: 'block'}, '& .MuiDrawer-paper': {width: drawerWidth}}}
+                    open>
+                    {drawer}
+                </Drawer>
+            </Box>
+            <Box
+                component="main"
+                id="main-content"
+                style={{paddingTop: headerHeight + 24}}
+                tabIndex={-1}
+                sx={{
+                    flexGrow: 1,
+                    minWidth: 0,
+                    p: {xs: 2, sm: 3, lg: 4},
+                }}>
                 {children}
-            </main>
-        </div>
+            </Box>
+        </Box>
     );
 };

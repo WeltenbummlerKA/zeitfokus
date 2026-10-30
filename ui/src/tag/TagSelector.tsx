@@ -1,27 +1,31 @@
+import {t, useI18n} from '../i18n';
 import * as React from 'react';
-import {Tags} from '../gql/__generated__/Tags';
+import {TagsQuery} from '../gql/__generated__';
 import * as gqlTags from '../gql/tags';
-import {useQuery} from '@apollo/react-hooks';
+import {useQuery} from '@apollo/client';
 import {useError} from '../utils/errors';
-import Typography from '@material-ui/core/Typography';
-import Tooltip from '@material-ui/core/Tooltip';
-import MenuItem from '@material-ui/core/MenuItem';
+import Typography from '@mui/material/Typography';
+import Tooltip from '@mui/material/Tooltip';
+import MenuItem from '@mui/material/MenuItem';
 import {AddTagDialog} from './AddTagDialog';
 import {TagSelectorEntry, itemLabel, label, addValues} from './tagSelectorEntry';
 import {useSuggest} from './suggest';
-import Paper from '@material-ui/core/Paper';
-import ClickAwayListener from '@material-ui/core/ClickAwayListener';
-import Input from '@material-ui/core/Input';
+import Paper from '@mui/material/Paper';
+import ClickAwayListener from '@mui/material/ClickAwayListener';
+import Input from '@mui/material/Input';
 import {useStateAndDelegateWithDelayOnChange} from '../utils/hooks';
 import {TagChip} from '../common/TagChip';
-import {makeStyles, Theme} from '@material-ui/core/styles';
+import {Theme} from '@mui/material/styles';
+import {isSubmitShortcut} from '../keyboard/shortcuts';
+
+import makeStyles from '@mui/styles/makeStyles';
 
 const useStyles = makeStyles((theme: Theme) => ({
     root: {
         width: '100%',
     },
     inputRoot: {display: 'flex', flexWrap: 'wrap', cursor: 'text', width: '100%'},
-    inputInput: {height: 40, minWidth: 150, flexGrow: 1},
+    inputInput: {height: 'auto', minHeight: 'max(40px, 2.5em)', minWidth: 150, flexGrow: 1},
     paper: {
         position: 'absolute',
         zIndex: 1,
@@ -48,6 +52,7 @@ export const TagSelector: React.FC<TagSelectorProps> = ({
     allowDuplicateKeys = false,
     onlySelectKeys = false,
 }) => {
+    useI18n();
     const classes = useStyles();
     const [tooltipErrorActive, tooltipError, showTooltipError] = useError(4000);
     const [open, setOpen] = React.useState(false);
@@ -57,7 +62,7 @@ export const TagSelector: React.FC<TagSelectorProps> = ({
     const input = React.useRef<null | HTMLDivElement>(null);
     const container = React.useRef<null | HTMLDivElement>(null);
 
-    const tagsResult = useQuery<Tags>(gqlTags.Tags);
+    const tagsResult = useQuery<TagsQuery>(gqlTags.Tags);
 
     const suggestions = useSuggest(tagsResult, currentValue, selectedEntries, onlySelectKeys, allowDuplicateKeys, createTags);
 
@@ -122,7 +127,6 @@ export const TagSelector: React.FC<TagSelectorProps> = ({
 
         setSelectedEntries([...selectedEntries, entry]);
         setCurrentValue('');
-        return;
     };
 
     const onTagClicked = (entry: TagSelectorEntry, edit: boolean) => {
@@ -157,13 +161,14 @@ export const TagSelector: React.FC<TagSelectorProps> = ({
             event.preventDefault();
             setHighlightedIndex(highlightedIndex === suggestions.length - 1 ? 0 : highlightedIndex + 1);
         }
+        if (!currentValue && isSubmitShortcut(event) && onCtrlEnter) {
+            event.preventDefault();
+            onCtrlEnter();
+            return;
+        }
         if (event.key === 'Enter' && highlightedIndex < suggestions.length) {
             event.preventDefault();
-            if (!currentValue && event.ctrlKey && onCtrlEnter) {
-                onCtrlEnter();
-            } else {
-                trySubmit(suggestions[highlightedIndex]);
-            }
+            trySubmit(suggestions[highlightedIndex]);
         }
         if (event.key === 'Escape' && input.current) {
             event.preventDefault();
@@ -199,7 +204,7 @@ export const TagSelector: React.FC<TagSelectorProps> = ({
                             onKeyDown={onKeyDown}
                             disableUnderline={true}
                             onChange={(e) => setCurrentValue(e.target.value)}
-                            placeholder="Enter Tags"
+                            placeholder={t('Enter Tags')}
                             className={classes.inputInput}
                         />
                     </div>
@@ -248,6 +253,7 @@ interface ItemProps {
 }
 
 const Item: React.FC<ItemProps> = ({entry, selected, onlySelectKeys, onClick}) => {
+    useI18n();
     return (
         <MenuItem
             key={entry.tag.key}

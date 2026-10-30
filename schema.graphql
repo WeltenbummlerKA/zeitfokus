@@ -45,6 +45,12 @@ type RootMutation {
     removeDashboardEntry(id: Int!): DashboardEntry! @hasRole(role: USER)
 
     setUserSettings(settings: InputUserSettings!): UserSettings! @hasRole(role: USER)
+    setInterfaceLanguage(language: InterfaceLanguage!): UserSettings! @hasRole(role: USER)
+    setWorkTargetProfile(profile: InputWorkTargetProfile!): UserSettings! @hasRole(role: USER)
+    createFavorite(input: InputFavorite!): Favorite! @hasRole(role: USER)
+    updateFavorite(id: Int!, input: InputFavorite!): Favorite! @hasRole(role: USER)
+    removeFavorite(id: Int!): Favorite! @hasRole(role: USER)
+    analyzeTimeReport(input: InputAIAnalysis!): AIAnalysisResult! @hasRole(role: USER)
 }
 
 type RootQuery {
@@ -56,12 +62,44 @@ type RootQuery {
     currentDevice: Device
     devices: [Device!] @hasRole(role: USER)
     timeSpans(fromInclusive: Time, toInclusive: Time, cursor: InputCursor): PagedTimeSpans! @hasRole(role: USER)
+    history(filter: InputHistoryFilter, cursor: InputCursor): HistoryResult! @hasRole(role: USER)
     timers: [TimeSpan!] @hasRole(role: USER)
     stats(ranges: [Range!], tags: [String!], excludeTags: [InputTimeSpanTag!], requireTags: [InputTimeSpanTag!]): [RangedStatisticsEntries!] @hasRole(role: USER)
     stats2(now: Time!, stats: InputStatsSelection!): [RangedStatisticsEntries!] @hasRole(role: USER)
     version: Version!
     dashboards: [Dashboard!] @hasRole(role: USER)
     userSettings: UserSettings!
+    favorites: [Favorite!]! @hasRole(role: USER)
+}
+
+input InputAIAnalysis {
+    from: Time!
+    toExclusive: Time!
+}
+
+type AIAnalysisResult {
+    text: String!
+    from: Time!
+    to: Time!
+    completedEntries: Int!
+    totalSeconds: Float!
+    averageSeconds: Float!
+    daysWithActivity: Int!
+}
+
+input InputFavorite {
+    title: String!
+    note: String!
+    tags: [InputTimeSpanTag!]
+    position: Int!
+}
+
+type Favorite {
+    id: Int!
+    title: String!
+    note: String!
+    tags: [TimeSpanTag!]!
+    position: Int!
 }
 
 input InputUserSettings {
@@ -71,11 +109,30 @@ input InputUserSettings {
     dateTimeInputStyle: DateTimeInputStyle!
 }
 
+enum InterfaceLanguage {
+    German
+    English
+}
+
 type UserSettings {
+    interfaceLanguage: InterfaceLanguage
+    workTargetProfile: WorkTargetProfile
     theme: Theme!
     dateLocale: DateLocale!
     firstDayOfTheWeek: WeekDay!
     dateTimeInputStyle: DateTimeInputStyle!
+}
+
+input InputWorkTargetProfile {
+    enabled: Boolean!
+    weeklyHours: Float!
+    workDays: [WeekDay!]!
+}
+
+type WorkTargetProfile {
+    enabled: Boolean!
+    weeklyHours: Float!
+    workDays: [WeekDay!]!
 }
 
 enum WeekDay {
@@ -167,6 +224,21 @@ type TimeSpan {
 type PagedTimeSpans {
     timeSpans: [TimeSpan!]!
     cursor: Cursor!
+}
+
+input InputHistoryFilter {
+    query: String
+    from: Time
+    toExclusive: Time
+    requireTags: [InputTimeSpanTag!]
+    excludeTags: [InputTimeSpanTag!]
+}
+
+type HistoryResult {
+    timeSpans: [TimeSpan!]!
+    cursor: Cursor!
+    matchingCount: Int!
+    totalSeconds: Float!
 }
 
 type TimeSpanTag {

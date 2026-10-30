@@ -1,27 +1,39 @@
+import {t, useI18n} from '../i18n';
 import * as React from 'react';
 import {TagSelectorEntry, toInputTags} from '../tag/tagSelectorEntry';
 import {TagSelector} from '../tag/TagSelector';
 import moment from 'moment';
-import Paper from '@material-ui/core/Paper';
+import Paper from '@mui/material/Paper';
 import {DateTimeSelector} from '../common/DateTimeSelector';
-import {Button, TextField, Typography, makeStyles} from '@material-ui/core';
+import {Alert, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Typography} from '@mui/material';
+import makeStyles from '@mui/styles/makeStyles';
 import {inUserTz} from './timeutils';
-import {useMutation} from '@apollo/react-hooks';
-import {StopTimer, StopTimerVariables} from '../gql/__generated__/StopTimer';
+import {useMutation} from '@apollo/client';
+import {
+    StopTimerMutation,
+    StopTimerMutationVariables,
+    UpdateTimeSpanMutation,
+    UpdateTimeSpanMutationVariables,
+    RemoveTimeSpanMutation,
+    RemoveTimeSpanMutationVariables,
+    TimeSpansQuery,
+    TrackersQuery,
+    StartTimerMutation,
+    StartTimerMutationVariables,
+    AddTimeSpanMutation,
+    AddTimeSpanMutationVariables,
+} from '../gql/__generated__';
 import * as gqlTimeSpan from '../gql/timeSpan';
-import {UpdateTimeSpan, UpdateTimeSpanVariables} from '../gql/__generated__/UpdateTimeSpan';
-import IconButton from '@material-ui/core/IconButton';
-import {MoreVert} from '@material-ui/icons';
-import Menu from '@material-ui/core/Menu';
-import MenuItem from '@material-ui/core/MenuItem';
-import {RemoveTimeSpan, RemoveTimeSpanVariables} from '../gql/__generated__/RemoveTimeSpan';
+import IconButton from '@mui/material/IconButton';
+import {MoreVert} from '@mui/icons-material';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
 import {useStateAndDelegateWithDelayOnChange} from '../utils/hooks';
-import {TimeSpans} from '../gql/__generated__/TimeSpans';
 import {isSameDate} from '../utils/time';
-import {Trackers} from '../gql/__generated__/Trackers';
 import {addTimeSpanToCache, removeFromTrackersCache} from '../gql/utils';
-import {StartTimer, StartTimerVariables} from '../gql/__generated__/StartTimer';
 import {RelativeTime, RelativeToNow} from '../common/RelativeTime';
+import {useSnackbar} from 'notistack';
+import {shortcutAria, shortcutLabel} from '../keyboard/shortcuts';
 
 interface Range {
     from: moment.Moment;
@@ -48,23 +60,33 @@ const useStyles = makeStyles(() => ({
         width: '100%',
         display: 'flex',
         alignItems: 'center',
+        flexWrap: 'wrap',
+        gap: 12,
         textAlign: 'center',
         '@media (max-width: 750px)': {
             flexDirection: 'column',
         },
     },
     tagInput: {
-        width: '100%',
-        flex: '1',
+        minWidth: 0,
+        flex: '1 1 260px',
         marginRight: 10,
         '@media (max-width: 750px)': {
             display: 'flex',
+            flex: 'none',
             width: 'calc(100% - 48px)',
             marginRight: '48px',
         },
     },
     timeSelection: {
         display: 'inline-flex',
+        maxWidth: '100%',
+        flexWrap: 'wrap',
+        // flex-end (not center): the start/end pickers have a floating label above their value,
+        // making them taller than the plain duration text - centering both as whole boxes leaves
+        // the duration vertically centered in the row while the picker's actual value text (below
+        // its label) sits lower, looking misaligned. Aligning bottoms lines up the value baselines.
+        alignItems: 'flex-end',
         '@media (max-width: 750px)': {
             justifyContent: 'space-evenly',
             width: '100%',
@@ -82,6 +104,7 @@ const useStyles = makeStyles(() => ({
     },
 }));
 
+// This component coordinates several independent entry actions and their dialogs.
 export const TimeSpan: React.FC<TimeSpanProps> = React.memo(
     ({
         range: {from, to, oldFrom},
@@ -95,66 +118,98 @@ export const TimeSpan: React.FC<TimeSpanProps> = React.memo(
         continued = () => {},
         elevation = 1,
         addTagsToTracker,
+        // eslint-disable-next-line complexity
     }) => {
+        useI18n();
+        const {enqueueSnackbar} = useSnackbar();
         const styles = useStyles();
         const [showNotes, toggleShowingNotes] = React.useState(initialNote !== '');
+        const [editOpen, setEditOpen] = React.useState(false);
+        const [editNote, setEditNote] = React.useState(initialNote);
+        const [editError, setEditError] = React.useState('');
+        const [editSaving, setEditSaving] = React.useState(false);
+        const [deleteOpen, setDeleteOpen] = React.useState(false);
+        const [deleteError, setDeleteError] = React.useState('');
+        const [deleteSaving, setDeleteSaving] = React.useState(false);
         const note = React.useRef<{value: string; handle?: number}>({value: initialNote});
 
         const [selectedEntries, setSelectedEntries] = React.useState<TagSelectorEntry[]>(initialTags);
         const [openMenu, setOpenMenu] = useStateAndDelegateWithDelayOnChange<null | HTMLElement>(null, (o) =>
             dateSelectorOpen(!!o)
         );
-        const [stopTimer] = useMutation<StopTimer, StopTimerVariables>(gqlTimeSpan.StopTimer, {
-            update: (cache, {data}) => {
-                if (!data || !data.stopTimeSpan) {
-                    return;
-                }
-                removeFromTrackersCache(cache, data);
-                addTimeSpanToCache(cache, data.stopTimeSpan);
-            },
-        });
-        const [startTimer] = useMutation<StartTimer, StartTimerVariables>(gqlTimeSpan.StartTimer, {
+        const pendingStop = React.useRef(false);
+        const [stopTimer, {loading: stopping}] = useMutation<StopTimerMutation, StopTimerMutationVariables>(
+            gqlTimeSpan.StopTimer,
+            {
+                refetchQueries: ['History'],
+                awaitRefetchQueries: true,
+                update: (cache, {data}) => {
+                    if (!data || !data.stopTimeSpan) {
+                        return;
+                    }
+                    removeFromTrackersCache(cache, data);
+                    addTimeSpanToCache(cache, data.stopTimeSpan);
+                },
+            }
+        );
+        const [startTimer] = useMutation<StartTimerMutation, StartTimerMutationVariables>(gqlTimeSpan.StartTimer, {
             refetchQueries: [{query: gqlTimeSpan.Trackers}],
+            awaitRefetchQueries: true,
         });
-        const [updateTimeSpan] = useMutation<UpdateTimeSpan, UpdateTimeSpanVariables>(gqlTimeSpan.UpdateTimeSpan);
-        const noteAwareUpdateTimeSpan = ({variables}: {variables: Omit<UpdateTimeSpanVariables, 'note'>}) => {
+        const [addTimeSpan, {loading: duplicating}] = useMutation<AddTimeSpanMutation, AddTimeSpanMutationVariables>(
+            gqlTimeSpan.AddTimeSpan,
+            {refetchQueries: ['History'], awaitRefetchQueries: true}
+        );
+        const [updateTimeSpan] = useMutation<UpdateTimeSpanMutation, UpdateTimeSpanMutationVariables>(
+            gqlTimeSpan.UpdateTimeSpan,
+            {
+                refetchQueries: ['History'],
+                awaitRefetchQueries: true,
+            }
+        );
+        const noteAwareUpdateTimeSpan = ({variables}: {variables: Omit<UpdateTimeSpanMutationVariables, 'note'>}) => {
             clearTimeout(note.current.handle);
             return updateTimeSpan({variables: {...variables, note: note.current.value}});
         };
-        const [removeTimeSpan] = useMutation<RemoveTimeSpan, RemoveTimeSpanVariables>(gqlTimeSpan.RemoveTimeSpan, {
-            update: (cache, {data}) => {
-                let oldData: TimeSpans | null = null;
-                try {
-                    oldData = cache.readQuery<TimeSpans>({query: gqlTimeSpan.TimeSpans});
-                } catch (e) {}
+        const [removeTimeSpan] = useMutation<RemoveTimeSpanMutation, RemoveTimeSpanMutationVariables>(
+            gqlTimeSpan.RemoveTimeSpan,
+            {
+                refetchQueries: ['History'],
+                awaitRefetchQueries: true,
+                update: (cache, {data}) => {
+                    let oldData: TimeSpansQuery | null = null;
+                    try {
+                        oldData = cache.readQuery<TimeSpansQuery>({query: gqlTimeSpan.TimeSpans});
+                    } catch {}
 
-                const oldTrackers = cache.readQuery<Trackers>({query: gqlTimeSpan.Trackers});
-                if (!data || !data.removeTimeSpan) {
-                    return;
-                }
-                const removedId = data.removeTimeSpan.id;
-                if (oldTrackers) {
-                    cache.writeQuery<Trackers>({
-                        query: gqlTimeSpan.Trackers,
-                        data: {
-                            timers: (oldTrackers.timers || []).filter((tracker) => tracker.id !== removedId),
-                        },
-                    });
-                }
-                if (oldData) {
-                    cache.writeQuery<TimeSpans>({
-                        query: gqlTimeSpan.TimeSpans,
-                        data: {
-                            timeSpans: {
-                                __typename: 'PagedTimeSpans',
-                                timeSpans: oldData.timeSpans.timeSpans.filter((ts) => ts.id !== removedId),
-                                cursor: oldData.timeSpans.cursor,
+                    const oldTrackers = cache.readQuery<TrackersQuery>({query: gqlTimeSpan.Trackers});
+                    if (!data || !data.removeTimeSpan) {
+                        return;
+                    }
+                    const removedId = data.removeTimeSpan.id;
+                    if (oldTrackers) {
+                        cache.writeQuery<TrackersQuery>({
+                            query: gqlTimeSpan.Trackers,
+                            data: {
+                                timers: (oldTrackers.timers || []).filter((tracker) => tracker.id !== removedId),
                             },
-                        },
-                    });
-                }
-            },
-        });
+                        });
+                    }
+                    if (oldData) {
+                        cache.writeQuery<TimeSpansQuery>({
+                            query: gqlTimeSpan.TimeSpans,
+                            data: {
+                                timeSpans: {
+                                    __typename: 'PagedTimeSpans',
+                                    timeSpans: oldData.timeSpans.timeSpans.filter((ts) => ts.id !== removedId),
+                                    cursor: oldData.timeSpans.cursor,
+                                },
+                            },
+                        });
+                    }
+                },
+            }
+        );
 
         const updateNote = (newValue: string) => {
             window.clearTimeout(note.current.handle);
@@ -180,6 +235,7 @@ export const TimeSpan: React.FC<TimeSpanProps> = React.memo(
         return (
             <Paper
                 elevation={elevation}
+                className={to ? 'time-entry time-entry-completed' : 'time-entry time-entry-running'}
                 style={{
                     display: 'flex',
                     flexDirection: 'column',
@@ -188,6 +244,14 @@ export const TimeSpan: React.FC<TimeSpanProps> = React.memo(
                     opacity: wasMoved ? 0.5 : 1,
                     width: '100%',
                 }}>
+                {!to && (
+                    <div className="running-duration">
+                        <Typography color="text.secondary">{t('Elapsed time')}</Typography>
+                        <Typography component="div" className="running-clock">
+                            <RelativeToNow from={from} />
+                        </Typography>
+                    </div>
+                )}
                 <div className={styles.innerTimespan}>
                     <div className={styles.tagInput}>
                         <TagSelector
@@ -242,7 +306,7 @@ export const TimeSpan: React.FC<TimeSpanProps> = React.memo(
                                     }
                                 }}
                                 showDate={showDate}
-                                label="start"
+                                label={t('start')}
                             />
                             {to !== undefined ? (
                                 <DateTimeSelector
@@ -277,31 +341,55 @@ export const TimeSpan: React.FC<TimeSpanProps> = React.memo(
                                         }
                                     }}
                                     showDate={showDate}
-                                    label="end"
+                                    label={t('end')}
                                 />
                             ) : (
                                 <Button
+                                    variant="outlined"
+                                    data-stop-timer
+                                    aria-keyshortcuts={shortcutAria('S')}
+                                    title={shortcutLabel('S')}
+                                    disabled={stopping}
                                     onClick={() => {
-                                        stopTimer({variables: {id, end: inUserTz(moment()).format()}}).then(stopped);
+                                        if (pendingStop.current) {
+                                            return;
+                                        }
+                                        pendingStop.current = true;
+                                        void stopTimer({variables: {id, end: inUserTz(moment()).format()}})
+                                            .then(stopped)
+                                            .catch(() =>
+                                                enqueueSnackbar(t('Could not stop this timer. Please retry.'), {variant: 'error'})
+                                            )
+                                            .finally(() => {
+                                                pendingStop.current = false;
+                                            });
                                     }}>
-                                    Stop
+                                    {t('Stop')}
                                 </Button>
                             )}
                         </div>
 
-                        <div style={{alignItems: 'center', display: 'flex'}}>
+                        <div
+                            className={to ? 'entry-duration' : 'running-duration-secondary'}
+                            style={{alignItems: 'center', display: 'flex'}}>
                             <Typography
                                 variant="subtitle1"
-                                style={{minWidth: '70px'}}
-                                title="The amount of time between from and to">
+                                // Matches the start/end pickers' MUI standard-variant input, which has
+                                // padding: 4px 0 5px below its own text - without this, aligning by
+                                // flex-end lines up the two elements' boxes but not their actual text,
+                                // since this Typography has no padding of its own to account for.
+                                style={{minWidth: '70px', paddingBottom: '5px'}}
+                                title={t('The amount of time between from and to')}>
                                 {to ? <RelativeTime from={from} to={to} /> : <RelativeToNow from={from} />}
                             </Typography>
                         </div>
                     </div>
 
                     <IconButton
+                        aria-label={t('Entry options')}
                         className={styles.showMoreButton}
-                        onClick={(e: React.MouseEvent<HTMLElement>) => setOpenMenu(e.currentTarget)}>
+                        onClick={(e: React.MouseEvent<HTMLElement>) => setOpenMenu(e.currentTarget)}
+                        size="large">
                         <MoreVert />
                     </IconButton>
 
@@ -318,7 +406,29 @@ export const TimeSpan: React.FC<TimeSpanProps> = React.memo(
                                         },
                                     }).then(() => continued());
                                 }}>
-                                Continue
+                                {t('Continue')}
+                            </MenuItem>
+                        ) : null}
+                        {to ? (
+                            <MenuItem
+                                disabled={duplicating}
+                                onClick={() => {
+                                    setOpenMenu(null);
+                                    const duration = Math.max(60, to.diff(from, 'seconds'));
+                                    const duplicateStart = moment();
+                                    const duplicateEnd = duplicateStart.clone().add(duration, 'seconds');
+                                    void addTimeSpan({
+                                        variables: {
+                                            start: inUserTz(duplicateStart).format(),
+                                            end: inUserTz(duplicateEnd).format(),
+                                            tags: toInputTags(selectedEntries),
+                                            note: note.current.value,
+                                        },
+                                    }).catch(() =>
+                                        enqueueSnackbar(t('Could not duplicate this entry. Please retry.'), {variant: 'error'})
+                                    );
+                                }}>
+                                {t('Duplicate')}
                             </MenuItem>
                         ) : null}
                         {addTagsToTracker ? (
@@ -327,29 +437,39 @@ export const TimeSpan: React.FC<TimeSpanProps> = React.memo(
                                     setOpenMenu(null);
                                     addTagsToTracker(selectedEntries);
                                 }}>
-                                Copy tags
+                                {t('Copy tags')}
                             </MenuItem>
                         ) : null}
                         <MenuItem
                             onClick={() => {
                                 setOpenMenu(null);
-                                toggleShowingNotes(!showNotes);
+                                setEditNote(note.current.value);
+                                setEditError('');
+                                setEditOpen(true);
                             }}>
-                            Show Notes
+                            {t('Edit')}
                         </MenuItem>
                         <MenuItem
                             onClick={() => {
                                 setOpenMenu(null);
-                                removeTimeSpan({variables: {id}}).then(() => deleted());
+                                toggleShowingNotes(!showNotes);
                             }}>
-                            Delete
+                            {t('Show Notes')}
+                        </MenuItem>
+                        <MenuItem
+                            onClick={() => {
+                                setOpenMenu(null);
+                                setDeleteError('');
+                                setDeleteOpen(true);
+                            }}>
+                            {t('Delete')}
                         </MenuItem>
                     </Menu>
                 </div>
                 {showNotes ? (
                     <div>
                         <TextField
-                            label="Note"
+                            label={t('Note')}
                             fullWidth
                             multiline
                             defaultValue={initialNote}
@@ -357,6 +477,91 @@ export const TimeSpan: React.FC<TimeSpanProps> = React.memo(
                         />
                     </div>
                 ) : null}
+                <Dialog open={editOpen} onClose={() => !editSaving && setEditOpen(false)} fullWidth maxWidth="sm">
+                    <DialogTitle>{t('Edit time entry')}</DialogTitle>
+                    <DialogContent>
+                        {editError ? (
+                            <Alert severity="error" sx={{mb: 2}}>
+                                {editError}
+                            </Alert>
+                        ) : null}
+                        <TextField
+                            autoFocus
+                            fullWidth
+                            multiline
+                            minRows={3}
+                            label={t('Description')}
+                            value={editNote}
+                            onChange={(event) => setEditNote(event.target.value)}
+                            inputProps={{maxLength: 500}}
+                            sx={{mt: 1}}
+                        />
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={() => setEditOpen(false)} disabled={editSaving}>
+                            {t('Cancel')}
+                        </Button>
+                        <Button
+                            variant="contained"
+                            disabled={editSaving}
+                            onClick={() => {
+                                setEditSaving(true);
+                                setEditError('');
+                                updateTimeSpan({
+                                    variables: {
+                                        id,
+                                        oldStart: oldFrom,
+                                        start: inUserTz(from).format(),
+                                        end: to && inUserTz(to).format(),
+                                        tags: toInputTags(selectedEntries),
+                                        note: editNote.trim(),
+                                    },
+                                })
+                                    .then(() => {
+                                        note.current.value = editNote.trim();
+                                        setEditSaving(false);
+                                        setEditOpen(false);
+                                    })
+                                    .catch(() => {
+                                        setEditSaving(false);
+                                        setEditError(t('Could not save changes. Please retry.'));
+                                    });
+                            }}>
+                            {t('Save')}
+                        </Button>
+                    </DialogActions>
+                </Dialog>
+                <Dialog open={deleteOpen} onClose={() => !deleteSaving && setDeleteOpen(false)}>
+                    <DialogTitle>{t('Delete time entry?')}</DialogTitle>
+                    <DialogContent>
+                        {deleteError ? <Alert severity="error">{deleteError}</Alert> : null}
+                        <Typography>{t('This action cannot be undone.')}</Typography>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={() => setDeleteOpen(false)} disabled={deleteSaving}>
+                            {t('Cancel')}
+                        </Button>
+                        <Button
+                            color="error"
+                            variant="contained"
+                            disabled={deleteSaving}
+                            onClick={() => {
+                                setDeleteSaving(true);
+                                removeTimeSpan({variables: {id}})
+                                    .then(() => {
+                                        setDeleteSaving(false);
+                                        setDeleteOpen(false);
+                                        deleted();
+                                    })
+                                    .catch(() => {
+                                        setDeleteSaving(false);
+                                        setDeleteError(t('Could not delete this entry. Please retry.'));
+                                    });
+                            }}>
+                            {t('Delete')}
+                        </Button>
+                    </DialogActions>
+                </Dialog>
             </Paper>
         );
     }

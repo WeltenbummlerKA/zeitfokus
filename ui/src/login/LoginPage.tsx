@@ -1,52 +1,29 @@
 import * as React from 'react';
-import Typography from '@material-ui/core/Typography';
-import Grid from '@material-ui/core/Grid';
+import {Box, Typography, Link} from '@mui/material';
 import {LoginForm} from './LoginForm';
-import Link from '@material-ui/core/Link';
 import {DefaultPaper} from '../common/DefaultPaper';
-import * as gqlVersion from '../gql/version';
-import {useQuery} from '@apollo/react-hooks';
-import {Version} from '../gql/__generated__/Version';
-import makeStyles from '@material-ui/core/styles/makeStyles';
-
-const useStyles = makeStyles(() => ({
-    footerLink: {
-        margin: '0 2px',
-    },
-}));
-
+import {LanguageSwitcher} from '../i18n/LanguageSwitcher';
+import {t, useI18n} from '../i18n';
 export const LoginPage = () => {
-    const classes = useStyles();
-    const {data: {version = gqlVersion.VersionDefault.version} = gqlVersion.VersionDefault} = useQuery<Version>(
-        gqlVersion.Version
-    );
+    useI18n();
     return (
-        <Grid container={true} direction="row" alignItems="center" justify="center" style={{height: '95%'}}>
-            <Grid item>
-                <DefaultPaper>
-                    <Typography variant="h1" component="h1" gutterBottom={true}>
-                        traggo
-                    </Typography>
-                    <LoginForm />
-                </DefaultPaper>
-            </Grid>
-            <div style={{position: 'absolute', bottom: 10, display: 'flex'}}>
-                <Typography variant="subtitle1" component="span" className={classes.footerLink}>
-                    <Link href="https://github.com/traggo/server">Source Code</Link>
+        <Box className="login-layout">
+            <Box sx={{alignSelf: 'flex-end'}}>
+                <LanguageSwitcher />
+            </Box>
+            <DefaultPaper>
+                <Typography variant="h1" component="h1" gutterBottom>
+                    Zeitfokus
                 </Typography>
-                <Typography variant="subtitle1" component="span" className={classes.footerLink}>
-                    |
+                <Typography color="text.secondary" sx={{mb: 3}}>
+                    {t('Your time, clearly organised.')}
                 </Typography>
-                <Typography variant="subtitle1" component="span" className={classes.footerLink}>
-                    <Link href="https://github.com/traggo/server/issues">Bug Tracker</Link>
-                </Typography>
-                <Typography variant="subtitle1" component="span" className={classes.footerLink}>
-                    |
-                </Typography>
-                <Typography variant="subtitle1" component="span" className={classes.footerLink}>
-                    {version.name}@{version.commit.slice(0, 8)}
-                </Typography>
-            </div>
-        </Grid>
+                <LoginForm />
+            </DefaultPaper>
+            <Box component="footer" sx={{display: 'flex', gap: 3, flexWrap: 'wrap', justifyContent: 'center'}}>
+                <Link href="https://github.com/traggo/server">{t('Source Code')}</Link>
+                <Link href="https://github.com/traggo/server/issues">{t('Bug Tracker')}</Link>
+            </Box>
+        </Box>
     );
 };

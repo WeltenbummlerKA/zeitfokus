@@ -1,26 +1,27 @@
+import {t, useI18n} from '../i18n';
 import * as React from 'react';
-import {useQuery} from '@apollo/react-hooks';
+import {useQuery} from '@apollo/client';
 import * as gqlTimeSpan from '../gql/timeSpan';
 import * as gqlTag from '../gql/tags';
-import {Trackers} from '../gql/__generated__/Trackers';
-import {Tags} from '../gql/__generated__/Tags';
+import {TrackersQuery, TagsQuery} from '../gql/__generated__';
 import {TimeSpan} from './TimeSpan';
 import {toTimeSpanProps} from './timespanutils';
-import {Typography} from '@material-ui/core';
+import {Box, Typography} from '@mui/material';
 
 export const ActiveTrackers = () => {
-    const trackersResult = useQuery<Trackers>(gqlTimeSpan.Trackers, {fetchPolicy: 'cache-and-network'});
-    const tagsResult = useQuery<Tags>(gqlTag.Tags, {fetchPolicy: 'cache-and-network'});
+    useI18n();
+    const trackersResult = useQuery<TrackersQuery>(gqlTimeSpan.Trackers, {fetchPolicy: 'cache-and-network'});
+    const tagsResult = useQuery<TagsQuery>(gqlTag.Tags, {fetchPolicy: 'cache-and-network'});
     const values = React.useMemo(() => {
         if (
             trackersResult.error ||
             trackersResult.loading ||
             !trackersResult.data ||
-            trackersResult.data.timers === null ||
+            trackersResult.data.timers == null ||
             tagsResult.error ||
             tagsResult.loading ||
             !tagsResult.data ||
-            tagsResult.data.tags === null
+            tagsResult.data.tags == null
         ) {
             return [];
         }
@@ -32,13 +33,13 @@ export const ActiveTrackers = () => {
     }
 
     return (
-        <>
-            <Typography align="center" variant="h5" style={{marginTop: 10}}>
-                Active Timers
+        <Box component="section" className="running-section" sx={{mt: 4}}>
+            <Typography component="h3" variant="h4" sx={{mb: 2}}>
+                {t('Active Timers')}
             </Typography>
             {values.map((value) => {
                 return <TimeSpan key={value.id} {...value} />;
             })}
-        </>
+        </Box>
     );
 };

@@ -1,9 +1,10 @@
-import Button from '@material-ui/core/Button';
-import Dialog from '@material-ui/core/Dialog';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
-import DialogTitle from '@material-ui/core/DialogTitle';
+import {t, useI18n} from '../i18n';
+import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
 import React from 'react';
 
 interface Props {
@@ -12,7 +13,8 @@ interface Props {
     fOnSubmit: () => void;
 }
 
-export const ConfirmDialog: React.FC<Props> = ({children, title, fClose, fOnSubmit}) => {
+export const ConfirmDialog: React.FC<React.PropsWithChildren<Props>> = ({children, title, fClose, fOnSubmit}) => {
+    useI18n();
     const submitAndClose = () => {
         fOnSubmit();
         fClose();
@@ -25,10 +27,10 @@ export const ConfirmDialog: React.FC<Props> = ({children, title, fClose, fOnSubm
             </DialogContent>
             <DialogActions>
                 <Button onClick={fClose} className="cancel">
-                    No
+                    {t('No')}
                 </Button>
                 <Button onClick={submitAndClose} autoFocus color="primary" variant="contained" className="confirm">
-                    Yes
+                    {t('Yes')}
                 </Button>
             </DialogActions>
         </Dialog>

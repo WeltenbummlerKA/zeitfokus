@@ -1,0 +1,320 @@
+const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
+const fs = require("fs");
+const { spawn } = require("child_process");
+(async () => {
+  const root = fs.mkdtempSync("/private/tmp/traggo-webqa-");
+  const proc = spawn(
+    process.env.TRAGGO_TEST_BINARY ||
+      (() => {
+        throw Error("Set TRAGGO_TEST_BINARY");
+      })(),
+    [],
+    {
+      cwd: root,
+      env: {
+        ...process.env,
+        TRAGGO_PORT: "18303",
+        TRAGGO_DATABASE_CONNECTION: root + "/traggo.db",
+        TRAGGO_DEFAULT_USER_NAME: "admin",
+        TRAGGO_DEFAULT_USER_PASS: "Traggo-Test-2026!",
+      },
+    },
+  );
+  let log = "";
+  proc.stdout.on("data", (d) => (log += d));
+  proc.stderr.on("data", (d) => (log += d));
+  let browser;
+  try {
+    for (let i = 0; i < 100; i++) {
+      try {
+        let r = await fetch("http://127.0.0.1:18303/graphql", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ query: "{version{name}}" }),
+        });
+        if (r.ok) break;
+      } catch {}
+      await new Promise((r) => setTimeout(r, 100));
+    }
+    browser = await chromium.launch({
+      headless: true,
+      ...(process.env.CHROME_EXECUTABLE
+        ? { executablePath: process.env.CHROME_EXECUTABLE }
+        : {}),
+    });
+    const context = await browser.newContext({
+      viewport: { width: 1440, height: 1000 },
+      locale: "de-DE",
+    });
+    const page = await context.newPage();
+    const errors = [];
+    page.on("pageerror", (e) => errors.push(e.message));
+    await page.goto("http://127.0.0.1:18303");
+    await page.getByRole("button", { name: "Anmelden", exact: true }).waitFor();
+    await page.screenshot({ path: root + "/login-de.png", fullPage: true });
+    await page.getByLabel("Benutzername", { exact: false }).fill("admin");
+    await page
+      .getByLabel("Passwort", { exact: false })
+      .fill("Traggo-Test-2026!");
+    await page.getByRole("button", { name: "Anmelden", exact: true }).click();
+    await page
+      .getByRole("button", { name: "Timer starten", exact: true })
+      .waitFor();
+    await page.screenshot({ path: root + "/list-de.png", fullPage: true });
+    await page
+      .getByRole("button", { name: "Timer starten", exact: true })
+      .click();
+    await page.getByText("Laufende Timer", { exact: true }).waitFor();
+    await page
+      .getByRole("combobox", { name: "Oberflächensprache" })
+      .selectOption("en");
+    await page
+      .getByRole("button", { name: "Start timer", exact: true })
+      .waitFor();
+    await page.waitForTimeout(300);
+    const gql = async (query) =>
+      page.evaluate(async (query) => {
+        const r = await fetch("./graphql", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ query }),
+        });
+        return r.json();
+      }, query);
+    await gql('mutation{createTag(key:"project",color:"#2f6edb"){key}}');
+    const completedStart = new Date(Date.now() - 95 * 60000).toISOString();
+    const completedEnd = new Date(Date.now() - 35 * 60000).toISOString();
+    await gql(
+      'mutation{createTimeSpan(start:"' +
+        completedStart +
+        '",end:"' +
+        completedEnd +
+        '",tags:[{key:"project",value:"Web-UI"}],note:"Design review"){id}}',
+    );
+    let result = await gql("{userSettings{interfaceLanguage} timers{id}}");
+    if (
+      result.data.userSettings.interfaceLanguage !== "English" ||
+      result.data.timers.length !== 1
+    )
+      throw Error(
+        "Language persistence/timer failed " + JSON.stringify(result),
+      );
+    const runningStart = new Date(Date.now() - 23 * 60000).toISOString();
+    await gql(
+      "mutation{updateTimeSpan(id:" +
+        result.data.timers[0].id +
+        ',start:"' +
+        runningStart +
+        '",tags:[{key:"project",value:"Traggo"}],note:""){id}}',
+    );
+    await page.reload();
+    await page
+      .getByRole("button", { name: "Start timer", exact: true })
+      .waitFor();
+    await page.screenshot({
+      path: root + "/workspace-running-dark.png",
+      fullPage: true,
+    });
+    await gql(
+      "mutation{setUserSettings(settings:{theme:MaterialLight,dateLocale:German,firstDayOfTheWeek:Monday,dateTimeInputStyle:Fancy}){theme}}",
+    );
+    await page.reload();
+    await page
+      .getByRole("button", { name: "Start timer", exact: true })
+      .waitFor();
+    await page.screenshot({
+      path: root + "/workspace-running-light.png",
+      fullPage: true,
+    });
+    await page
+      .getByRole("combobox", { name: "Interface language" })
+      .selectOption("de");
+    await page
+      .getByRole("heading", { name: "Zeiterfassung", level: 2, exact: true })
+      .waitFor();
+    await page.screenshot({
+      path: root + "/workspace-running-de.png",
+      fullPage: true,
+    });
+    await page.evaluate(
+      () => (document.documentElement.style.fontSize = "200%"),
+    );
+    await page.waitForTimeout(100);
+    if (
+      await page.evaluate(
+        () => document.documentElement.scrollWidth > innerWidth + 1,
+      )
+    ) {
+      throw Error("Recording 200% text overflow");
+    }
+    const clippedTimes = await page
+      .locator(".time-picker input")
+      .evaluateAll((inputs) =>
+        inputs
+          .filter((input) => {
+            const canvas = document.createElement("canvas");
+            const context = canvas.getContext("2d");
+            context.font = getComputedStyle(input).font;
+            return (
+              context.measureText(input.value).width + 4 > input.clientWidth
+            );
+          })
+          .map((input) => input.value),
+      );
+    if (clippedTimes.length) {
+      throw Error("Clipped time values: " + clippedTimes.join(","));
+    }
+    await page.screenshot({
+      path: root + "/recording-text-200.png",
+      fullPage: true,
+    });
+    await page.evaluate(() => (document.documentElement.style.fontSize = ""));
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page
+      .getByRole("button", { name: "Manueller Eintrag", exact: true })
+      .click();
+    await page
+      .getByRole("button", { name: "Zeiteintrag hinzufügen", exact: true })
+      .waitFor();
+    if (
+      await page.evaluate(
+        () => document.documentElement.scrollWidth > innerWidth + 1,
+      )
+    ) {
+      throw Error("Recording workspace overflow");
+    }
+    await page.screenshot({
+      path: root + "/workspace-manual-mobile-de.png",
+      fullPage: true,
+    });
+    await page.getByRole("button", { name: "Timer", exact: true }).click();
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await page
+      .getByRole("combobox", { name: "Oberflächensprache" })
+      .selectOption("en");
+    await page
+      .getByRole("heading", { name: "Time tracking", level: 2, exact: true })
+      .waitFor();
+
+    await gql(
+      "mutation{stopTimeSpan(id:" +
+        result.data.timers[0].id +
+        ',end:"' +
+        new Date().toISOString() +
+        '"){id}}',
+    );
+    await page.reload();
+    await page
+      .getByRole("button", { name: "Start timer", exact: true })
+      .waitFor();
+    await page.screenshot({ path: root + "/list-en.png", fullPage: true });
+    if (
+      await page.evaluate(() => {
+        const el = document.querySelector("#main-content");
+        return (
+          el.getBoundingClientRect().top +
+            parseFloat(getComputedStyle(el).paddingTop) <
+          document.querySelector("header").getBoundingClientRect().bottom + 16
+        );
+      })
+    )
+      throw Error("Header overlaps content");
+    await page.getByRole("link", { name: "Settings", exact: true }).click();
+    await page
+      .getByRole("heading", { name: "Interface language", exact: true })
+      .waitFor();
+    await page.screenshot({ path: root + "/settings-en.png", fullPage: true });
+    await page.locator("#setting-1").selectOption("MaterialLight");
+    await page.waitForFunction(async () => {
+      const r = await fetch("./graphql", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query: "{userSettings{theme}}" }),
+      });
+      return (await r.json()).data.userSettings.theme === "MaterialLight";
+    });
+    await page
+      .getByRole("combobox", { name: "Interface language" })
+      .first()
+      .selectOption("de");
+    await page
+      .getByRole("heading", { name: "Oberflächensprache", exact: true })
+      .waitFor();
+    await page.screenshot({
+      path: root + "/settings-de-light.png",
+      fullPage: true,
+    });
+    await page
+      .getByRole("combobox", { name: "Oberflächensprache" })
+      .first()
+      .selectOption("en");
+    await page
+      .getByRole("heading", { name: "Interface language", exact: true })
+      .waitFor();
+    await page.evaluate(
+      () => (document.documentElement.style.fontSize = "200%"),
+    );
+    await page.waitForTimeout(100);
+    if (
+      await page.evaluate(
+        () => document.documentElement.scrollWidth > innerWidth + 1,
+      )
+    )
+      throw Error("200% text overflow");
+    await page.screenshot({
+      path: root + "/settings-text-200.png",
+      fullPage: true,
+    });
+    await page.evaluate(() => (document.documentElement.style.fontSize = ""));
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.screenshot({
+      path: root + "/settings-mobile.png",
+      fullPage: true,
+    });
+    if (
+      await page.evaluate(
+        () => document.documentElement.scrollWidth > innerWidth + 1,
+      )
+    )
+      throw Error("Mobile horizontal overflow");
+    await page
+      .getByRole("button", { name: "Open drawer", exact: true })
+      .click();
+    await page.getByRole("link", { name: "Calendar", exact: true }).click();
+    await page.waitForTimeout(300);
+    await page.screenshot({
+      path: root + "/calendar-mobile.png",
+      fullPage: true,
+    });
+    if (
+      await page.evaluate(
+        () => document.documentElement.scrollWidth > innerWidth + 1,
+      )
+    )
+      throw Error("Calendar mobile overflow");
+    if (errors.length) throw Error("Browser errors: " + errors.join(";"));
+    console.log(
+      JSON.stringify({
+        passed: true,
+        root,
+        checks: [
+          "German login",
+          "timer creation",
+          "language switch without data loss",
+          "server preference persisted",
+          "reload retains English",
+          "settings desktop/mobile",
+          "mobile navigation/calendar",
+          "no uncaught browser errors",
+        ],
+      }),
+    );
+  } catch (e) {
+    console.error(e);
+    console.error(log.slice(-1500));
+    process.exitCode = 1;
+  } finally {
+    if (browser) await browser.close();
+    proc.kill("SIGTERM");
+  }
+})();

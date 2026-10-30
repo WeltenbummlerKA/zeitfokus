@@ -1,15 +1,15 @@
+import {t, useI18n} from '../i18n';
 import * as React from 'react';
-import TextField from '@material-ui/core/TextField';
-import Button from '@material-ui/core/Button';
+import TextField from '@mui/material/TextField';
+import Button from '@mui/material/Button';
 import {useSnackbar} from 'notistack';
 import {handleError} from '../utils/errors';
 import * as gqlUser from '../gql/user';
-import {Login, LoginVariables} from '../gql/__generated__/Login';
-import {useMutation} from '@apollo/react-hooks';
-import {Checkbox} from '@material-ui/core';
-import {DeviceType} from '../gql/__generated__/globalTypes';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import makeStyles from '@material-ui/core/styles/makeStyles';
+import {LoginMutation, LoginMutationVariables, DeviceType} from '../gql/__generated__';
+import {useMutation} from '@apollo/client';
+import {Checkbox} from '@mui/material';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import makeStyles from '@mui/styles/makeStyles';
 import {Settings as SettingsGQL} from '../gql/settings';
 
 const useStyles = makeStyles((theme) => ({
@@ -19,8 +19,9 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export const LoginForm = () => {
+    useI18n();
     const classes = useStyles();
-    const [login] = useMutation<Login, LoginVariables>(gqlUser.Login, {
+    const [login, {loading}] = useMutation<LoginMutation, LoginMutationVariables>(gqlUser.Login, {
         update: (cache, {data}) => {
             cache.writeQuery({query: gqlUser.CurrentUser, data: {user: data && data.login && data.login.user}});
         },
@@ -33,6 +34,9 @@ export const LoginForm = () => {
     const [remember, setRemember] = React.useState(false);
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
+        if (loading) {
+            return;
+        }
         login({
             variables: {
                 name: username,
@@ -40,16 +44,17 @@ export const LoginForm = () => {
                 deviceType: remember ? DeviceType.LongExpiry : DeviceType.ShortExpiry,
             },
         })
-            .then(() => enqueueSnackbar('Login successful', {variant: 'success'}))
-            .catch(handleError('Login failed', enqueueSnackbar));
+            .then(() => enqueueSnackbar(t('Login successful'), {variant: 'success'}))
+            .catch(handleError(t('Login failed'), enqueueSnackbar));
     };
     return (
-        <form noValidate autoComplete="off" onSubmit={submit}>
+        <form onSubmit={submit}>
             <TextField
                 required
                 margin="dense"
                 variant="outlined"
-                label="username"
+                label={t('username')}
+                autoComplete="username"
                 autoFocus
                 fullWidth
                 onChange={(e) => setUsername(e.target.value)}
@@ -57,26 +62,27 @@ export const LoginForm = () => {
             <TextField
                 required
                 type="password"
+                autoComplete="current-password"
                 margin="dense"
                 variant="outlined"
-                label="password"
+                label={t('password')}
                 fullWidth
                 onChange={(e) => setPassword(e.target.value)}
             />
             <FormControlLabel
-                style={{float: 'right'}}
+                sx={{my: 1}}
                 control={<Checkbox checked={remember} onChange={(e) => setRemember(e.target.checked)} />}
-                label="Remember Me"
+                label={t('Remember Me')}
             />
             <Button
                 type="submit"
                 className={classes.button}
                 fullWidth
                 size="large"
-                onClick={submit}
+                disabled={loading || !username || !password}
                 variant="contained"
                 color="primary">
-                Login
+                {t('Login')}
             </Button>
         </form>
     );

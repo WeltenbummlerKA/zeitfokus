@@ -1,5 +1,7 @@
-import {Tags, Tags_tags} from '../gql/__generated__/Tags';
-import {QueryResult} from 'react-apollo';
+import {t} from '../i18n';
+import {TagsQuery} from '../gql/__generated__';
+import {Tag} from '../gql/types';
+import {QueryResult} from '@apollo/client';
 
 export interface TagInputError {
     error: string;
@@ -15,7 +17,7 @@ export interface SpecialTag {
 }
 
 export interface TagSelectorEntry {
-    tag: Omit<Tags_tags, 'usages'> & SpecialTag;
+    tag: Omit<Tag, 'usages'> & SpecialTag;
     value: string;
 }
 
@@ -29,15 +31,13 @@ export const toInputTags = (entries: TagSelectorEntry[]): InputTag[] => {
 };
 
 export const toTagSelectorEntry = (tags: Array<TagSelectorEntry['tag']>, entries: InputTag[]): TagSelectorEntry[] => {
-    return entries.map(
-        (timerTag): TagSelectorEntry => {
-            const definition = tags.find((tag) => tag.key === timerTag.key) || specialTag(timerTag.key, 'new');
-            return {
-                tag: definition,
-                value: timerTag.value,
-            };
-        }
-    );
+    return entries.map((timerTag): TagSelectorEntry => {
+        const definition = tags.find((tag) => tag.key === timerTag.key) || specialTag(timerTag.key, 'new');
+        return {
+            tag: definition,
+            value: timerTag.value,
+        };
+    });
 };
 
 export const specialTag = (name: string, state: SpecialTagState): TagSelectorEntry['tag'] & {usages: 0} => {
@@ -53,26 +53,26 @@ export const specialTag = (name: string, state: SpecialTagState): TagSelectorEnt
     };
 };
 
-const tryAdd = (tagsResult: QueryResult<Tags, {}>, entry: string, onlyKeys: boolean): TagSelectorEntry | TagInputError => {
+const tryAdd = (tagsResult: QueryResult<TagsQuery, {}>, entry: string, onlyKeys: boolean): TagSelectorEntry | TagInputError => {
     const [keySomeCase, value, ...other] = entry.split(':');
     const key = keySomeCase.toLowerCase();
 
     if (other.length || !tagsResult.data || !tagsResult.data.tags) {
-        return {error: `${entry} has too many colons`, value: entry};
+        return {error: t('{name} has too many colons', {name: entry}), value: entry};
     }
 
     const foundTag = tagsResult.data.tags.find((tag) => tag.key === key);
 
     if (foundTag === undefined) {
-        return {error: `'${key}' does not exist`, value: entry};
+        return {error: t('Tag {name} does not exist', {name: key}), value: entry};
     }
 
     if (onlyKeys && value) {
-        return {error: `'${key}' has a value, but this field doesn't allow them`, value: entry};
+        return {error: t('Tag {name} cannot have a value here', {name: key}), value: entry};
     }
 
     if (!onlyKeys && !value) {
-        return {error: `'${key}' requires a value`, value: entry};
+        return {error: t('Tag {name} requires a value', {name: key}), value: entry};
     }
 
     return {tag: foundTag, value: value || ''};
@@ -90,7 +90,10 @@ const groupAndCheckExistence = (onlyKeys: boolean, allowDuplicateKeys: boolean) 
                 a.entries = [...a.entries, entry];
                 a.usedTags = [...a.usedTags, entry.tag.key];
             } else {
-                a.errors = [...a.errors, {value: itemLabel(entry, onlyKeys), error: `'${entry.tag.key}' is already defined`}];
+                a.errors = [
+                    ...a.errors,
+                    {value: itemLabel(entry, onlyKeys), error: t('Tag {name} is already defined', {name: entry.tag.key})},
+                ];
             }
         } else {
             a.errors = [...a.errors, entry];
@@ -101,7 +104,7 @@ const groupAndCheckExistence = (onlyKeys: boolean, allowDuplicateKeys: boolean) 
 
 export const addValues = (
     newValue: string,
-    tagsResult: QueryResult<Tags, {}>,
+    tagsResult: QueryResult<TagsQuery, {}>,
     selectedEntries: TagSelectorEntry[],
     onlyKeys: boolean,
     allowDuplicateKeys: boolean
@@ -119,16 +122,16 @@ export const addValues = (
 
 export const itemLabel = (tag: TagSelectorEntry, onlyShowKey = false) => {
     if (tag.tag.create) {
-        return `Create tag '${tag.tag.key}'`;
+        return t('Create tag {name}', {name: tag.tag.key});
     }
     if (tag.tag.alreadyUsed) {
-        return `Tag '${tag.tag.key}' is already defined`;
+        return t('Tag {name} is already defined', {name: tag.tag.key});
     }
     if (tag.tag.noValues) {
-        return `Unkown value '${tag.value}' of tag '${tag.tag.key}'`;
+        return t('Unknown value {value} of tag {name}', {value: tag.value, name: tag.tag.key});
     }
     if (tag.tag.allValuesUsed) {
-        return `All values of tag '${tag.tag.key}' are used`;
+        return t('All values of tag {name} are used', {name: tag.tag.key});
     }
     if (onlyShowKey) {
         return tag.tag.key;

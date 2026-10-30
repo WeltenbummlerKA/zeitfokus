@@ -8,6 +8,7 @@ import (
 	"github.com/jinzhu/gorm"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+	"github.com/traggo/server/ai"
 	"github.com/traggo/server/auth"
 	"github.com/traggo/server/config"
 	"github.com/traggo/server/config/mode"
@@ -38,7 +39,7 @@ func main() {
 
 	conf, errs := config.Get()
 	logger.Init(conf.LogLevel.AsZeroLogLevel())
-	log.Info().Str("commit", BuildCommit).Str("buildDate", BuildDate).Str("buildMode", BuildMode).Str("version", BuildVersion).Msg("Traggo")
+	log.Info().Str("commit", BuildCommit).Str("buildDate", BuildDate).Str("buildMode", BuildMode).Str("version", BuildVersion).Msg("Zeitfokus")
 
 	exit := false
 	for _, err := range errs {
@@ -48,7 +49,7 @@ func main() {
 	if exit {
 		os.Exit(1)
 	}
-	log.Debug().Interface("config", conf).Msg("Using")
+	log.Debug().Int("port", conf.Port).Str("databaseDialect", conf.DatabaseDialect).Msg("Configuration loaded")
 
 	db := initDatabase(conf)
 
@@ -66,11 +67,10 @@ func main() {
 func initRouter(db *gorm.DB, conf config.Config, version model.Version) *mux.Router {
 	gqlHandler := graphql.Handler(
 		"/graphql",
-		graphql.NewResolver(db, conf.PassStrength, version),
-		graphql.NewDirective())
+		graphql.NewResolver(db, conf.PassStrength, version, ai.ProviderConfig{Provider: conf.AIProvider, BaseURL: conf.AIBaseURL, Model: conf.AIModel, Timeout: time.Duration(conf.AITimeoutSeconds) * time.Second}),
+		graphql.NewDirective(), auth.Middleware(db, conf.CookieSecure))
 
 	router := mux.NewRouter()
-	router.Use(auth.Middleware(db))
 	router.HandleFunc("/graphql", gqlHandler)
 	ui.Register(router)
 	return router
@@ -83,6 +83,9 @@ func initDatabase(conf config.Config) *gorm.DB {
 	}
 	c := new(int)
 	if db.Model(new(model.User)).Count(c); *c == 0 {
+		if len(conf.DefaultUserPass) < 12 || conf.DefaultUserPass == "change-me" || conf.DefaultUserPass == "admin" {
+			log.Fatal().Msg("Set ZEITFOKUS_DEFAULT_USER_PASS (or legacy TRAGGO_DEFAULT_USER_PASS) to a unique password of at least 12 characters before initializing an empty database")
+		}
 		log.Info().Msg("Creating default user.")
 		db.Create(&model.User{
 			Name:  conf.DefaultUserName,

@@ -4,11 +4,13 @@ import "time"
 
 // UserSetting a setting for a user.
 type UserSetting struct {
-	UserID             int `gorm:"primary_key;unique_index"`
-	Theme              string
-	DateLocale         string
-	FirstDayOfTheWeek  string
-	DateTimeInputStyle string
+	UserID                int `gorm:"primary_key;unique_index"`
+	Theme                 string
+	DateLocale            string
+	FirstDayOfTheWeek     string
+	DateTimeInputStyle    string
+	InterfaceLanguage     string
+	WorkTargetProfileJSON *string `gorm:"type:text"`
 }
 
 // Settings constants

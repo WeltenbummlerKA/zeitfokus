@@ -1,12 +1,16 @@
-import {gql} from 'apollo-boost';
-import {useQuery} from '@apollo/react-hooks';
-import {Settings as SettingsQueryResponse} from './__generated__/Settings';
-import {DateLocale, Theme, WeekDay, DateTimeInputStyle} from './__generated__/globalTypes';
+import {gql, useQuery} from '@apollo/client';
+import {SettingsQuery as SettingsQueryResponse, DateLocale, Theme, WeekDay, DateTimeInputStyle} from './__generated__';
 import {stripTypename} from '../utils/strip';
 
 export const Settings = gql`
     query Settings {
         userSettings {
+            interfaceLanguage
+            workTargetProfile {
+                enabled
+                weeklyHours
+                workDays
+            }
             theme
             dateLocale
             firstDayOfTheWeek
@@ -29,6 +33,8 @@ const defaultSettings = {
     dateLocale: DateLocale.American,
     firstDayOfTheWeek: WeekDay.Monday,
     dateTimeInputStyle: DateTimeInputStyle.Fancy,
+    interfaceLanguage: null,
+    workTargetProfile: null,
 } as const;
 
 export const useSettings = (): {done: boolean} & Omit<SettingsQueryResponse['userSettings'], '__typename'> => {
@@ -39,3 +45,27 @@ export const useSettings = (): {done: boolean} & Omit<SettingsQueryResponse['use
     }
     return {done: true, ...stripTypename(data.data.userSettings)};
 };
+
+export const SetInterfaceLanguage = gql`
+    mutation SetInterfaceLanguage($language: InterfaceLanguage!) {
+        setInterfaceLanguage(language: $language) {
+            interfaceLanguage
+            theme
+            dateLocale
+            firstDayOfTheWeek
+            dateTimeInputStyle
+        }
+    }
+`;
+
+export const SetWorkTargetProfile = gql`
+    mutation SetWorkTargetProfile($profile: InputWorkTargetProfile!) {
+        setWorkTargetProfile(profile: $profile) {
+            workTargetProfile {
+                enabled
+                weeklyHours
+                workDays
+            }
+        }
+    }
+`;

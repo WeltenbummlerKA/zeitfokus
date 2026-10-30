@@ -53,7 +53,7 @@ func (r *ResolverForEntry) AddDashboardEntry(ctx context.Context, dashboardID in
 	}
 
 	if stats.RangeID != nil {
-		if _, err := util.FindDashboardRange(r.DB, *stats.RangeID); err != nil {
+		if _, err := util.FindOwnedDashboardRange(r.DB, userID, dashboardID, *stats.RangeID); err != nil {
 			return nil, err
 		}
 		entry.RangeID = *stats.RangeID

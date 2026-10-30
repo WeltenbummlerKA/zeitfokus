@@ -1,43 +1,49 @@
+import useMediaQuery from '@mui/material/useMediaQuery';
+import {t, useI18n} from '../../i18n';
+import deLocale from '@fullcalendar/core/locales/de';
+import {escapeHtml} from '../../utils/html';
 import * as React from 'react';
-import {Paper, useTheme} from '@material-ui/core';
+import {Paper, useTheme} from '@mui/material';
 import moment from 'moment';
-import {useApolloClient, useMutation, useQuery} from '@apollo/react-hooks';
-import {TimeSpans_timeSpans_timeSpans} from '../../gql/__generated__/TimeSpans';
+import {useApolloClient, useMutation, useQuery} from '@apollo/client';
+import {TimeSpanItem} from '../../gql/types';
 import * as gqlTimeSpan from '../../gql/timeSpan';
-import {Trackers} from '../../gql/__generated__/Trackers';
-import {Tags} from '../../gql/__generated__/Tags';
+import {
+    TrackersQuery,
+    TagsQuery,
+    UpdateTimeSpanMutation,
+    UpdateTimeSpanMutationVariables,
+    AddTimeSpanMutation,
+    AddTimeSpanMutationVariables,
+    StopTimerMutation,
+    StopTimerMutationVariables,
+    StartTimerMutation,
+    StartTimerMutationVariables,
+    TimeSpansInRangeQuery,
+    TimeSpansInRangeQueryVariables,
+} from '../../gql/__generated__';
 import * as gqlTag from '../../gql/tags';
 import FullCalendar from '@fullcalendar/react';
 import {calculateColor, ColorMode} from '../colorutils';
-import '@fullcalendar/core/main.css';
-import '@fullcalendar/daygrid/main.css';
-import '@fullcalendar/timegrid/main.css';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import momentPlugin from '@fullcalendar/moment';
 import interactionPlugin from '@fullcalendar/interaction';
-import {OptionsInput} from '@fullcalendar/core';
-import {UpdateTimeSpan, UpdateTimeSpanVariables} from '../../gql/__generated__/UpdateTimeSpan';
-import Popper from '@material-ui/core/Popper';
-import ClickAwayListener from '@material-ui/core/ClickAwayListener';
+import {CalendarOptions, EventApi, EventInput} from '@fullcalendar/core';
+import Popper from '@mui/material/Popper';
+import ClickAwayListener from '@mui/material/ClickAwayListener';
 import {TimeSpan} from '../TimeSpan';
 import {toTagSelectorEntry} from '../../tag/tagSelectorEntry';
-import {AddTimeSpan, AddTimeSpanVariables} from '../../gql/__generated__/AddTimeSpan';
 import {FullCalendarStyling} from './FullCalendarStyling';
-import useInterval from '@rooks/use-interval';
-import {EventApi} from '@fullcalendar/core/api/EventApi';
-import {StopTimer, StopTimerVariables} from '../../gql/__generated__/StopTimer';
+import {useInterval} from '../../utils/hooks';
 import {
     addTimeSpanInRangeToCache,
     addTimeSpanToCache,
     removeFromTimeSpanInRangeCache,
     removeFromTrackersCache,
 } from '../../gql/utils';
-import {StartTimer, StartTimerVariables} from '../../gql/__generated__/StartTimer';
 import {timeRunningCalendar} from '../timeutils';
 import {stripTypename} from '../../utils/strip';
-import {TimeSpansInRange, TimeSpansInRangeVariables} from '../../gql/__generated__/TimeSpansInRange';
-import {ExtendedEventSourceInput} from '@fullcalendar/core/structs/event-source';
 
 const toMoment = (date: Date): moment.Moment => {
     return moment(date).tz('utc');
@@ -45,7 +51,7 @@ const toMoment = (date: Date): moment.Moment => {
 
 declare global {
     interface Window {
-        // tslint:disable-next-line:no-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         __TRAGGO_CALENDAR: any;
     }
 }
@@ -53,33 +59,33 @@ declare global {
 const StartTimerId = '-1';
 
 export const CalendarPage: React.FC = () => {
+    const {language} = useI18n();
+    const compact = useMediaQuery('(max-width:600px)');
     const apollo = useApolloClient();
     const theme = useTheme();
-    const timeSpansResult = useQuery<TimeSpansInRange, TimeSpansInRangeVariables>(gqlTimeSpan.TimeSpansInRange, {
+    const timeSpansResult = useQuery<TimeSpansInRangeQuery, TimeSpansInRangeQueryVariables>(gqlTimeSpan.TimeSpansInRange, {
         variables: {
-            start: moment()
-                .startOf('week')
-                .format(),
-            end: moment()
-                .endOf('week')
-                .format(),
+            start: moment().startOf('week').format(),
+            end: moment().endOf('week').format(),
         },
         fetchPolicy: 'cache-and-network',
     });
-    const trackersResult = useQuery<Trackers>(gqlTimeSpan.Trackers, {fetchPolicy: 'cache-and-network'});
-    const tagsResult = useQuery<Tags>(gqlTag.Tags);
-    const [startTimer] = useMutation<StartTimer, StartTimerVariables>(gqlTimeSpan.StartTimer, {
+    const trackersResult = useQuery<TrackersQuery>(gqlTimeSpan.Trackers, {fetchPolicy: 'cache-and-network'});
+    const tagsResult = useQuery<TagsQuery>(gqlTag.Tags);
+    const [startTimer] = useMutation<StartTimerMutation, StartTimerMutationVariables>(gqlTimeSpan.StartTimer, {
         refetchQueries: [{query: gqlTimeSpan.Trackers}],
     });
-    const [updateTimeSpanMutation] = useMutation<UpdateTimeSpan, UpdateTimeSpanVariables>(gqlTimeSpan.UpdateTimeSpan);
+    const [updateTimeSpanMutation] = useMutation<UpdateTimeSpanMutation, UpdateTimeSpanMutationVariables>(
+        gqlTimeSpan.UpdateTimeSpan
+    );
     const [currentDate, setCurrentDate] = React.useState(moment());
-    const [stopTimer] = useMutation<StopTimer, StopTimerVariables>(gqlTimeSpan.StopTimer, {
+    const [stopTimer] = useMutation<StopTimerMutation, StopTimerMutationVariables>(gqlTimeSpan.StopTimer, {
         update: (cache, {data}) => {
             if (!data || !data.stopTimeSpan) {
                 return;
             }
             removeFromTrackersCache(cache, data);
-            addTimeSpanInRangeToCache(cache, data.stopTimeSpan, timeSpansResult.variables);
+            addTimeSpanInRangeToCache(cache, data.stopTimeSpan, timeSpansResult.variables!);
         },
     });
     useInterval(
@@ -94,34 +100,34 @@ export const CalendarPage: React.FC = () => {
         return () => (window.__TRAGGO_CALENDAR = undefined);
     });
     const [ignore, setIgnore] = React.useState<boolean>(false);
-    const [selected, setSelected] = React.useState<{selected: HTMLElement | null; data: TimeSpans_timeSpans_timeSpans | null}>({
+    const [selected, setSelected] = React.useState<{selected: HTMLElement | null; data: TimeSpanItem | null}>({
         selected: null,
         data: null,
     });
-    const [addTimeSpan] = useMutation<AddTimeSpan, AddTimeSpanVariables>(gqlTimeSpan.AddTimeSpan, {
+    const [addTimeSpan] = useMutation<AddTimeSpanMutation, AddTimeSpanMutationVariables>(gqlTimeSpan.AddTimeSpan, {
         update: (cache, {data}) => {
             if (!data || !data.createTimeSpan) {
                 return;
             }
-            addTimeSpanInRangeToCache(cache, data.createTimeSpan, timeSpansResult.variables);
+            addTimeSpanInRangeToCache(cache, data.createTimeSpan, timeSpansResult.variables!);
             addTimeSpanToCache(cache, data.createTimeSpan);
         },
     });
 
-    const values: ExtendedEventSourceInput[] = (() => {
+    const values: EventInput[] = (() => {
         if (
             timeSpansResult.error ||
             timeSpansResult.loading ||
             !timeSpansResult.data ||
-            timeSpansResult.data.timeSpans === null ||
+            timeSpansResult.data.timeSpans == null ||
             trackersResult.error ||
             trackersResult.loading ||
             !trackersResult.data ||
-            trackersResult.data.timers === null ||
+            trackersResult.data.timers == null ||
             tagsResult.error ||
             tagsResult.loading ||
             !tagsResult.data ||
-            tagsResult.data.tags === null
+            tagsResult.data.tags == null
         ) {
             return [];
         }
@@ -130,11 +136,11 @@ export const CalendarPage: React.FC = () => {
             .sort((a, b) => a.start.toString().localeCompare(b.start.toString()))
             .map((ts) => {
                 const colorKey = ts
-                    .tags!.map((t) => t.key + ':' + t.value)
+                    .tags!.map((tag) => tag.key + ':' + tag.value)
                     .sort((a, b) => a.localeCompare(b))
                     .join(' ');
-                const color = calculateColor(colorKey, ColorMode.Bold, theme.palette.type);
-                const borderColor = calculateColor(colorKey, ColorMode.None, theme.palette.type);
+                const color = calculateColor(colorKey, ColorMode.Bold, theme.palette.mode);
+                const borderColor = calculateColor(colorKey, ColorMode.None, theme.palette.mode);
                 return {
                     start: moment(ts.start).toDate(),
                     end: moment(ts.end || currentDate).toDate(),
@@ -142,9 +148,9 @@ export const CalendarPage: React.FC = () => {
                     editable: !!ts.end,
                     backgroundColor: color,
                     startEditable: true,
-                    id: ts.id,
+                    id: '' + ts.id,
                     tags: ts.tags!.map(({value, key}) => ({key, value})),
-                    title: ts.tags!.map((t) => t.key + ':' + t.value).join(' '),
+                    title: ts.tags!.map((tag) => tag.key + ':' + tag.value).join(' '),
                     extendedProps: {ts},
                     textColor: theme.palette.getContrastText(color),
                     borderColor,
@@ -152,7 +158,7 @@ export const CalendarPage: React.FC = () => {
             });
     })();
 
-    const onDrop: OptionsInput['eventDrop'] = (data) => {
+    const onDropOrResize: CalendarOptions['eventDrop'] & CalendarOptions['eventResize'] = (data) => {
         updateTimeSpanMutation({
             variables: {
                 oldStart: moment(data.oldEvent.start!).format(),
@@ -164,19 +170,7 @@ export const CalendarPage: React.FC = () => {
             },
         });
     };
-    const onResize: OptionsInput['eventResize'] = (data) => {
-        updateTimeSpanMutation({
-            variables: {
-                oldStart: moment(data.prevEvent.start!).format(),
-                start: moment(data.event.start!).format(),
-                end: moment(data.event.end!).format(),
-                id: parseInt(data.event.id, 10),
-                tags: stripTypename(data.event.extendedProps.ts.tags),
-                note: data.event.extendedProps.ts.note,
-            },
-        });
-    };
-    const onSelect: OptionsInput['select'] = (data) => {
+    const onSelect: CalendarOptions['select'] = (data) => {
         addTimeSpan({
             variables: {
                 start: moment(data.start).format(),
@@ -186,7 +180,7 @@ export const CalendarPage: React.FC = () => {
             },
         });
     };
-    const onClick: OptionsInput['eventClick'] = (data) => {
+    const onClick: CalendarOptions['eventClick'] = (data) => {
         data.jsEvent.preventDefault();
         if (data.event.id === StartTimerId) {
             startTimer({variables: {start: moment().format(), tags: [], note: ''}}).then(() => {
@@ -195,15 +189,12 @@ export const CalendarPage: React.FC = () => {
             return;
         }
 
-        // tslint:disable-next-line:no-any
-        setSelected({data: data.event.extendedProps.ts, selected: data.jsEvent.target as any});
+        setSelected({data: data.event.extendedProps.ts, selected: data.jsEvent.target as HTMLElement});
     };
     if (trackersResult.data && !(trackersResult.data.timers || []).length) {
-        const startTimerEvent: ExtendedEventSourceInput = {
+        const startTimerEvent: EventInput = {
             start: currentDate.toDate(),
-            end: moment(currentDate)
-                .add(15, 'minute')
-                .toDate(),
+            end: moment(currentDate).add(15, 'minute').toDate(),
             className: '__start',
             editable: false,
             id: StartTimerId,
@@ -212,19 +203,27 @@ export const CalendarPage: React.FC = () => {
     }
 
     return (
-        <Paper style={{padding: 10, bottom: 10, top: 80, position: 'absolute'}} color="red">
+        <Paper
+            sx={{
+                p: {xs: 1, sm: 2},
+                width: '100%',
+                minWidth: 0,
+                overflowX: 'auto',
+                height: {xs: 'calc(100dvh - 184px)', sm: 'calc(100dvh - 136px)'},
+                minHeight: 440,
+            }}>
             <FullCalendarStyling>
                 <FullCalendar
-                    defaultView="timeGridWeek"
+                    initialView={compact ? 'timeGridDay' : 'timeGridWeek'}
                     rerenderDelay={30}
-                    datesRender={(x) => {
+                    datesSet={(x) => {
                         const range = {
                             start: moment(x.view.currentStart).format(),
                             end: moment(x.view.currentEnd).format(),
                         };
                         if (
-                            !moment(timeSpansResult.variables.start).isSame(range.start) ||
-                            !moment(timeSpansResult.variables.end).isSame(range.end)
+                            !moment(timeSpansResult.variables!.start).isSame(range.start) ||
+                            !moment(timeSpansResult.variables!.end).isSame(range.end)
                         ) {
                             timeSpansResult.refetch(range);
                         }
@@ -233,7 +232,7 @@ export const CalendarPage: React.FC = () => {
                         timeGrid5Day: {
                             type: 'timeGrid',
                             duration: {days: 7},
-                            buttonText: '5 day',
+                            buttonText: language === 'de' ? '5 Tage' : '5 days',
                             hiddenDays: [0, 6],
                         },
                     }}
@@ -245,18 +244,17 @@ export const CalendarPage: React.FC = () => {
                     handleWindowResize={true}
                     height={'parent'}
                     selectMinDistance={20}
+                    locale={language === 'de' ? deLocale : 'en'}
                     now={currentDate.toDate()}
                     defaultTimedEventDuration={{minute: 15}}
-                    eventRender={(e) => {
-                        const content = e.el.getElementsByClassName('fc-content').item(0);
-                        if (content) {
-                            content.innerHTML = getElementContent(e.event, () => {
-                                stopTimer({
-                                    variables: {id: e.event.extendedProps.ts.id, end: moment().format()},
-                                });
+                    eventContent={(e) => ({
+                        html: getElementContent(e.event, () => {
+                            stopTimer({
+                                variables: {id: e.event.extendedProps.ts.id, end: moment().format()},
                             });
-                        }
-
+                        }),
+                    })}
+                    eventDidMount={(e) => {
                         e.el.setAttribute('data-has-end', '' + (!e.event.extendedProps.ts || !!e.event.extendedProps.ts.end));
                     }}
                     slotLabelInterval={{minute: 60}}
@@ -264,14 +262,14 @@ export const CalendarPage: React.FC = () => {
                     scrollTime={{hour: 6, minute: 30}}
                     select={onSelect}
                     firstDay={moment.localeData().firstDayOfWeek()}
-                    eventResize={onResize}
+                    eventResize={onDropOrResize}
                     eventClick={onClick}
-                    eventDrop={onDrop}
+                    eventDrop={onDropOrResize}
                     slotLabelFormat={(s) => toMoment(s.start.marker).format('LT')}
-                    columnHeaderFormat={(s) => toMoment(s.start.marker).format('DD ddd')}
+                    dayHeaderFormat={(s) => toMoment(s.start.marker).format('DD ddd')}
                     nowIndicator={true}
                     plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin, momentPlugin]}
-                    header={{
+                    headerToolbar={{
                         center: 'title',
                         left: 'prev,next today',
                         right: 'timeGridWeek,timeGrid5Day,timeGridDay',
@@ -299,7 +297,7 @@ export const CalendarPage: React.FC = () => {
                                     });
                                 }}
                                 deleted={() => {
-                                    removeFromTimeSpanInRangeCache(apollo.cache, selected.data!.id, timeSpansResult.variables);
+                                    removeFromTimeSpanInRangeCache(apollo.cache, selected.data!.id, timeSpansResult.variables!);
                                     setSelected({selected: null, data: null});
                                 }}
                                 continued={() => setCurrentDate(moment())}
@@ -334,7 +332,7 @@ const getElementContent = (event: EventApi, stop: () => void): string => {
     }
 
     if (event.id === StartTimerId) {
-        return 'START';
+        return escapeHtml(t('Start timer'));
     }
 
     const start = moment(event.start);
@@ -356,24 +354,24 @@ const getElementContent = (event: EventApi, stop: () => void): string => {
             stop();
             return false;
         };
-        stopButton = `<div class="stop"><a onClick="return window.__TRAGGO_CALENDAR[${id}](event)">STOP ${timeRunningCalendar(
+        stopButton = `<div class="stop"><a onClick="return window.__TRAGGO_CALENDAR[${id}](event)">${escapeHtml(t('Stop'))} ${timeRunningCalendar(
             start,
             end
         )}</a></div>`;
     }
     const clamp = (amount: number) =>
-        `<span class="ellipsis" title="${event.title}" style="-webkit-line-clamp: ${amount}">${event.title}</span>`;
+        `<span class="ellipsis" title="${escapeHtml(event.title)}" style="-webkit-line-clamp: ${amount}">${escapeHtml(event.title)}</span>`;
 
     const running = hasEnd ? `<span style="float: right">${timeRunningCalendar(start, end)}</span>` : '';
-    const date = `${start.format('LT')} - ${hasEnd ? end.format('LT') : 'now'} ${running}`;
+    const date = `${start.format('LT')} - ${hasEnd ? end.format('LT') : t('now')} ${running}`;
     if (lines < 2) {
         return event.title
-            ? `<span class="ellipsis-single" title="${event.title}">${event.title}</span>${stopButton}`
+            ? `<span class="ellipsis-single" title="${escapeHtml(event.title)}">${escapeHtml(event.title)}</span>${stopButton}`
             : `${date}${stopButton}`;
     }
     if (lines === 2) {
         if (hasEnd) {
-            return `${date}<span class="ellipsis-single" title="${event.title}">${event.title}</span>${stopButton}`;
+            return `${date}<span class="ellipsis-single" title="${escapeHtml(event.title)}">${escapeHtml(event.title)}</span>${stopButton}`;
         } else {
             return `${clamp(2)}${stopButton}`;
         }

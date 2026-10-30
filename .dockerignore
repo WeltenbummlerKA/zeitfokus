@@ -1,4 +1,8 @@
-/docker/Dockerfile.dev
-/ui/node_modules/
-.idea/
-build/
+.git
+ui/node_modules
+ui/build
+generated
+build
+coverage.txt
+.env*
+!/.env.sample

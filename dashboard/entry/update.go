@@ -51,7 +51,7 @@ func (r *ResolverForEntry) UpdateDashboardEntry(ctx context.Context, id int, ent
 
 	if stats != nil {
 		if stats.RangeID != nil {
-			if _, err := util.FindDashboardRange(tx, *stats.RangeID); err != nil {
+			if _, err := util.FindOwnedDashboardRange(tx, userID, entry.DashboardID, *stats.RangeID); err != nil {
 				return nil, err
 			}
 			entry.RangeID = *stats.RangeID

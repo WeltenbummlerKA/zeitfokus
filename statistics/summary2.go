@@ -2,6 +2,7 @@ package statistics
 
 import (
 	"context"
+	"errors"
 
 	"github.com/traggo/server/generated/gqlmodel"
 	"github.com/traggo/server/model"
@@ -12,6 +13,9 @@ import (
 // Stats2 another version of the stats endpoint
 func (r *ResolverForStatistics) Stats2(ctx context.Context, now model.Time, stats gqlmodel.InputStatsSelection) ([]*gqlmodel.RangedStatisticsEntries, error) {
 
+	if stats.Range == nil {
+		return nil, errors.New("range is required")
+	}
 	settings, err := setting.Get(ctx, r.DB)
 	if err != nil {
 		return nil, err

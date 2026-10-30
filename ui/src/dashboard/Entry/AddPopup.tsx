@@ -1,23 +1,24 @@
+import {t, useI18n} from '../../i18n';
 import * as React from 'react';
-import Popper from '@material-ui/core/Popper';
-import ClickAwayListener from '@material-ui/core/ClickAwayListener';
-import {Paper} from '@material-ui/core';
-import Typography from '@material-ui/core/Typography';
-import Button from '@material-ui/core/Button';
-import {Dashboards_dashboards_items} from '../../gql/__generated__/Dashboards';
-import {useMutation} from '@apollo/react-hooks';
+import Popper from '@mui/material/Popper';
+import ClickAwayListener from '@mui/material/ClickAwayListener';
+import {Paper} from '@mui/material';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import {DashboardItem} from '../../gql/types';
+import {useMutation} from '@apollo/client';
 import * as gqlDashboard from '../../gql/dashboard';
 import {Fade} from '../../common/Fade';
 import {DashboardEntryForm, isValidDashboardEntry} from './DashboardEntryForm';
-import {AddDashboardEntry, AddDashboardEntryVariables} from '../../gql/__generated__/AddDashboardEntry';
+import {AddDashboardEntryMutation, AddDashboardEntryMutationVariables} from '../../gql/__generated__';
 import {handleError} from '../../utils/errors';
 import {useSnackbar} from 'notistack';
 
 interface EditPopupProps {
     dashboardId: number;
-    entry: Dashboards_dashboards_items;
+    entry: DashboardItem;
     anchorEl: HTMLElement;
-    onChange: (entry: Dashboards_dashboards_items | null) => void;
+    onChange: (entry: DashboardItem | null) => void;
     doPreview: (preview: boolean) => void;
     preview: boolean;
     maxY: number;
@@ -36,9 +37,13 @@ export const AddPopup: React.FC<EditPopupProps> = ({
     finish,
     ranges,
 }) => {
-    const [addEntry] = useMutation<AddDashboardEntry, AddDashboardEntryVariables>(gqlDashboard.AddDashboardEntry, {
-        refetchQueries: [{query: gqlDashboard.Dashboards}],
-    });
+    useI18n();
+    const [addEntry] = useMutation<AddDashboardEntryMutation, AddDashboardEntryMutationVariables>(
+        gqlDashboard.AddDashboardEntry,
+        {
+            refetchQueries: [{query: gqlDashboard.Dashboards}],
+        }
+    );
     const valid = isValidDashboardEntry(entry);
 
     const {enqueueSnackbar} = useSnackbar();
@@ -55,7 +60,7 @@ export const AddPopup: React.FC<EditPopupProps> = ({
             <Fade fullyVisible={!preview} opacity={0.4}>
                 <ClickAwayListener onClickAway={() => setEdit(null)}>
                     <Paper style={{padding: 10, maxWidth: 500}}>
-                        <Typography variant="h5">Add</Typography>
+                        <Typography variant="h5">{t('Add')}</Typography>
                         <DashboardEntryForm ranges={ranges} entry={entry} onChange={setEdit} disabled={preview} />
                         <div style={{textAlign: 'right', display: 'flex', justifyContent: 'flex-end', paddingTop: 10}}>
                             <Button
@@ -71,7 +76,7 @@ export const AddPopup: React.FC<EditPopupProps> = ({
                                 variant={'outlined'}
                                 style={{marginRight: 10}}
                                 onClick={() => setEdit(null)}>
-                                Cancel
+                                {t('Cancel')}
                             </Button>
                             <Button
                                 color={'primary'}
@@ -108,9 +113,9 @@ export const AddPopup: React.FC<EditPopupProps> = ({
                                         },
                                     })
                                         .then(finish)
-                                        .catch(handleError('Add Dashboard Entry', enqueueSnackbar));
+                                        .catch(handleError(t('Add Dashboard Entry'), enqueueSnackbar));
                                 }}>
-                                Add
+                                {t('Add')}
                             </Button>
                         </div>
                     </Paper>

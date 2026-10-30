@@ -1,9 +1,10 @@
+import {t, useI18n} from '../../i18n';
 import * as React from 'react';
-import EditIcon from '@material-ui/icons/Edit';
-import Typography from '@material-ui/core/Typography';
+import EditIcon from '@mui/icons-material/Edit';
+import Typography from '@mui/material/Typography';
 import {Center} from '../../common/Center';
-import DeleteIcon from '@material-ui/icons/Delete';
-import {Button} from '@material-ui/core';
+import DeleteIcon from '@mui/icons-material/Delete';
+import {Button} from '@mui/material';
 
 interface EditGlassProps {
     doEdit: (elm: HTMLElement) => void;
@@ -11,6 +12,7 @@ interface EditGlassProps {
 }
 
 export const EditGlass: React.FC<EditGlassProps> = ({doEdit, doDelete}) => {
+    useI18n();
     const [confirm, askConfirmation] = React.useState(false);
     return (
         <div
@@ -24,10 +26,10 @@ export const EditGlass: React.FC<EditGlassProps> = ({doEdit, doDelete}) => {
             }}>
             {confirm ? (
                 <div>
-                    <Typography>Confirm Deletion</Typography>
-                    <Button onClick={() => askConfirmation(false)}>Cancel</Button>
+                    <Typography>{t('Confirm Deletion')}</Typography>
+                    <Button onClick={() => askConfirmation(false)}>{t('Cancel')}</Button>
                     <Button color={'primary'} onClick={doDelete}>
-                        Yeah, Delete
+                        {t('Yeah, Delete')}
                     </Button>
                 </div>
             ) : (
@@ -52,10 +54,10 @@ export const EditGlass: React.FC<EditGlassProps> = ({doEdit, doDelete}) => {
                         <Center>
                             <div style={{background: 'rgba(120,120,120, .8)', padding: 10}}>
                                 <Typography variant={'h5'} style={{textAlign: 'center', width: '100%'}}>
-                                    drag here
+                                    {t('drag here')}
                                 </Typography>
                                 <Typography variant={'body1'} style={{textAlign: 'center'}}>
-                                    resize on corner
+                                    {t('resize on corner')}
                                 </Typography>
                             </div>
                         </Center>

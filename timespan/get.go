@@ -63,7 +63,7 @@ func normalize(cursor *gqlmodel.InputCursor) *gqlmodel.InputCursor {
 	}
 
 	maxPageSize := 100
-	if cursor.PageSize == nil || maxPageSize < *cursor.PageSize {
+	if cursor.PageSize == nil || *cursor.PageSize < 1 || maxPageSize < *cursor.PageSize {
 		cursor.PageSize = &maxPageSize
 	}
 
