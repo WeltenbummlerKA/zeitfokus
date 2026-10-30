@@ -1,148 +1,120 @@
-# Zeitfokus – Handout für eine neue Instanz
+# Zeitfokus – Übergabe-Handout für die nächste Instanz
 
 Stand: 30.10.2026
 
-Dieses Handout beschreibt die saubere Neuinstallation einer Zeitfokus-Instanz in Portainer. Das Image ist unabhängig von Portainer; Netzwerk, IP-Adresse, Datenpfad und Umgebungsvariablen werden ausschließlich im Stack festgelegt.
+Dieses Dokument ist eine Übergabeakte. Es beschreibt verbindlich, was erledigt, offen und als Nächstes zu prüfen ist.
 
-## 1. Verwendetes Image
+## Projekt und Leitplanken
 
-```text
-ghcr.io/weltenbummlerka/zeitfokus:stable
-```
+- Produktname: **Zeitfokus**
+- GitHub-Repository: `WeltenbummlerKA/zeitfokus`
+- Image: `ghcr.io/weltenbummlerka/zeitfokus:stable`
+- Portainer-Stack: `zeitfokus`
+- Vorhandenes NAS-Verzeichnis `.../docker/zeitfokus` weiterverwenden; niemals bei Redeploys löschen.
+- Externes macvlan-Netzwerk verwenden; zuletzt vereinbarte feste IP: `192.168.178.168`.
+- Kein `traggo-client`-Image, kein neues Test-Image und kein zweites Datenvolume anlegen.
+- Nur im About-Bereich darf klein „based on Traggo“ stehen. Sichtbarer Produktname, Tab-Titel, Manifest, Favicon und Repository-Verweise heißen Zeitfokus.
 
-Vor dem Deploy in Portainer **Pull latest image** aktivieren. Danach wird bei einem Redeploy der aktuelle `stable`-Stand geladen.
+## Erledigt
 
-## 2. Vorbereitungen auf dem NAS
+### Branding und Oberfläche
 
-Den bereits angelegten Ordner für diese Instanz verwenden:
+- Produktname auf Zeitfokus umgestellt.
+- Browser-Titel und Manifest angepasst.
+- GHCR-Image auf `ghcr.io/weltenbummlerka/zeitfokus` umgestellt.
+- Zeitfokus-App-Symbol als Favicon, Manifest-Icon und Seiten-Symbol eingebunden.
+- Altes/erfundenes SVG-Icon entfernt.
+- Harte helle Formularflächen entfernt; semantische Theme-Farben verwendet.
+- Kontrast- und Icon-Korrekturen vorgenommen.
+- Apple-Design-Prinzipien gezielt angewendet: semantische Farben, Systemdarstellung, klare Hierarchie und zugänglicher Kontrast.
 
-```text
-/volume1/docker/zeitfokus
-```
+### Funktionen
 
-Der Ordner muss für den Container les- und schreibbar sein. Die Datenbank liegt danach unter `/opt/zeitfokus/data` im Container und bleibt bei Container-Neuerstellung erhalten.
+- Verlaufssuche, Zeitraum- und Tagfilter.
+- Tages-/Wochen-/Monatssummen.
+- CSV-Export und Einträge duplizieren.
+- Tagesansicht mit Gesamtsumme.
+- Favoritenverwaltung und Synchronisationsdienst.
+- Hilfe-Seite mit kontextbezogenen Hinweisen.
+- KI-Auswertung vorbereitet.
+- System-Thema als Einstellung ergänzt; neue Konten starten mit `System`.
 
-Das externe macvlan-Netzwerk muss bereits in Docker existieren. Die im ursprünglichen Stack vereinbarte Adresse ist `192.168.178.168`. Falls diese Adresse im NAS-Netzwerk tatsächlich anders reserviert wurde, darf nur die eine `ipv4_address`-Zeile angepasst werden.
+### Qualität und Veröffentlichung
 
-## 3. Portainer-Stack
+- Audit-PR #5 abgeschlossen/übernommen.
+- Docker-Image wird unabhängig gebaut; Portainer übernimmt Netzwerk, Volume und ENV.
+- Veröffentlichung ist auf `master` und versionierte Tags begrenzt.
+- Workflow nutzt Ubuntu 24.04 und Node.js 24.
+- Sicherheits-/Lizenzprüfung: keine verwundbaren oder inkompatiblen Pakete; acht unbekannte Lizenzmetadaten.
+- Letzter bekannter Code-Stand vor diesem Handout: `13d3996`.
 
-Stack-Name: `zeitfokus`
+## Offen und verbindlich zu erledigen
 
-```yaml
-services:
-  zeitfokus:
-    image: ghcr.io/weltenbummlerka/zeitfokus:stable
-    container_name: zeitfokus
-    restart: unless-stopped
-    environment:
-      ZEITFOKUS_DEFAULT_USER_NAME: "admin"
-      # Mindestens 12 Zeichen. Sonderzeichen nicht mit $ beginnen lassen,
-      # oder jedes $ in Portainer als $$ schreiben.
-      ZEITFOKUS_DEFAULT_USER_PASS: "BITTE_EIN_EINDEUTIGES_PASSWORT_SETZEN"
-      ZEITFOKUS_LOG_LEVEL: "info"
-      ZEITFOKUS_COOKIE_SECURE: "false"
-      ZEITFOKUS_DATABASE_DIALECT: "sqlite3"
-      ZEITFOKUS_DATABASE_CONNECTION: "data/zeitfokus.db"
+### 1. Build und Image
 
-      # Systemdarstellung ist die Voreinstellung der Weboberfläche.
-      # Jede Person kann sie später unter Einstellungen ändern.
+- Aktuellen `master`-Workflow vollständig prüfen.
+- Nur bei grünem Workflow `ghcr.io/weltenbummlerka/zeitfokus:stable` verwenden.
+- Prüfen, dass GHCR öffentlich lesbar ist und Portainer keinen alten Digest bzw. kein `traggo-client`-Image verwendet.
+- Erst danach auf dem NAS redeployen.
 
-      # KI: disabled, ollama oder lmstudio
-      ZEITFOKUS_AI_PROVIDER: "disabled"
-      ZEITFOKUS_AI_BASE_URL: ""
-      ZEITFOKUS_AI_MODEL: ""
-      ZEITFOKUS_AI_TIMEOUT_SECONDS: "60"
+### 2. Systemdarstellung live prüfen
 
-      # Nur aktivieren, wenn die Favoriten-Synchronisation benötigt wird.
-      ZEITFOKUS_FAVORITES_ADDR: "0.0.0.0:3031"
-      ZEITFOKUS_FAVORITES_TOKEN: "EIN_LANGES_FAVORITEN_TOKEN_SETZEN"
-      ZEITFOKUS_FAVORITES_ALLOW_UNAUTHENTICATED: "false"
-      ZEITFOKUS_FAVORITES_CORS_ORIGIN: ""
-    volumes:
-      - /volume1/docker/zeitfokus:/opt/zeitfokus/data
-    networks:
-      docker-macvlan:
-        ipv4_address: 192.168.178.168
+- Unter **Einstellungen → Theme → System** auswählen.
+- Betriebssystem einmal auf hell und dunkel stellen.
+- Prüfen, dass die Oberfläche automatisch folgt.
+- Browser-Hard-Reload durchführen.
+- Tab, Favicon, Seitenkopf und About-Bereich auf durchgängiges Zeitfokus-Branding prüfen.
 
-networks:
-  docker-macvlan:
-    external: true
-```
+### 3. KI-Einstellung vervollständigen
 
-Wichtig: In diesem Stack gibt es **kein** `build:` und kein `traggo-client`-Image. Portainer lädt ausschließlich das Zeitfokus-Image aus GHCR.
+Aktuell wird die KI administrativ über Stack-Variablen konfiguriert, nicht über ein frei editierbares Benutzerformular.
 
-## 4. Erststart und Anmeldung
+- `ZEITFOKUS_AI_PROVIDER`: `disabled`, `ollama` oder `lmstudio`.
+- `ZEITFOKUS_AI_BASE_URL`: erreichbarer Backend-Endpunkt.
+- `ZEITFOKUS_AI_MODEL`: vorhandenes Modell.
+- KI-Auswertung mit echten Zeitdaten testen.
+- Fehler bei nicht erreichbarem Backend verständlich anzeigen.
+- Falls gewünscht, eine Admin-Maske ergänzen; Tokens nicht im Browser speichern.
 
-1. In Portainer den Stack anlegen.
-2. Das Passwort ersetzen und den Stack deployen.
-3. Nur beim allerersten Start einer leeren Datenbank wird der Benutzer aus `ZEITFOKUS_DEFAULT_USER_NAME` und `ZEITFOKUS_DEFAULT_USER_PASS` angelegt.
-4. Bei einer vorhandenen Datenbank ändern diese Variablen den bestehenden Benutzer nicht.
-5. Anmeldung erfolgt mit `admin` und dem beim Erststart gesetzten Passwort.
+### 4. Start- und Containerlogs
 
-Wenn eine Anmeldung fehlschlägt, nicht wiederholt das Stack-Passwort ändern: zuerst prüfen, ob die Datenbank bereits vorhanden ist. Für einen neuen Test muss eine **separate leere Datenbank** verwendet werden.
+Portainer kann nach einem Redeploy noch die alte Container-ID abfragen und zweimal „No such container“ melden. Das ist eine veraltete ID-Abfrage, wenn der neue Container bereits läuft.
 
-## 5. Systemdarstellung und KI
-
-Unter **Einstellungen**:
-
-- **Darstellung → System** folgt dem hellen/dunklen Erscheinungsbild des Browsers bzw. Betriebssystems.
-- Bestehende Konten behalten ihre bisherige Auswahl, bis sie einmal „System“ wählen.
-- Die KI-Sektion zeigt, welcher Administrator-Endpunkt aktiv ist.
-
-KI wird serverseitig über die Stack-Variablen konfiguriert. Beispiele:
-
-### Ollama im lokalen Netz
-
-```yaml
-ZEITFOKUS_AI_PROVIDER: "ollama"
-ZEITFOKUS_AI_BASE_URL: "http://192.168.178.XX:11434"
-ZEITFOKUS_AI_MODEL: "llama3.2:3b"
-```
-
-### LM Studio im lokalen Netz
-
-```yaml
-ZEITFOKUS_AI_PROVIDER: "lmstudio"
-ZEITFOKUS_AI_BASE_URL: "http://192.168.178.XX:1234/v1"
-ZEITFOKUS_AI_MODEL: "Name-des-geladenen-Modells"
-```
-
-Die Weboberfläche speichert keine KI-Zugangsdaten. Bei `disabled` bleibt die KI-Auswertung deaktiviert.
-
-## 6. Updates
-
-1. In Portainer **Pull latest image** aktivieren.
-2. Stack erneut deployen/redeployen.
-3. Datenpfad und Umgebungsvariablen unverändert lassen.
-4. Im Browser `Cmd+Shift+R` bzw. `Ctrl+F5` ausführen.
-
-Das Datenverzeichnis wird dabei nicht gelöscht. Vor einem produktiven Update empfiehlt sich eine Kopie von `/volume1/docker/zeitfokus`.
-
-## 7. Logs und Startdiagnose
-
-Der Fehler „Unable to get container logs: No such container: …“ bedeutet in der Regel, dass Portainer noch die ID eines bereits ersetzten Containers abfragt. Das ist kein Beweis für einen Anwendungsfehler, wenn der neue Container läuft.
-
-In Portainer:
-
-1. Zum Stack `zeitfokus` wechseln.
-2. Den aktuell laufenden Container `zeitfokus` öffnen.
-3. **Logs** öffnen und **Auto-refresh** aktivieren.
-
-Auf dem NAS ist die zuverlässige Variante:
+Live prüfen, ob die Logs mindestens Folgendes zeigen: Prozessstart, Datenbank/Datenpfad, Port `3030`, optional Port `3031`, KI-Konfiguration ohne Geheimnisse und eine abschließende Bereitschaftsmeldung.
 
 ```bash
 docker logs -f --tail=200 zeitfokus
-```
-
-Ein erfolgreicher Start enthält mindestens die Meldung des Favoriten-Dienstes und anschließend die Servermeldungen von Zeitfokus. Bei einem Neustart immer den aktuellen Container-Namen bzw. die aktuelle Stack-Ansicht öffnen; alte Container-IDs sind nach einem Redeploy ungültig.
-
-## 8. Schnellprüfung nach dem Deploy
-
-```bash
-docker ps --filter name=zeitfokus
 docker inspect --format '{{.State.Status}} {{.State.Health.Status}}' zeitfokus
-docker logs --tail=100 zeitfokus
 ```
 
-Erwartet wird `running`. Die Weboberfläche ist auf Port `3030` erreichbar; die optionale Favoriten-Schnittstelle lauscht auf Port `3031`.
+Immer den aktuell laufenden Container öffnen, niemals eine alte Container-ID diagnostizieren.
 
+### 5. Portainer-Stack live prüfen
+
+- Host-Pfad auf den bestehenden Ordner `.../docker/zeitfokus` zeigen lassen.
+- Keine automatische Volume-Neuanlage verwenden.
+- Externes macvlan-Netzwerk muss vorhanden sein.
+- Feste IP darf nicht belegt sein.
+- `Pull latest image` aktivieren.
+- Nach Redeploy prüfen, dass derselbe Datenbestand sichtbar bleibt.
+
+## Aktionsreihenfolge
+
+1. GitHub-Actions-Run des aktuellen `master` prüfen.
+2. Bei Fehlern den konkreten fehlgeschlagenen Schritt beheben; keinen neuen Stack bauen.
+3. Bei grünem Build `stable` veröffentlichen.
+4. Portainer mit Pull-latest redeployen.
+5. Containerstatus und aktuelle Logs prüfen.
+6. Bestehenden Datenbestand und Anmeldung testen.
+7. System-Thema hell/dunkel testen.
+8. Favicon, Tab-Titel und About-Branding kontrollieren.
+9. KI-Endpunkt konfigurieren und Testauswertung durchführen.
+10. Erst danach den Stand als abgeschlossen melden.
+
+## Nicht tun
+
+- Nicht auf `traggo-client` zurückfallen.
+- Nicht `traggo_data` oder ein zweites Kandidaten-Volume verwenden.
+- Nicht das bestehende Zeitfokus-Datenverzeichnis löschen.
+- Nicht behaupten, die KI sei vollständig konfigurierbar, solange nur ENV-Variablen vorhanden sind.
+- Nicht „Build erfolgreich“ mit „live auf dem NAS geprüft“ gleichsetzen.
