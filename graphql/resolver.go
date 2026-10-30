@@ -83,8 +83,10 @@ func (r *resolver) Version(ctx context.Context) (*gqlmodel.Version, error) {
 }
 
 func (r *resolver) AnalyzeTimeReport(ctx context.Context, input gqlmodel.InputAIAnalysis) (*gqlmodel.AIAnalysisResult, error) {
-	if err := r.aiProvider.Validate(); err != nil { return nil, err }
-	if r.aiProvider.Provider == "disabled" || r.aiProvider.Provider == "" { return nil, errors.New("AI analysis is disabled") }
+	provider, err := r.effectiveAIProvider()
+	if err != nil { return nil, err }
+	if err := provider.Validate(); err != nil { return nil, err }
+	if provider.Provider == "disabled" || provider.Provider == "" { return nil, errors.New("AI analysis is disabled") }
 	if !input.From.Time().Before(input.ToExclusive.Time()) { return nil, errors.New("AI analysis range must have from before toExclusive") }
 	user := auth.GetUser(ctx)
 	var spans []model.TimeSpan
@@ -97,7 +99,7 @@ func (r *resolver) AnalyzeTimeReport(ctx context.Context, input gqlmodel.InputAI
 	loc := input.From.Time().Location()
 	if loc == nil { loc = time.UTC }
 	summary := ai.Summarize(spans, loc)
-	text, err := ai.Analyze(ctx, r.aiProvider, summary)
+	text, err := ai.Analyze(ctx, provider, summary)
 	if err != nil { return nil, err }
 	return &gqlmodel.AIAnalysisResult{Text: text, From: model.Time(summary.From), To: model.Time(summary.To), CompletedEntries: summary.CompletedEntries, TotalSeconds: float64(summary.TotalSeconds), AverageSeconds: float64(summary.AverageSeconds), DaysWithActivity: summary.DaysWithActivity}, nil
 }

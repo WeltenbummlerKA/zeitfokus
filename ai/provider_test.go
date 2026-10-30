@@ -52,3 +52,20 @@ func TestAnalyzeRejectsOversizedResponse(t *testing.T) {
 		t.Fatalf("expected response-size rejection, got %v", err)
 	}
 }
+
+func TestAnalyzeLMStudioAcceptsRootAndV1BaseURLs(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/v1/chat/completions" {
+			t.Errorf("unexpected LM Studio path: %s", r.URL.Path)
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"choices":[{"message":{"content":"Report"}}]}`))
+	}))
+	defer server.Close()
+	for _, suffix := range []string{"", "/", "/v1", "/v1/"} {
+		got, err := Analyze(context.Background(), ProviderConfig{Provider: "lmstudio", BaseURL: server.URL + suffix, Model: "local"}, Summary{})
+		if err != nil || got != "Report" {
+			t.Fatalf("base suffix %q: got %q, err %v", suffix, got, err)
+		}
+	}
+}
