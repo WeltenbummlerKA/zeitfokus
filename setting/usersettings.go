@@ -68,10 +68,10 @@ func toExternalDateLocale(dateLocale string) gqlmodel.DateLocale {
 
 func toInternalTheme(theme gqlmodel.Theme) string {
 	switch theme.String() {
-	case model.ThemeGruvboxDark, model.ThemeGruvboxLight, model.ThemeMaterialLight, model.ThemeMaterialDark:
+	case model.ThemeSystem, model.ThemeGruvboxDark, model.ThemeGruvboxLight, model.ThemeMaterialLight, model.ThemeMaterialDark:
 		return theme.String()
 	default:
-		return model.ThemeGruvboxDark
+	return model.ThemeSystem
 	}
 }
 
@@ -79,7 +79,7 @@ func toExternalTheme(theme string) gqlmodel.Theme {
 	if gqlmodel.Theme(theme).IsValid() {
 		return gqlmodel.Theme(theme)
 	}
-	return gqlmodel.ThemeGruvboxDark
+	return gqlmodel.ThemeSystem
 }
 
 func toExternalWeekday(weekday time.Weekday) gqlmodel.WeekDay {

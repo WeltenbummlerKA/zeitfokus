@@ -110,6 +110,15 @@ export const SettingsPage: React.FC = () => {
                     ))}
                 </Select>
             </FormControl>
+            <Typography variant="body2" color="text.secondary" sx={{mt: 1}}>
+                {t('Theme follows system appearance')}
+            </Typography>
+            <Typography variant="h6" sx={{mt: 3, mb: 1}}>
+                {t('AI analysis')}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+                {t('AI analysis is configured by the administrator through ZEITFOKUS_AI_PROVIDER, ZEITFOKUS_AI_BASE_URL and ZEITFOKUS_AI_MODEL. Use a local Ollama or LM Studio endpoint when possible.')}
+            </Typography>
             <FormControl margin={'normal'} fullWidth>
                 <InputLabel htmlFor="setting-2">{t('First day of the week')}</InputLabel>
                 <Select

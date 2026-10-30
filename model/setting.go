@@ -15,6 +15,7 @@ type UserSetting struct {
 
 // Settings constants
 const (
+	ThemeSystem        = "System"
 	ThemeGruvboxDark   = "GruvboxDark"
 	ThemeGruvboxLight  = "GruvboxLight"
 	ThemeMaterialDark  = "MaterialDark"

@@ -72,7 +72,7 @@ export const createWorkspaceTheme = (dark: boolean, warm = false): Theme => {
         },
     });
 };
-const themes: Record<SettingTheme, Theme> = {
+const themes: Record<Exclude<SettingTheme, SettingTheme.System>, Theme> = {
     [SettingTheme.GruvboxDark]: createWorkspaceTheme(true, true),
     [SettingTheme.GruvboxLight]: createWorkspaceTheme(false, true),
     [SettingTheme.MaterialDark]: createWorkspaceTheme(true),
@@ -81,9 +81,19 @@ const themes: Record<SettingTheme, Theme> = {
 
 export const ThemeProvider: React.FC<React.PropsWithChildren> = ({children}) => {
     const {theme} = useSettings();
+    const [systemDark, setSystemDark] = React.useState(() => window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false);
+    React.useEffect(() => {
+        if (theme !== SettingTheme.System || !window.matchMedia) return;
+        const media = window.matchMedia('(prefers-color-scheme: dark)');
+        const update = () => setSystemDark(media.matches);
+        update();
+        media.addEventListener?.('change', update);
+        return () => media.removeEventListener?.('change', update);
+    }, [theme]);
+    const resolvedTheme = theme === SettingTheme.System ? (systemDark ? SettingTheme.MaterialDark : SettingTheme.MaterialLight) : theme;
     return (
         <StyledEngineProvider injectFirst>
-            <MuiThemeProvider theme={themes[theme]}>
+            <MuiThemeProvider theme={themes[resolvedTheme as Exclude<SettingTheme, SettingTheme.System>]}>
                 <CssBaseline />
                 {children}
             </MuiThemeProvider>

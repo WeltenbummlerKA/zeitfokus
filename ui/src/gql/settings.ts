@@ -29,7 +29,7 @@ export const SetSettings = gql`
 `;
 
 const defaultSettings = {
-    theme: Theme.GruvboxDark,
+    theme: Theme.System,
     dateLocale: DateLocale.American,
     firstDayOfTheWeek: WeekDay.Monday,
     dateTimeInputStyle: DateTimeInputStyle.Fancy,

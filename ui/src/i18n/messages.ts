@@ -344,6 +344,10 @@ export const messages: Record<string, {en: string; de: string}> = {
         en: 'Theme',
         de: 'Darstellung',
     },
+    System: {
+        en: 'System',
+        de: 'System',
+    },
     'This operation cannot be undone.': {
         en: 'This operation cannot be undone.',
         de: 'Dieser Vorgang kann nicht rückgängig gemacht werden.',
@@ -711,6 +715,18 @@ export const messages: Record<string, {en: string; de: string}> = {
     MaterialLight: {
         en: 'Neutral · Light',
         de: 'Neutral · Hell',
+    },
+    'Theme follows system appearance': {
+        en: 'System follows the device appearance and changes automatically between light and dark.',
+        de: 'System folgt der Geräte-Einstellung und wechselt automatisch zwischen hell und dunkel.',
+    },
+    'AI analysis': {
+        en: 'AI analysis',
+        de: 'KI-Auswertung',
+    },
+    'AI analysis is configured by the administrator through ZEITFOKUS_AI_PROVIDER, ZEITFOKUS_AI_BASE_URL and ZEITFOKUS_AI_MODEL. Use a local Ollama or LM Studio endpoint when possible.': {
+        en: 'AI analysis is configured by the administrator through ZEITFOKUS_AI_PROVIDER, ZEITFOKUS_AI_BASE_URL and ZEITFOKUS_AI_MODEL. Use a local Ollama or LM Studio endpoint when possible.',
+        de: 'Die KI-Auswertung wird administrativ über ZEITFOKUS_AI_PROVIDER, ZEITFOKUS_AI_BASE_URL und ZEITFOKUS_AI_MODEL konfiguriert. Wenn möglich, einen lokalen Ollama- oder LM-Studio-Endpunkt verwenden.',
     },
     Sunday: {
         en: 'Sunday',
