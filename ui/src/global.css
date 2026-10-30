@@ -103,9 +103,10 @@ input:focus-visible {
     flex-wrap: wrap;
     gap: 12px;
     padding: 24px;
-    background: linear-gradient(135deg, #ffffff 0%, #f7faff 100%);
-    border: 1px solid rgba(67, 139, 234, 0.16);
-    box-shadow: 0 12px 30px rgba(37, 58, 91, 0.08);
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    color: inherit;
 }
 .tracker-tags {
     flex: 1 1 240px;

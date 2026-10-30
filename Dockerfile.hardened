@@ -23,7 +23,7 @@ COPY --from=generator /go/pkg/mod /go/pkg/mod
 COPY --from=frontend /src/ui/build ./ui/build
 ARG SOURCE_REVISION=unknown
 RUN CGO_ENABLED=1 go build -trimpath -tags 'netgo osusergo sqlite_omit_load_extension' \
-    -ldflags "-s -w -linkmode external -extldflags '-static' -X main.BuildMode=prod -X main.BuildVersion=hardened-candidate -X main.BuildCommit=${SOURCE_REVISION}" \
+    -ldflags "-s -w -linkmode external -extldflags '-static' -X main.BuildMode=prod -X main.BuildVersion=Zeitfokus -X main.BuildCommit=${SOURCE_REVISION}" \
     -o /zeitfokus .
 
 FROM alpine:3.22

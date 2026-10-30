@@ -118,7 +118,16 @@ export const Tracker: React.FC<TrackerProps> = ({selectedEntries, onSelectedEntr
     };
 
     return (
-        <Paper className="tracker-composer" sx={{p: {xs: 2.5, sm: 3}, borderRadius: '18px'}}>
+        <Paper
+            className="tracker-composer"
+            sx={{
+                p: {xs: 2.5, sm: 3},
+                borderRadius: '18px',
+                bgcolor: 'background.paper',
+                color: 'text.primary',
+                borderColor: 'divider',
+                boxShadow: 0,
+            }}>
             <Box className="composer-heading">
                 <Typography component="h3" variant="h4">
                     {t('New entry')}
