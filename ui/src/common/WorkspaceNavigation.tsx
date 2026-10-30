@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {Box, Button, Link, List, ListItemButton, ListItemIcon, ListItemText, Typography} from '@mui/material';
-import {useTheme} from '@mui/material/styles';
+import {alpha, useTheme} from '@mui/material/styles';
 import {NavLink} from 'react-router-dom';
 import ScheduleOutlined from '@mui/icons-material/ScheduleOutlined';
 import CalendarMonthOutlined from '@mui/icons-material/CalendarMonthOutlined';
@@ -38,10 +38,12 @@ const NavigationItem: React.FC<NavigationItemProps> = ({to, title, icon, descrip
             border: '1px solid transparent',
             '&.active': {
                 bgcolor: 'var(--nav-active)',
-                borderColor: 'var(--nav-border)',
+                borderColor: 'var(--nav-selected-border)',
+                color: 'var(--nav-accent)',
                 boxShadow: 'inset 3px 0 0 var(--nav-accent)',
             },
             '&:hover': {bgcolor: 'var(--nav-hover)'},
+            '&.active:hover': {bgcolor: 'var(--nav-active-hover)'},
             '&.Mui-focusVisible': {outline: '2px solid var(--nav-accent)', outlineOffset: 2},
         }}>
         <ListItemIcon sx={{minWidth: 36, color: 'inherit', '& svg': {fontSize: 21}}}>{icon}</ListItemIcon>
@@ -71,7 +73,9 @@ export const WorkspaceNavigation: React.FC<{
     onNavigate: () => void;
 }> = ({dashboards, admin, version, onNavigate}) => {
     const {language} = useI18n();
-    const dark = useTheme().palette.mode === 'dark';
+    const theme = useTheme();
+    const dark = theme.palette.mode === 'dark';
+    const accent = dark ? '#b4c49d' : '#526b43';
     return (
         <Box
             sx={{
@@ -79,12 +83,16 @@ export const WorkspaceNavigation: React.FC<{
                 minHeight: 0,
                 display: 'flex',
                 flexDirection: 'column',
-                bgcolor: dark ? '#17211d' : '#eff4f0',
-                color: dark ? '#dce9e1' : '#244537',
-                '--nav-active': dark ? '#2b4537' : '#dcebe0',
-                '--nav-hover': dark ? '#22362b' : '#e3ede5',
-                '--nav-border': dark ? '#52725e' : '#b6ccbd',
-                '--nav-accent': dark ? '#9ac5a8' : '#3e6b50',
+                bgcolor: 'background.paper',
+                color: 'text.primary',
+                borderRight: 1,
+                borderColor: 'divider',
+                '--nav-active': alpha(accent, 0.09),
+                '--nav-active-hover': alpha(accent, 0.14),
+                '--nav-hover': theme.palette.action.hover,
+                '--nav-border': theme.palette.divider,
+                '--nav-selected-border': alpha(accent, 0.26),
+                '--nav-accent': accent,
             }}>
             <Box sx={{px: 3, pt: 3, pb: 1.5, flexShrink: 0}}>
                 <Link
