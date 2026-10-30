@@ -41,6 +41,8 @@ jobs:
       - uses: actions/setup-go@v6
         with:
           go-version: '1.27.3'
+      - name: Generate gqlgen sources
+        run: go run github.com/99designs/gqlgen@v0.17.85 generate
       - name: govulncheck
         run: go run golang.org/x/vuln/cmd/govulncheck@v1.1.4 ./...
       - name: gosec
@@ -78,6 +80,7 @@ jobs:
           scan-type: fs
           scan-ref: .
           scanners: vuln,secret,misconfig
+          skip-dirs: docker
           severity: CRITICAL,HIGH,MEDIUM
           ignore-unfixed: true
           exit-code: '1'

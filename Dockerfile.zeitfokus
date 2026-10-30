@@ -11,4 +11,5 @@ ARG SOURCE_REVISION=unknown
 LABEL org.opencontainers.image.source="https://github.com/WeltenbummlerKA/zeitfokus" \
       org.opencontainers.image.revision="${SOURCE_REVISION}"
 EXPOSE 3030 3031
+USER zeitfokus
 ENTRYPOINT ["/usr/local/bin/zeitfokus-entrypoint"]
