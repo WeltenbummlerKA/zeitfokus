@@ -143,9 +143,7 @@ export const DashboardsPage = () => {
             <Typography color="text.secondary" sx={{textAlign: 'left', mb: 2}}>
                 {t('Save a weekly project overview or compare periods with charts. Your time entries stay unchanged.')}
             </Typography>
-            <Link component={RouterLink} to="/help#dashboards" sx={{display: 'block', textAlign: 'left', mb: 3}}>
-                {t('How to use reports')}
-            </Link>
+
             <Button
                 color={'primary'}
                 variant={'outlined'}
