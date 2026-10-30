@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {Link as RouterLink} from 'react-router-dom';
+import {Link as RouterLink, useLocation} from 'react-router-dom';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import {useMutation} from '@apollo/client';
 import {Box, Button, TextField, Typography} from '@mui/material';
@@ -23,6 +23,15 @@ import {SettingsPanel} from './SettingsPanel';
 
 export const SettingsPage: React.FC = () => {
     const {language} = useI18n();
+    const location = useLocation();
+    React.useEffect(() => {
+        const id = location.hash.slice(1);
+        if (!id) {
+            return;
+        }
+        const frame = requestAnimationFrame(() => document.getElementById(id)?.scrollIntoView?.({block: 'start'}));
+        return () => cancelAnimationFrame(frame);
+    }, [location.hash]);
     const all = useSettings();
     const {enqueueSnackbar} = useSnackbar();
     const [save, {loading: saving}] = useMutation<SetSettingsMutation, SetSettingsMutationVariables>(SetSettings, {

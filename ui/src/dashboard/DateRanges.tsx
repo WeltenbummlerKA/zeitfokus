@@ -21,6 +21,7 @@ import {
 import {stripTypename} from '../utils/strip';
 import {Range} from '../utils/range';
 import Input from '@mui/material/Input';
+import {displayRangeName} from './rangeLabels';
 
 interface Props {
     changeMode: boolean;
@@ -80,10 +81,16 @@ export const DateRanges: React.FC<Props> = ({changeMode, dashboard, ranges, setR
 
     return (
         <>
+            {changeMode && (
+                <Typography variant="body2" color="text.secondary" sx={{mb: 2}}>
+                    {t('now/w means this week; now-1w/w means last week. These ranges move automatically with the calendar.')}
+                </Typography>
+            )}
             {dashboard.ranges
                 .filter((range) => range.editable || changeMode)
                 .map((range) => {
-                    const name = editedNames[range.id] !== undefined ? editedNames[range.id] : range.name;
+                    const savedName = displayRangeName(range.name);
+                    const name = editedNames[range.id] !== undefined ? editedNames[range.id] : savedName;
                     const dateRange = (changeMode ? editedRanges[range.id] : ranges[range.id]) || stripTypename(range.range);
                     return (
                         <React.Fragment key={range.id}>
@@ -94,6 +101,7 @@ export const DateRanges: React.FC<Props> = ({changeMode, dashboard, ranges, setR
                                     <Typography variant={'subtitle2'} component="div">
                                         {changeMode ? (
                                             <Input
+                                                inputProps={{'aria-label': t('Range name')}}
                                                 disableUnderline={true}
                                                 fullWidth
                                                 onChange={(e) => {
@@ -111,6 +119,7 @@ export const DateRanges: React.FC<Props> = ({changeMode, dashboard, ranges, setR
                                         )}
                                     </Typography>
                                     <RelativeDateTimeSelector
+                                        label={t('From')}
                                         small={!changeMode}
                                         disableUnderline={!changeMode}
                                         style={{width: changeMode ? 170 : 120}}
@@ -128,6 +137,7 @@ export const DateRanges: React.FC<Props> = ({changeMode, dashboard, ranges, setR
                                     />
                                     <ArrowForwardIcon style={{margin: '0 10px'}} />
                                     <RelativeDateTimeSelector
+                                        label={t('To')}
                                         small={!changeMode}
                                         disableUnderline={!changeMode}
                                         style={{width: changeMode ? 170 : 120}}
@@ -154,7 +164,10 @@ export const DateRanges: React.FC<Props> = ({changeMode, dashboard, ranges, setR
                                 {changeMode ? (
                                     <>
                                         <Typography style={{height: 50, display: 'inline-block'}} component="div">
-                                            <IconButton size="medium" onClick={(e) => setOpenMenu([e.currentTarget, range.id])}>
+                                            <IconButton
+                                                aria-label={t('Range options')}
+                                                size="medium"
+                                                onClick={(e) => setOpenMenu([e.currentTarget, range.id])}>
                                                 <MoreVert />
                                             </IconButton>
                                         </Typography>
@@ -175,7 +188,11 @@ export const DateRanges: React.FC<Props> = ({changeMode, dashboard, ranges, setR
                                                 if (used.length === 0) {
                                                     removeRange({variables: {rangeId: range.id}});
                                                 } else {
-                                                    alert('Range is used by ' + used.map((entry) => entry.title).join(', '));
+                                                    alert(
+                                                        t('Range is used by {names}', {
+                                                            names: used.map((entry) => entry.title).join(', '),
+                                                        })
+                                                    );
                                                 }
                                                 setOpenMenu(null);
                                             }}>
@@ -195,7 +212,7 @@ export const DateRanges: React.FC<Props> = ({changeMode, dashboard, ranges, setR
                                                 });
                                                 setOpenMenu(null);
                                             }}>
-                                            {range.editable ? 'make static' : 'make editable'}
+                                            {range.editable ? t('Make static') : t('Make editable')}
                                         </MenuItem>
                                     </Menu>
                                 ) : undefined}
@@ -210,10 +227,11 @@ export const DateRanges: React.FC<Props> = ({changeMode, dashboard, ranges, setR
                             addRange({
                                 variables: {
                                     dashboardId: dashboard.id,
-                                    range: {name: 'new range', editable: true, range: {from: 'now/w', to: 'now/w'}},
+                                    range: {name: t('This week'), editable: true, range: {from: 'now/w', to: 'now/w'}},
                                 },
                             });
                         }}
+                        aria-label={t('Add date range')}
                         size="large">
                         <PlusIcon />
                     </IconButton>

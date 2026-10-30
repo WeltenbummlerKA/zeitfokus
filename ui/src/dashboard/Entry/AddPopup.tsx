@@ -69,7 +69,7 @@ export const AddPopup: React.FC<EditPopupProps> = ({
                                 style={{marginRight: 10, flex: 1}}
                                 disabled={!valid}
                                 onClick={() => doPreview(!preview)}>
-                                {preview ? 'Exit Preview' : 'Preview'}
+                                {preview ? t('Exit preview') : t('Preview')}
                             </Button>
                             <Button
                                 color={'secondary'}

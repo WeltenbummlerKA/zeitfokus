@@ -1,4 +1,39 @@
 export const messages: Record<string, {en: string; de: string}> = {
+    'Enter a valid date or relative expression, e.g. now/w.': {
+        en: 'Enter a valid date or relative expression, e.g. now/w.',
+        de: 'Gib ein gültiges Datum oder eine relative Formel ein, zum Beispiel now/w.',
+    },
+    'Mobile view': {en: 'Mobile view', de: 'Mobilansicht'},
+    'Desktop view': {en: 'Desktop view', de: 'Desktopansicht'},
+    'Finish editing': {en: 'Finish editing', de: 'Bearbeiten beenden'},
+    'Edit dashboard': {en: 'Edit dashboard', de: 'Übersicht bearbeiten'},
+    'New range': {en: 'New range', de: 'Neuer Zeitraum'},
+    'This week': {en: 'This week', de: 'Diese Woche'},
+    'Make static': {en: 'Lock range', de: 'Zeitraum sperren'},
+    'Make editable': {en: 'Unlock range', de: 'Zeitraum freigeben'},
+    'Range is used by {names}': {en: 'Range is used by {names}', de: 'Dieser Zeitraum wird verwendet von: {names}'},
+    'Range name': {en: 'Range name', de: 'Name des Zeitraums'},
+    'Range options': {en: 'Range options', de: 'Zeitraumoptionen'},
+    'Add date range': {en: 'Add date range', de: 'Zeitraum hinzufügen'},
+    'Exit preview': {en: 'Close preview', de: 'Vorschau schließen'},
+    Preview: {en: 'Preview', de: 'Vorschau'},
+    'Show total row': {en: 'Show total row', de: 'Summenzeile anzeigen'},
+    'Show total column': {en: 'Show total column', de: 'Summenspalte anzeigen'},
+    'Show total in tooltip': {en: 'Show total in tooltip', de: 'Summe im Hinweis anzeigen'},
+    'now/w means this week; now-1w/w means last week. These ranges move automatically with the calendar.': {
+        en: 'now/w means this week; now-1w/w means last week. These ranges move automatically with the calendar.',
+        de: 'now/w steht für diese Woche, now-1w/w für die letzte Woche. Diese Zeiträume passen sich automatisch dem Kalender an.',
+    },
+    'Saved charts compare your working time by project, tag or period. Time tracking works without a dashboard.': {
+        en: 'Saved charts compare your working time by project, tag or period. Time tracking works without a dashboard.',
+        de: 'Gespeicherte Diagramme vergleichen deine Arbeitszeit nach Projekt, Tag oder Zeitraum. Die Zeiterfassung funktioniert auch ohne Übersichten.',
+    },
+    'How to use reports': {en: 'How to use reports', de: 'So nutzt du die Übersichten'},
+    'Saved reports': {en: 'Saved reports', de: 'Gespeicherte Auswertungen'},
+    'Save a weekly project overview or compare periods with charts. Your time entries stay unchanged.': {
+        en: 'Save a weekly project overview or compare periods with charts. Your time entries stay unchanged.',
+        de: 'Speichere zum Beispiel eine Wochenübersicht pro Projekt oder vergleiche Zeiträume mit Diagrammen. Deine Zeiteinträge bleiben unverändert.',
+    },
     Version: {en: 'Version', de: 'Version'},
     hours: {en: 'hours', de: 'Stunden'},
     'Search all entries': {en: 'Search all entries', de: 'Alle Einträge durchsuchen'},
@@ -94,7 +129,7 @@ export const messages: Record<string, {en: string; de: string}> = {
     },
     'Create Dashboard': {
         en: 'Create Dashboard',
-        de: 'Dashboard erstellen',
+        de: 'Übersicht erstellen',
     },
     'Create Device': {
         en: 'Create Device',
@@ -118,11 +153,11 @@ export const messages: Record<string, {en: string; de: string}> = {
     },
     'Dashboard created': {
         en: 'Dashboard created',
-        de: 'Dashboard erstellt',
+        de: 'Übersicht erstellt',
     },
     Dashboards: {
         en: 'Dashboards',
-        de: 'Dashboards',
+        de: 'Übersichten',
     },
     Date: {
         en: 'Date',
@@ -146,7 +181,7 @@ export const messages: Record<string, {en: string; de: string}> = {
     },
     'Deleting the dashboard will remove all its dashboard entries.': {
         en: 'Deleting the dashboard will remove all its dashboard entries.',
-        de: 'Mit dem Dashboard werden alle zugehörigen Diagramme gelöscht.',
+        de: 'Mit dem Übersicht werden alle zugehörigen Diagramme gelöscht.',
     },
     'Deleting the tag will remove all references in time spans.': {
         en: 'Deleting the tag will remove all references in time spans.',
@@ -154,7 +189,7 @@ export const messages: Record<string, {en: string; de: string}> = {
     },
     'Deleting the user includes deleting dashboards, time spans, tags and devices of that user.': {
         en: 'Deleting the user includes deleting dashboards, time spans, tags and devices of that user.',
-        de: 'Alle Dashboards, Zeiteinträge, Tags und Geräte dieses Benutzers werden ebenfalls gelöscht.',
+        de: 'Alle Übersichten, Zeiteinträge, Tags und Geräte dieses Benutzers werden ebenfalls gelöscht.',
     },
     'Device Created': {
         en: 'Device Created',
@@ -202,7 +237,7 @@ export const messages: Record<string, {en: string; de: string}> = {
     },
     Global: {
         en: 'Global',
-        de: 'Dashboard-Zeitraum',
+        de: 'Übersicht-Zeitraum',
     },
     ID: {
         en: 'ID',
@@ -407,15 +442,15 @@ export const messages: Record<string, {en: string; de: string}> = {
     },
     'dashboard deleted': {
         en: 'dashboard deleted',
-        de: 'Dashboard gelöscht',
+        de: 'Übersicht gelöscht',
     },
     'dashboard does not exist': {
         en: 'dashboard does not exist',
-        de: 'Dashboard nicht gefunden',
+        de: 'Übersicht nicht gefunden',
     },
     'dashboard edited': {
         en: 'dashboard edited',
-        de: 'Dashboard gespeichert',
+        de: 'Übersicht gespeichert',
     },
     'date locale changed': {
         en: 'date locale changed',
@@ -455,11 +490,11 @@ export const messages: Record<string, {en: string; de: string}> = {
     },
     'id parameter is missing in url': {
         en: 'id parameter is missing in url',
-        de: 'In der Adresse fehlt die Dashboard-ID',
+        de: 'In der Adresse fehlt die Übersicht-ID',
     },
     'no dashboards added': {
         en: 'No dashboards yet',
-        de: 'Noch keine Dashboards',
+        de: 'Noch keine Übersichten',
     },
     'no data': {
         en: 'No data yet',
@@ -725,10 +760,11 @@ export const messages: Record<string, {en: string; de: string}> = {
         en: 'AI analysis',
         de: 'KI-Auswertung',
     },
-    'AI analysis is configured by the administrator through ZEITFOKUS_AI_PROVIDER, ZEITFOKUS_AI_BASE_URL and ZEITFOKUS_AI_MODEL. Use a local Ollama or LM Studio endpoint when possible.': {
-        en: 'AI analysis is configured by the administrator through ZEITFOKUS_AI_PROVIDER, ZEITFOKUS_AI_BASE_URL and ZEITFOKUS_AI_MODEL. Use a local Ollama or LM Studio endpoint when possible.',
-        de: 'Die KI-Auswertung wird administrativ über ZEITFOKUS_AI_PROVIDER, ZEITFOKUS_AI_BASE_URL und ZEITFOKUS_AI_MODEL konfiguriert. Wenn möglich, einen lokalen Ollama- oder LM-Studio-Endpunkt verwenden.',
-    },
+    'AI analysis is configured by the administrator through ZEITFOKUS_AI_PROVIDER, ZEITFOKUS_AI_BASE_URL and ZEITFOKUS_AI_MODEL. Use a local Ollama or LM Studio endpoint when possible.':
+        {
+            en: 'AI analysis is configured by the administrator through ZEITFOKUS_AI_PROVIDER, ZEITFOKUS_AI_BASE_URL and ZEITFOKUS_AI_MODEL. Use a local Ollama or LM Studio endpoint when possible.',
+            de: 'Die KI-Auswertung wird administrativ über ZEITFOKUS_AI_PROVIDER, ZEITFOKUS_AI_BASE_URL und ZEITFOKUS_AI_MODEL konfiguriert. Wenn möglich, einen lokalen Ollama- oder LM-Studio-Endpunkt verwenden.',
+        },
     Sunday: {
         en: 'Sunday',
         de: 'Sonntag',
@@ -839,7 +875,7 @@ export const messages: Record<string, {en: string; de: string}> = {
     },
     'Delete dashboard “{name}”?': {
         en: 'Delete dashboard “{name}”?',
-        de: 'Dashboard „{name}“ löschen?',
+        de: 'Übersicht „{name}“ löschen?',
     },
     'Delete user “{name}”?': {
         en: 'Delete user “{name}”?',

@@ -13,3 +13,12 @@ export const AnalyzeTimeReport = gql`
         }
     }
 `;
+
+export const AIStatus = gql`
+    query AIStatus {
+        aiStatus {
+            enabled
+            provider
+        }
+    }
+`;

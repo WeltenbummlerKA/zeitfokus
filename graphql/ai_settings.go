@@ -94,3 +94,20 @@ func (r *resolver) SetAISettings(ctx context.Context, input gqlmodel.InputAISett
 	}
 	return externalAISettings(cfg), nil
 }
+
+// AiStatus reveals only availability and provider kind, never the server address.
+func (r *resolver) AiStatus(ctx context.Context) (*gqlmodel.AIStatus, error) {
+	if auth.GetUser(ctx) == nil {
+		return nil, errors.New("authentication required")
+	}
+	cfg, err := r.effectiveAIProvider()
+	if err != nil {
+		return nil, err
+	}
+	enabled := (cfg.Provider == "ollama" || cfg.Provider == "lmstudio") && cfg.BaseURL != "" && cfg.Model != ""
+	provider := "disabled"
+	if enabled {
+		provider = cfg.Provider
+	}
+	return &gqlmodel.AIStatus{Enabled: enabled, Provider: provider}, nil
+}
