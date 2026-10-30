@@ -44,7 +44,7 @@ jobs:
       - name: Generate gqlgen sources
         run: |
           go install github.com/99designs/gqlgen@v0.17.85
-          "$(go env GOPATH)/bin/gqlgen"
+          "$(go env GOPATH)/bin/gqlgen" 2>&1 | tee /tmp/gqlgen.log
       - name: govulncheck
         run: go run golang.org/x/vuln/cmd/govulncheck@v1.1.4 ./...
       - name: gosec
