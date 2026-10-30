@@ -28,6 +28,7 @@ jobs:
       - run: yarn install --frozen-lockfile --ignore-scripts && yarn generate
         working-directory: ui
       - run: |
+          export GOFLAGS=-mod=mod
           go install github.com/99designs/gqlgen@v0.17.85
           "$(go env GOPATH)/bin/gqlgen" generate
       - run: go mod tidy
