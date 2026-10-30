@@ -23,16 +23,16 @@ COPY --from=frontend /src/ui/build ./ui/build
 ARG SOURCE_REVISION=unknown
 RUN CGO_ENABLED=1 go build -trimpath -tags 'netgo osusergo sqlite_omit_load_extension' \
     -ldflags "-s -w -linkmode external -extldflags '-static' -X main.BuildMode=prod -X main.BuildVersion=hardened-candidate -X main.BuildCommit=${SOURCE_REVISION}" \
-    -o /traggo .
+    -o /zeitfokus .
 
 FROM alpine:3.22
-RUN apk add --no-cache ca-certificates tzdata && mkdir -p /opt/traggo/data
-WORKDIR /opt/traggo
-COPY --from=backend /traggo ./traggo
-COPY LICENSE /usr/share/licenses/traggo/LICENSE
+RUN apk add --no-cache ca-certificates tzdata && mkdir -p /opt/zeitfokus/data
+WORKDIR /opt/zeitfokus
+COPY --from=backend /zeitfokus ./zeitfokus
+COPY LICENSE /usr/share/licenses/zeitfokus/LICENSE
 ARG SOURCE_REVISION=unknown
-LABEL org.opencontainers.image.source="https://github.com/WeltenbummlerKA/traggo-server" \
+LABEL org.opencontainers.image.source="https://github.com/WeltenbummlerKA/zeitfokus" \
       org.opencontainers.image.revision="${SOURCE_REVISION}" \
       org.opencontainers.image.licenses="GPL-3.0"
 EXPOSE 3030
-ENTRYPOINT ["/opt/traggo/traggo"]
+ENTRYPOINT ["/opt/zeitfokus/zeitfokus"]
