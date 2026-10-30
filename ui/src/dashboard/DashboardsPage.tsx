@@ -4,6 +4,7 @@ import Paper from '@mui/material/Paper';
 import {useMutation, useQuery} from '@apollo/client';
 import {CenteredSpinner} from '../common/CenteredSpinner';
 import Table from '@mui/material/Table';
+import TableContainer from '@mui/material/TableContainer';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
@@ -39,9 +40,9 @@ const useStyles = makeStyles((theme) => ({
         },
         paddingTop: theme.spacing(3),
         paddingBottom: theme.spacing(3),
-        textAlign: 'center',
-        maxWidth: 800,
-        margin: '0 auto',
+        textAlign: 'left',
+        width: '100%',
+        minWidth: 0,
     },
 }));
 
@@ -149,21 +150,22 @@ export const DashboardsPage = () => {
                 variant={'outlined'}
                 size="small"
                 onClick={() => setAddDashboard(true)}
-                fullWidth
                 style={{marginBottom: 10}}>
                 {t('Create Dashboard')}
             </Button>
             {addDashboard && <AddDashboardDialog open={true} close={() => setAddDashboard(false)} />}
-            <Table>
-                <TableHead>
-                    <TableRow>
-                        <TableCell>{t('ID')}</TableCell>
-                        <TableCell>{t('Name')}</TableCell>
-                        <TableCell style={{width: 150}} />
-                    </TableRow>
-                </TableHead>
-                <TableBody>{dashboards}</TableBody>
-            </Table>
+            <TableContainer>
+                <Table>
+                    <TableHead>
+                        <TableRow>
+                            <TableCell>{t('ID')}</TableCell>
+                            <TableCell>{t('Name')}</TableCell>
+                            <TableCell style={{width: 150}} />
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>{dashboards}</TableBody>
+                </Table>
+            </TableContainer>
             {removeDashboardConfirm ? (
                 <ConfirmDialog
                     title={t('Delete dashboard {name}?', {name: removeDashboardConfirm[1]})}

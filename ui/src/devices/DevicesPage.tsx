@@ -15,6 +15,7 @@ import {
 } from '../gql/__generated__';
 import {CenteredSpinner} from '../common/CenteredSpinner';
 import Table from '@mui/material/Table';
+import TableContainer from '@mui/material/TableContainer';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
@@ -42,9 +43,9 @@ const useStyles = makeStyles((theme) => ({
         },
         paddingTop: theme.spacing(3),
         paddingBottom: theme.spacing(3),
-        textAlign: 'center',
-        maxWidth: 1200,
-        margin: '0 auto',
+        textAlign: 'left',
+        width: '100%',
+        minWidth: 0,
     },
 }));
 
@@ -155,26 +156,27 @@ export const DevicesPage = () => {
                 variant={'outlined'}
                 size="small"
                 onClick={() => setAddActive(true)}
-                fullWidth
                 style={{marginBottom: 10}}>
                 {t('Create Device')}
             </Button>
-            <Table>
-                <TableHead>
-                    <TableRow>
-                        <TableCell>{t('ID')}</TableCell>
-                        <TableCell>{t('Name')}</TableCell>
-                        <TableCell>{t('Created')}</TableCell>
-                        <TableCell>{t('Expires after')}</TableCell>
-                        <TableCell>{t('Last Active')}</TableCell>
-                        <TableCell style={{width: 150}} />
-                    </TableRow>
-                </TableHead>
-                <TableBody>
-                    {addActive ? <AddDeviceDialog initialName={''} open={true} close={() => setAddActive(false)} /> : null}
-                    {devices}
-                </TableBody>
-            </Table>
+            <TableContainer>
+                <Table>
+                    <TableHead>
+                        <TableRow>
+                            <TableCell>{t('ID')}</TableCell>
+                            <TableCell>{t('Name')}</TableCell>
+                            <TableCell>{t('Created')}</TableCell>
+                            <TableCell>{t('Expires after')}</TableCell>
+                            <TableCell>{t('Last Active')}</TableCell>
+                            <TableCell style={{width: 150}} />
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {addActive ? <AddDeviceDialog initialName={''} open={true} close={() => setAddActive(false)} /> : null}
+                        {devices}
+                    </TableBody>
+                </Table>
+            </TableContainer>
         </Paper>
     );
 };

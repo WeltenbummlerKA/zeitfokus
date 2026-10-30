@@ -113,7 +113,7 @@ export const AIPage: React.FC = () => {
             .catch(() => setFailed(true));
     };
     return (
-        <Box sx={{maxWidth: 1120, mx: 'auto'}}>
+        <Box sx={{width: '100%', minWidth: 0}}>
             <Box sx={{display: 'flex', justifyContent: 'space-between', alignItems: 'start', flexWrap: 'wrap', gap: 2, mb: 3}}>
                 <Box>
                     <Typography component="h2" variant="h3" gutterBottom>
@@ -240,7 +240,7 @@ const ReportPanel: React.FC<{loading: boolean; failed: boolean; report: Report |
         )}
         {failed && <Alert severity="error">{text.failed}</Alert>}
         {!loading && !failed && !report && (
-            <Typography color="text.secondary" sx={{mt: 3, maxWidth: 420}}>
+            <Typography color="text.secondary" sx={{mt: 3, maxWidth: '75ch'}}>
                 {text.empty}
             </Typography>
         )}
@@ -263,7 +263,9 @@ const ReportPanel: React.FC<{loading: boolean; failed: boolean; report: Report |
                         </Box>
                     ))}
                 </Box>
-                <Typography sx={{whiteSpace: 'pre-wrap', overflowWrap: 'anywhere'}}>{report.data.text}</Typography>
+                <Typography sx={{whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', maxWidth: '85ch'}}>
+                    {report.data.text}
+                </Typography>
                 <Typography variant="body2" color="text.secondary">
                     {text.note}
                 </Typography>
