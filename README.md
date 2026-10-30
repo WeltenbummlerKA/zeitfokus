@@ -1,62 +1,39 @@
-<p align="center">
-    <a href="https://github.com/traggo/logo">
-        <img height="300px" src="https://raw.githubusercontent.com/traggo/logo/master/logo.png" />
-    </a>
-</p>
+# Zeitfokus
 
-<h1 align="center">traggo/server</h1>
-<p align="center"><i>tag-based time tracking</i></p>
+Zeitfokus ist eine selbst gehostete, tagbasierte Zeiterfassung mit Kalender-, Verlaufs-, Statistik- und KI-Auswertung. Die Daten bleiben auf dem eigenen Server.
 
-<p align="center">
-    <a href="https://travis-ci.com/traggo/server">
-        <img alt="Build Status" src="https://travis-ci.com/traggo/server.svg?branch=master">
-    </a>
-     <a href="https://codecov.io/gh/traggo/server">
-        <img alt="codecov" src="https://codecov.io/gh/traggo/server/branch/master/graph/badge.svg">
-    </a>
-    <a href="https://hub.docker.com/r/traggo/server">
-        <img alt="Docker Pulls" src="https://img.shields.io/docker/pulls/traggo/server.svg">
-    </a>
-    <a href="https://github.com/traggo/server/releases/latest">
-        <img alt="latest release" src="https://img.shields.io/github/release/traggo/server.svg">
-    </a>
-</p>
+## Funktionen
 
+- Zeiterfassung mit Tags und Beschreibungen
+- Listen-, Kalender- und Tagesansicht
+- Verlaufssuche, Zeitraum- und Tagfilter
+- korrekte Tages-, Wochen- und Monatssummen
+- CSV-Export und Einträge duplizieren
+- serverseitige Favoriten
+- optionale Soll-/Ist-Arbeitsprofile
+- deutsche und englische Oberfläche mit integrierter Hilfe
+- optionale KI-Auswertung über administrativ konfiguriertes Ollama oder LM Studio
 
-Traggo is a tag-based time tracking tool. In Traggo there are no tasks, only [tagged](https://traggo.net/terminology/#tag) [time spans](https://traggo.net/terminology/#timespan).
+## KI-Datenschutz
 
-With [tags](https://traggo.net/terminology/#tag), Traggo tries to be as customizable as possible, f.ex. if you work on different projects you could add a `project`-tag.
-If you like to see statistics from the different things you do, you could add a `type`-tag with values like `email`, `programming`, `meeting`. 
-You can do it just as you like.
+Die KI-Auswertung wird ausschließlich vom Backend ausgeführt. Standardmäßig werden nur aggregierte Zeitdaten übertragen; Beschreibungen und Notizen bleiben außen vor. Ergebnisse werden nicht gespeichert und ändern keine Zeitdaten automatisch. Unterstützt werden lokale oder private Ollama- und LM-Studio-Endpunkte.
 
-If you want to use Traggo, you need to host it yourself. This way, you have the full control over your data and no third-party
-may be able to read it. Have a look at our [Install Guide](https://traggo.net/install/).
+## Entwicklung
 
-## Features
+```sh
+go test ./...
+```
 
-* easy to setup
-* time tracking (obviously)
-* customizable dashboards with diagrams
-* a list and calendar view of the tracked time
-* sleek web ui with multiple themes
-* simple user management
+Für den Webbereich:
 
----
+```sh
+cd ui
+npm ci
+npm run build
+```
 
-<a href="./.github/traggo_list.png">
-    <img width="265" alt="traggo list" src=".github/traggo_list.png">
-</a>
-<a href=".github/traggo_calendar.png">
-    <img width="265" alt="traggo list" src=".github/traggo_calendar.png">
-</a>
-<a href=".github/traggo_dashboard.png">
-    <img width="265" alt="traggo list" src=".github/traggo_dashboard.png">
-</a>
+## Herkunft und Lizenz
 
-[Install](https://traggo.net/install/) ᛫
-[Configuration](https://traggo.net/config/) ᛫
-[Setup Dev Environment](https://traggo.net/dev/setup/)
+Zeitfokus steht unter GPL-3.0. Das Projekt basiert auf dem ursprünglichen Projekt [Traggo](https://github.com/traggo/server); die entsprechenden Lizenz- und Herkunftshinweise bleiben in `NOTICE` erhalten.
 
-## Versioning
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the
-[tags on this repository](https://github.com/traggo/server/tags).
+Zeitfokus ist ein eigenständiges Projekt und wird unabhängig weiterentwickelt.
