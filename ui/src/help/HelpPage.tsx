@@ -1,34 +1,26 @@
 import {t, useI18n} from '../i18n';
 import * as React from 'react';
-import {Accordion, AccordionDetails, AccordionSummary, Alert, Box, Paper, Stack, Typography} from '@mui/material';
+import {Accordion, AccordionDetails, AccordionSummary, Box, Button, Paper, Stack, Typography} from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import {shortcutLabel} from '../keyboard/shortcuts';
-
-const topics = [
-    {
-        title: 'Recording time',
-        body: 'Start a timer for the current task or switch to Manual to enter a completed interval. Add a description before saving so the history remains understandable.',
-    },
-    {
-        title: 'Finding and correcting entries',
-        body: 'Use the list and calendar views to review your entries. Open the entry menu to edit it explicitly or delete it after confirmation.',
-    },
-    {
-        title: 'Keyboard shortcuts',
-        body: 'Keyboard commands work outside text fields, menus and dialogs. Use Ctrl + Alt on Windows/Linux or Command + Option on Mac. Holding a key does not repeat an action.',
-    },
-    {
-        title: 'Exports and reports',
-        body: 'CSV export, complete-range totals and saved filters are planned for the reporting workspace. Until then, the calendar remains the visual overview.',
-    },
-    {
-        title: 'Privacy and AI analysis',
-        body: 'Any future AI analysis will be opt-in, limited to your own time data and configurable for a local or explicitly chosen provider. It will never change entries automatically.',
-    },
-];
+import {Link as RouterLink, useLocation} from 'react-router-dom';
+import {helpTopics} from './topics';
 
 export const HelpPage: React.FC = () => {
-    useI18n();
+    const {language} = useI18n();
+    const location = useLocation();
+    const [expanded, setExpanded] = React.useState<string[]>(['recording']);
+    React.useEffect(() => {
+        const id = location.hash.slice(1);
+        if (!id) {
+            return;
+        }
+        if (helpTopics.some((topic) => topic.id === id)) {
+            setExpanded((previous) => (previous.includes(id) ? previous : [...previous, id]));
+        }
+        const frame = requestAnimationFrame(() => document.getElementById(id)?.scrollIntoView?.({block: 'start'}));
+        return () => cancelAnimationFrame(frame);
+    }, [location.hash]);
     return (
         <Box sx={{maxWidth: 900, mx: 'auto'}}>
             <Box sx={{mb: 4}}>
@@ -38,23 +30,49 @@ export const HelpPage: React.FC = () => {
                 <Typography color="text.secondary">{t('Short, practical guidance for Zeitfokus.')}</Typography>
             </Box>
             <Stack spacing={2}>
-                <Alert severity="info">
-                    {t(
-                        'Zeitfokus keeps your data on your server. The help content describes the current workflow and clearly marks planned features.'
-                    )}
-                </Alert>
-                {topics.map(({title, body}) => (
-                    <Accordion key={title} defaultExpanded={title === 'Recording time'}>
-                        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                            <Typography fontWeight={600}>{t(title)}</Typography>
+                <Box
+                    component="nav"
+                    aria-label={language === 'de' ? 'Hilfethemen' : 'Help topics'}
+                    sx={{display: 'flex', flexWrap: 'wrap', gap: 1, mb: 1}}>
+                    {helpTopics.map((topic) => (
+                        <Button key={topic.id} component={RouterLink} to={`/help#${topic.id}`} variant="outlined" size="small">
+                            {topic[language].title}
+                        </Button>
+                    ))}
+                    <Button component={RouterLink} to="/help#shortcuts" variant="outlined" size="small">
+                        {t('Keyboard shortcuts')}
+                    </Button>
+                </Box>
+                {helpTopics.map((topic) => (
+                    <Accordion
+                        key={topic.id}
+                        id={topic.id}
+                        expanded={expanded.includes(topic.id)}
+                        sx={{scrollMarginTop: 160}}
+                        onChange={(_, open) =>
+                            setExpanded((previous) => (open ? [...previous, topic.id] : previous.filter((id) => id !== topic.id)))
+                        }>
+                        <AccordionSummary
+                            expandIcon={<ExpandMoreIcon />}
+                            id={`${topic.id}-heading`}
+                            aria-controls={`${topic.id}-content`}>
+                            <Typography component="h3" variant="subtitle1" fontWeight={600}>
+                                {topic[language].title}
+                            </Typography>
                         </AccordionSummary>
-                        <AccordionDetails>
-                            <Typography color="text.secondary">{t(body)}</Typography>
+                        <AccordionDetails id={`${topic.id}-content`}>
+                            <Box component="ol" sx={{m: 0, pl: 2.5, '& li + li': {mt: 1.5}}}>
+                                {topic[language].steps.map((step) => (
+                                    <Typography component="li" key={step} color="text.secondary">
+                                        {step}
+                                    </Typography>
+                                ))}
+                            </Box>
                         </AccordionDetails>
                     </Accordion>
                 ))}
-                <Paper variant="outlined" sx={{p: 2.5}}>
-                    <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+                <Paper id="shortcuts" component="section" variant="outlined" sx={{p: 2.5, scrollMarginTop: 160}}>
+                    <Typography component="h3" variant="subtitle1" fontWeight={600} gutterBottom>
                         {t('Current keyboard hint')}
                     </Typography>
                     <Box

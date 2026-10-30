@@ -23,8 +23,9 @@ beforeEach(() => {
     admin = true;
     mocks.query.mockReset();
     mocks.save.mockReset().mockResolvedValue({data: {setAISettings: settings}});
-    mocks.query.mockImplementation((document) => document.definitions[0].name.value === 'CurrentUser'
-        ? {data: {user: {admin}}} : queryResult);
+    mocks.query.mockImplementation((document) =>
+        document.definitions[0].name.value === 'CurrentUser' ? {data: {user: {admin}}} : queryResult
+    );
     mocks.mutation.mockReturnValue([mocks.save, {loading: false}]);
     host = document.createElement('div');
     document.body.appendChild(host);
@@ -36,7 +37,9 @@ afterEach(() => {
 });
 
 const render = async () => {
-    await act(async () => { root.render(<AISettingsSection />); });
+    await act(async () => {
+        root.render(<AISettingsSection />);
+    });
 };
 
 test('administrator can select either provider and save the complete server configuration', async () => {
@@ -48,7 +51,9 @@ test('administrator can select either provider and save the complete server conf
         select.value = 'lmstudio';
         select.dispatchEvent(new Event('change', {bubbles: true}));
     });
-    await act(async () => { host.querySelector('form')!.dispatchEvent(new Event('submit', {bubbles: true, cancelable: true})); });
+    await act(async () => {
+        host.querySelector('form')!.dispatchEvent(new Event('submit', {bubbles: true, cancelable: true}));
+    });
     expect(mocks.save).toHaveBeenCalledWith({variables: {settings: {...settings, provider: 'lmstudio'}}});
     expect(host.textContent).toContain('KI-Einstellungen gespeichert.');
 });
@@ -64,8 +69,24 @@ test('regular users do not load or edit the administrator connection', async () 
 test('save failure remains visible and retains the draft for retry', async () => {
     mocks.save.mockRejectedValueOnce(new Error('offline'));
     await render();
-    await act(async () => { host.querySelector('form')!.dispatchEvent(new Event('submit', {bubbles: true, cancelable: true})); });
+    act(() => {
+        const select = host.querySelector('select')!;
+        select.value = 'lmstudio';
+        select.dispatchEvent(new Event('change', {bubbles: true}));
+    });
+    await act(async () => {
+        host.querySelector('form')!.dispatchEvent(new Event('submit', {bubbles: true, cancelable: true}));
+    });
     expect(host.textContent).toContain('Speichern fehlgeschlagen.');
-    expect(host.querySelector('select')!.value).toBe('ollama');
+    expect(host.querySelector('select')!.value).toBe('lmstudio');
     expect(host.querySelector('button')!.disabled).toBe(false);
+});
+
+test('unchanged connection cannot be saved again', async () => {
+    await render();
+    expect(host.querySelector('button')!.disabled).toBe(true);
+    await act(async () => {
+        host.querySelector('form')!.dispatchEvent(new Event('submit', {bubbles: true, cancelable: true}));
+    });
+    expect(mocks.save).not.toHaveBeenCalled();
 });

@@ -30,6 +30,7 @@ import * as gqlVersion from '../gql/version';
 import Button from '@mui/material/Button';
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import {NavLink, matchPath, useLocation} from 'react-router-dom';
 import MenuItem from '@mui/material/MenuItem';
 import {useMutation, useQuery} from '@apollo/client';
@@ -117,9 +118,13 @@ export const Page: React.FC<React.PropsWithChildren> = ({children}) => {
                         </Typography>
                     </Box>
                 </HrefLink>
-                <HrefLink href="https://github.com/WeltenbummlerKA/zeitfokus/releases" underline="none" target="_blank">
-                    <Typography variant="caption" align="center" sx={{color: 'text.secondary'}}>
-                        {version.name}@{version.commit.slice(0, 8)}
+                <HrefLink
+                    component={NavLink}
+                    to="/about"
+                    underline="hover"
+                    sx={{display: 'block', textAlign: 'center', mt: 1, color: 'text.secondary'}}>
+                    <Typography component="span" variant="caption">
+                        {t('Version')} {version.name}
                     </Typography>
                 </HrefLink>
             </Box>
@@ -199,6 +204,20 @@ export const Page: React.FC<React.PropsWithChildren> = ({children}) => {
                 </>
             ) : null}
             <Divider />
+            <List aria-label={t('Help')} dense>
+                <ListItemButton component={routerLink('/help')} onClick={() => setMobileOpen(false)}>
+                    <ListItemIcon>
+                        <HelpOutlineIcon />
+                    </ListItemIcon>
+                    <ListItemText primary={t('Help')} />
+                </ListItemButton>
+                <ListItemButton component={routerLink('/about')} onClick={() => setMobileOpen(false)}>
+                    <ListItemIcon>
+                        <InfoOutlinedIcon />
+                    </ListItemIcon>
+                    <ListItemText primary={t('About')} />
+                </ListItemButton>
+            </List>
         </div>
     );
 
@@ -234,13 +253,14 @@ export const Page: React.FC<React.PropsWithChildren> = ({children}) => {
                         {pageTitle}
                     </Typography>
                     <LanguageSwitcher />
-                    <IconButton
+                    <Button
                         component={routerLink('/help')}
-                        aria-label={t('Help')}
+                        color="inherit"
+                        startIcon={<HelpOutlineIcon />}
                         aria-keyshortcuts={shortcutAria('H')}
                         title={`${t('Help')} (${shortcutLabel('H')})`}>
-                        <HelpOutlineIcon />
-                    </IconButton>
+                        {t('Help')}
+                    </Button>
                     <Button
                         color="inherit"
                         sx={{color: 'text.primary'}}

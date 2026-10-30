@@ -12,5 +12,5 @@ export const Version = gql`
 `;
 
 export const VersionDefault: VersionResponse = {
-    version: {__typename: 'Version', commit: 'unknown', buildDate: 'unknown', name: 'vUnknown'},
+    version: {__typename: 'Version', commit: 'unknown', buildDate: 'unknown', name: '—'},
 };

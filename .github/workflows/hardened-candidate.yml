@@ -18,6 +18,15 @@ jobs:
       packages: write
     steps:
       - uses: actions/checkout@v5
+      - name: Read product version
+        id: product-version
+        run: |
+          version=$(cat VERSION)
+          if ! [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "VERSION must contain a semantic version number."
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
       - uses: actions/setup-go@v6
         with:
           go-version: 1.26.0
@@ -43,7 +52,9 @@ jobs:
           file: Dockerfile.hardened
           load: true
           tags: zeitfokus-server-base:local
-          build-args: SOURCE_REVISION=${{ github.sha }}
+          build-args: |
+            SOURCE_REVISION=${{ github.sha }}
+            RELEASE_VERSION=${{ steps.product-version.outputs.version }}
       - run: docker build -f Dockerfile.zeitfokus --build-arg ZEITFOKUS_SERVER_IMAGE=zeitfokus-server-base:local --build-arg SOURCE_REVISION=${{ github.sha }} -t ghcr.io/weltenbummlerka/zeitfokus:sha-${{ github.sha }} -t ghcr.io/weltenbummlerka/zeitfokus:stable .
       - run: python3 tests/container/container_smoke.py ghcr.io/weltenbummlerka/zeitfokus:sha-${{ github.sha }}
       - name: Reject publish outside protected release refs
