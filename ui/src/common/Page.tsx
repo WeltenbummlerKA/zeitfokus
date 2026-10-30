@@ -111,7 +111,7 @@ export const Page: React.FC<React.PropsWithChildren> = ({children}) => {
             <Box sx={{p: 3, minHeight: 104}}>
                 <HrefLink href="https://github.com/WeltenbummlerKA/zeitfokus" underline="none" target="_blank">
                     <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1.25}}>
-                        <Box component="img" src="/zeitfokus.svg" alt="" aria-hidden="true" sx={{width: 30, height: 30}} />
+                        <Box component="img" src="/zeitfokus-icon.png" alt="" aria-hidden="true" sx={{width: 30, height: 30}} />
                         <Typography variant="h5" align="center" sx={{color: 'text.primary'}}>
                             Zeitfokus
                         </Typography>

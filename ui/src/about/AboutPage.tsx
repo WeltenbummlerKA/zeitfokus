@@ -11,7 +11,7 @@ export const AboutPage: React.FC = () => {
     const version = data?.version ?? gqlVersion.VersionDefault.version;
     return (
         <Paper sx={{maxWidth: 640, mx: 'auto', p: {xs: 3, sm: 5}, textAlign: 'center', borderRadius: 3}}>
-            <Box component="img" src="/zeitfokus.svg" alt="Zeitfokus" sx={{width: 80, height: 80, imageRendering: 'auto', mb: 2}} />
+            <Box component="img" src="/zeitfokus-icon.png" alt="Zeitfokus" sx={{width: 80, height: 80, imageRendering: 'auto', mb: 2}} />
             <Typography component="h2" variant="h4" gutterBottom>
                 Zeitfokus
             </Typography>
