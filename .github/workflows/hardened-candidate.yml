@@ -42,7 +42,7 @@ jobs:
           load: true
           tags: zeitfokus-server-base:local
           build-args: SOURCE_REVISION=${{ github.sha }}
-      - run: docker build --build-arg ZEITFOKUS_SERVER_IMAGE=zeitfokus-server-base:local --build-arg SOURCE_REVISION=${{ github.sha }} -t ghcr.io/weltenbummlerka/zeitfokus:sha-${{ github.sha }} -t ghcr.io/weltenbummlerka/zeitfokus:stable .
+      - run: docker build -f Dockerfile.zeitfokus --build-arg ZEITFOKUS_SERVER_IMAGE=zeitfokus-server-base:local --build-arg SOURCE_REVISION=${{ github.sha }} -t ghcr.io/weltenbummlerka/zeitfokus:sha-${{ github.sha }} -t ghcr.io/weltenbummlerka/zeitfokus:stable .
       - run: python3 tests/container/container_smoke.py ghcr.io/weltenbummlerka/zeitfokus:sha-${{ github.sha }}
       - uses: docker/login-action@v3
         if: github.event_name == 'workflow_dispatch' && inputs.publish
