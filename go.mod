@@ -13,7 +13,7 @@ require (
 	github.com/rs/zerolog v1.34.0
 	github.com/stretchr/testify v1.11.1
 	github.com/vektah/gqlparser/v2 v2.5.31
-	golang.org/x/crypto v0.55.0
+	golang.org/x/crypto v0.56.0
 )
 
 require (
