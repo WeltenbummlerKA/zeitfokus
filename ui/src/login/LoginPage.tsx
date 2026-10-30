@@ -21,8 +21,8 @@ export const LoginPage = () => {
                 <LoginForm />
             </DefaultPaper>
             <Box component="footer" sx={{display: 'flex', gap: 3, flexWrap: 'wrap', justifyContent: 'center'}}>
-                <Link href="https://github.com/traggo/server">{t('Source Code')}</Link>
-                <Link href="https://github.com/traggo/server/issues">{t('Bug Tracker')}</Link>
+                <Link href="https://github.com/WeltenbummlerKA/zeitfokus">{t('Source Code')}</Link>
+                <Link href="https://github.com/WeltenbummlerKA/zeitfokus/issues">{t('Bug Tracker')}</Link>
             </Box>
         </Box>
     );
