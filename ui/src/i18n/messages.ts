@@ -1070,4 +1070,15 @@ export const messages: Record<string, {en: string; de: string}> = {
         en: 'All commands are also available as buttons or links, including on touch devices.',
         de: 'Alle Befehle sind auch als Schaltflächen oder Links erreichbar, einschließlich auf Touch-Geräten.',
     },
+    'Analyze with AI': {en: 'Analyze with AI', de: 'Mit KI auswerten'},
+    'Analyzing…': {en: 'Analyzing…', de: 'Wird mit KI ausgewertet …'},
+    'AI time report': {en: 'AI time report', de: 'KI-Zeitauswertung'},
+    'AI analysis failed. Check the server configuration.': {
+        en: 'AI analysis failed. Check the server configuration.',
+        de: 'Die KI-Auswertung ist fehlgeschlagen. Prüfe die Serverkonfiguration.',
+    },
+    '{count} completed entries, {duration} total': {
+        en: '{count} completed entries, {duration} total',
+        de: '{count} abgeschlossene Einträge, insgesamt {duration}',
+    },
 };
