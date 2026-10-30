@@ -22,7 +22,11 @@ def docker(*args):
 with tempfile.TemporaryDirectory(prefix='zeitfokus-container-test-') as directory:
     envfile = os.path.join(directory, 'test.env')
     with open(envfile, 'w') as out:
-        out.write('ZEITFOKUS_DEFAULT_USER_PASS=' + password + '\nZEITFOKUS_FAVORITES_TOKEN=' + favorites_token + '\n')
+        out.write(
+            'ZEITFOKUS_DEFAULT_USER_PASS=' + password +
+            '\nZEITFOKUS_FAVORITES_TOKEN=' + favorites_token +
+            '\nZEITFOKUS_DATABASE_CONNECTION=/opt/zeitfokus/data/zeitfokus.db\n'
+        )
     os.chmod(envfile, 0o600)
     try:
         docker('run', '-d', '--name', name, '--read-only', '--tmpfs', '/tmp', '--tmpfs', '/opt/zeitfokus/data', '--cap-drop', 'ALL', '--security-opt', 'no-new-privileges:true', '--env-file', envfile, '-p', '127.0.0.1::3030', '-p', '127.0.0.1::3031', image)
