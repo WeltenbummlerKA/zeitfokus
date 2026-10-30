@@ -20,9 +20,9 @@ import {EditGlass} from './Entry/EditGlass';
 import {Fade} from '../common/Fade';
 import {CenteredSpinner} from '../common/CenteredSpinner';
 import {AddPopup} from './Entry/AddPopup';
-import {Box, Link, Paper, Typography} from '@mui/material';
+import {Box, Paper, Typography} from '@mui/material';
 import {Center} from '../common/Center';
-import {Link as RouterLink, useNavigate, useParams} from 'react-router-dom';
+import {useNavigate, useParams} from 'react-router-dom';
 import {useSnackbar} from 'notistack';
 import {DateRanges} from './DateRanges';
 import {displayRangeName} from './rangeLabels';
@@ -172,9 +172,6 @@ export const DashboardPage: React.FC = () => {
                         'Saved charts compare your working time by project, tag or period. Time tracking works without a dashboard.'
                     )}
                 </Typography>
-                <Link component={RouterLink} to="/help#dashboards" sx={{display: 'inline-block', mt: 1}}>
-                    {t('How to use reports')}
-                </Link>
             </Box>
             <div style={{display: 'flex', flexWrap: 'wrap', gap: 16}}>
                 <div style={{flex: 1}}>

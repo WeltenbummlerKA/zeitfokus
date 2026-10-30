@@ -15,7 +15,6 @@ import * as gqlUser from '../gql/user';
 import * as gqlVersion from '../gql/version';
 import Button from '@mui/material/Button';
 import AccountCircle from '@mui/icons-material/AccountCircle';
-import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import {NavLink, matchPath, useLocation} from 'react-router-dom';
 import MenuItem from '@mui/material/MenuItem';
 import {useMutation, useQuery} from '@apollo/client';
@@ -23,7 +22,6 @@ import {LogoutMutation, VersionQuery, CurrentUserQuery, DashboardsQuery} from '.
 import * as gqlDashboard from '../gql/dashboard';
 import {Dashboard} from '../gql/types';
 import {KeyboardShortcuts} from '../keyboard/KeyboardShortcuts';
-import {shortcutAria, shortcutLabel} from '../keyboard/shortcuts';
 import {WorkspaceNavigation} from './WorkspaceNavigation';
 
 const drawerWidth = 272;
@@ -136,14 +134,6 @@ export const Page: React.FC<React.PropsWithChildren> = ({children}) => {
                     </Typography>
                     <LanguageSwitcher />
                     <Button
-                        component={routerLink('/help')}
-                        color="inherit"
-                        startIcon={<HelpOutlineIcon />}
-                        aria-keyshortcuts={shortcutAria('H')}
-                        title={`${t('Help')} (${shortcutLabel('H')})`}>
-                        {t('Help')}
-                    </Button>
-                    <Button
                         color="inherit"
                         sx={{color: 'text.primary'}}
                         aria-haspopup="menu"
@@ -157,10 +147,6 @@ export const Page: React.FC<React.PropsWithChildren> = ({children}) => {
                         </MenuItem>
                         <MenuItem component={routerLink('/about')} onClick={() => setUserMenuOpen(null)}>
                             {t('About')}
-                        </MenuItem>
-                        <MenuItem component={routerLink('/help')} onClick={() => setUserMenuOpen(null)}>
-                            <HelpOutlineIcon fontSize="small" sx={{mr: 1}} />
-                            {t('Help')}
                         </MenuItem>
                         <MenuItem
                             onClick={() => {

@@ -121,9 +121,6 @@ export const AIPage: React.FC = () => {
                     </Typography>
                     <Typography color="text.secondary">{text.intro}</Typography>
                 </Box>
-                <Button component={RouterLink} to="/help#ai">
-                    {text.help}
-                </Button>
             </Box>
             {status.loading && <LinearProgress aria-label={text.loading} sx={{mb: 2}} />}
             {status.error && (

@@ -2,6 +2,7 @@ import * as React from 'react';
 import {useLocation, useNavigate} from 'react-router-dom';
 import {useSnackbar} from 'notistack';
 import {useI18n} from '../i18n';
+import {helpDestination} from '../help/navigation';
 import {focusShortcutTarget, isApplePlatform, shortcutAction, ShortcutAction} from './shortcuts';
 
 const routes: Partial<Record<ShortcutAction, string>> = {
@@ -37,7 +38,7 @@ export const KeyboardShortcuts: React.FC = () => {
             if (!action || document.querySelector('[role="dialog"], [role="menu"], [role="listbox"]')) {
                 return;
             }
-            const route = routes[action];
+            const route = action === 'help' ? helpDestination(location.pathname) : routes[action];
             if (route) {
                 event.preventDefault();
                 navigate(route);
