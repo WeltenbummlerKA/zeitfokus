@@ -42,7 +42,7 @@ jobs:
         with:
           go-version: '1.27.3'
       - name: Generate gqlgen sources
-        run: go run github.com/99designs/gqlgen@v0.17.85 generate
+        run: go install github.com/99designs/gqlgen@v0.17.85 && gqlgen generate
       - name: govulncheck
         run: go run golang.org/x/vuln/cmd/govulncheck@v1.1.4 ./...
       - name: gosec
