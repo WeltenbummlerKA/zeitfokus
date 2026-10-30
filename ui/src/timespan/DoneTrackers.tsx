@@ -6,7 +6,7 @@ import * as gqlTag from '../gql/tags';
 import {TimeSpan, TimeSpanProps} from './TimeSpan';
 import {HistoryQuery, HistoryQueryVariables, InputHistoryFilter, TagsQuery} from '../gql/__generated__';
 import moment from 'moment';
-import {Alert, Box, Button, LinearProgress, Paper, Stack, Typography} from '@mui/material';
+import {Alert, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, LinearProgress, Paper, Stack, Typography} from '@mui/material';
 import Refresh from '@mui/icons-material/Refresh';
 import {toGroupedTimeSpanProps} from './timespanutils';
 import {TagSelectorEntry} from '../tag/tagSelectorEntry';
@@ -14,12 +14,13 @@ import {HistoryFilters} from './HistoryFilters';
 import {historyFilterFromDraft, formatHistoryDuration} from './historyFilterUtils';
 import {HistoryCsvExport} from '../history/HistoryCsvExport';
 import {AnalyzeTimeReport} from '../gql/aiAnalysis';
-import {Dialog, DialogActions, DialogContent, DialogTitle} from '@mui/material';
 
 interface DoneTrackersProps {
     addTagsToTracker?: (entries: TagSelectorEntry[]) => void;
 }
 
+// The history screen combines loading, filtering, pagination, export and AI states.
+// eslint-disable-next-line complexity
 export const DoneTrackers: React.FC<DoneTrackersProps> = ({addTagsToTracker}) => {
     useI18n();
     const [filter, setFilter] = React.useState<InputHistoryFilter>({});
