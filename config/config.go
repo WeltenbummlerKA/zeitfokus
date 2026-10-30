@@ -38,6 +38,16 @@ type Config struct {
 // Get loads the application config.
 func Get() (Config, []FutureLog) {
 	var logs []FutureLog
+	// Zeitfokus is the product name. Keep the legacy TRAGGO_* names as
+	// fallback so existing installations continue to start during migration.
+	for _, name := range []string{"PORT", "LOG_LEVEL", "DEFAULT_USER_NAME", "DEFAULT_USER_PASS", "COOKIE_SECURE", "PASS_STRENGTH", "DATABASE_DIALECT", "DATABASE_CONNECTION", "AI_PROVIDER", "AI_BASE_URL", "AI_MODEL", "AI_TIMEOUT_SECONDS"} {
+		zeitfokus, legacy := "ZEITFOKUS_"+name, "TRAGGO_"+name
+		if value, ok := os.LookupEnv(zeitfokus); ok {
+			if _, legacySet := os.LookupEnv(legacy); !legacySet {
+				_ = os.Setenv(legacy, value)
+			}
+		}
+	}
 	dir, log := getExecutableOrWorkDir()
 	if log != nil {
 		logs = append(logs, *log)
