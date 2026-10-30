@@ -1,5 +1,6 @@
 import * as React from 'react';
 import {useMutation, useQuery} from '@apollo/client';
+import {TextField} from '@mui/material';
 import {useSnackbar} from 'notistack';
 import {CurrentUser} from '../gql/user';
 import {Settings, SetInterfaceLanguage} from '../gql/settings';
@@ -11,7 +12,7 @@ import {
 } from '../gql/__generated__';
 import {Language, setLanguageSaving, t, useI18n} from './index';
 
-export const LanguageSwitcher = () => {
+export const LanguageSwitcher: React.FC<{formField?: boolean}> = ({formField = false}) => {
     const {language, saving, setLanguage} = useI18n();
     const {data} = useQuery<CurrentUserQuery>(CurrentUser);
     const {enqueueSnackbar} = useSnackbar();
@@ -42,6 +43,32 @@ export const LanguageSwitcher = () => {
             setLanguageSaving(false);
         }
     };
+    const options = (
+        <>
+            <option value="de" lang="de">
+                Deutsch
+            </option>
+            <option value="en" lang="en">
+                English
+            </option>
+        </>
+    );
+    if (formField) {
+        return (
+            <TextField
+                select
+                fullWidth
+                label={t('Interface language')}
+                value={language}
+                disabled={saving}
+                SelectProps={{native: true}}
+                onChange={(event) => {
+                    void change(event.target.value as Language);
+                }}>
+                {options}
+            </TextField>
+        );
+    }
     return (
         <div className="language-control">
             <label htmlFor={id} className="visually-hidden">
@@ -54,12 +81,7 @@ export const LanguageSwitcher = () => {
                 onChange={(event) => {
                     void change(event.target.value as Language);
                 }}>
-                <option value="de" lang="de">
-                    Deutsch
-                </option>
-                <option value="en" lang="en">
-                    English
-                </option>
+                {options}
             </select>
         </div>
     );

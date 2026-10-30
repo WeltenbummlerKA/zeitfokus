@@ -1,11 +1,10 @@
-import {t, useI18n} from '../i18n';
 import * as React from 'react';
-import {LanguageSwitcher} from '../i18n/LanguageSwitcher';
-import Typography from '@mui/material/Typography';
-import makeStyles from '@mui/styles/makeStyles';
-import {Paper} from '@mui/material';
-import {SetSettings as SetSettingsGQL, Settings as SettingsGQL, useSettings} from '../gql/settings';
 import {useMutation} from '@apollo/client';
+import {Box, TextField, Typography} from '@mui/material';
+import {useSnackbar} from 'notistack';
+import {t, useI18n} from '../i18n';
+import {LanguageSwitcher} from '../i18n/LanguageSwitcher';
+import {SetSettings, Settings, useSettings} from '../gql/settings';
 import {
     SetSettingsMutation,
     SetSettingsMutationVariables,
@@ -13,177 +12,154 @@ import {
     Theme,
     WeekDay,
     DateTimeInputStyle,
+    InputUserSettings,
 } from '../gql/__generated__';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import Select from '@mui/material/NativeSelect';
-import {useSnackbar} from 'notistack';
 import {handleError} from '../utils/errors';
 import {WorkTargetSettings} from './WorkTargetSettings';
 import {AISettingsSection} from './AISettingsSection';
-
-const useStyles = makeStyles((theme) => ({
-    root: {
-        paddingLeft: theme.spacing(2),
-        paddingRight: theme.spacing(2),
-        [theme.breakpoints.up('sm')]: {
-            paddingLeft: theme.spacing(3),
-            paddingRight: theme.spacing(3),
-        },
-        paddingTop: theme.spacing(1),
-        paddingBottom: theme.spacing(3),
-        maxWidth: 500,
-        margin: '0 auto',
-    },
-}));
+import {SettingsPanel} from './SettingsPanel';
 
 export const SettingsPage: React.FC = () => {
-    useI18n();
-    const classes = useStyles();
-    const allSettings = useSettings();
-    const settings = {
-        theme: allSettings.theme,
-        dateLocale: allSettings.dateLocale,
-        firstDayOfTheWeek: allSettings.firstDayOfTheWeek,
-        dateTimeInputStyle: allSettings.dateTimeInputStyle,
-    };
+    const {language} = useI18n();
+    const all = useSettings();
     const {enqueueSnackbar} = useSnackbar();
-    const [setSettings, {loading: saving}] = useMutation<SetSettingsMutation, SetSettingsMutationVariables>(SetSettingsGQL, {
+    const [save, {loading: saving}] = useMutation<SetSettingsMutation, SetSettingsMutationVariables>(SetSettings, {
         awaitRefetchQueries: true,
-        refetchQueries: [{query: SettingsGQL}],
+        refetchQueries: [{query: Settings}],
     });
+    const settings: InputUserSettings = {
+        theme: all.theme,
+        dateLocale: all.dateLocale,
+        firstDayOfTheWeek: all.firstDayOfTheWeek,
+        dateTimeInputStyle: all.dateTimeInputStyle,
+    };
+    const change = (patch: Partial<InputUserSettings>, message: string, action: string) => {
+        void save({variables: {settings: {...settings, ...patch}}})
+            .then(() => enqueueSnackbar(t(message), {variant: 'success'}))
+            .catch(handleError(t(action), enqueueSnackbar));
+    };
+    const disabled = saving || !all.done;
     return (
-        <Paper elevation={0} className={classes.root}>
-            <Typography variant="h6" sx={{mt: 2, mb: 1}}>
-                {t('Interface language')}
+        <Box sx={{maxWidth: 1200, mx: 'auto', width: '100%'}}>
+            <Typography color="text.secondary" sx={{mb: 3}}>
+                {language === 'de' ? 'Richte Zeitfokus für deinen Arbeitsalltag ein.' : 'Set up Zeitfokus for your working day.'}
             </Typography>
-            <LanguageSwitcher />
-            <FormControl margin={'normal'} fullWidth>
-                <InputLabel htmlFor="setting-0">{t('Date Locale')}</InputLabel>
-                <Select
-                    disabled={saving}
-                    inputProps={{id: 'setting-0'}}
-                    fullWidth
-                    value={settings.dateLocale}
-                    onChange={(e) => {
-                        setSettings({
-                            variables: {
-                                settings: {
-                                    ...settings,
-                                    dateLocale: e.target.value as DateLocale,
-                                },
-                            },
-                        })
-                            .then(() => {
-                                enqueueSnackbar(t('date locale changed'), {
-                                    variant: 'success',
-                                });
-                            })
-                            .catch(handleError(t('set date locale'), enqueueSnackbar));
-                    }}>
-                    {Object.values(DateLocale).map((type) => (
-                        <option key={type} value={type}>
-                            {t(type)}
-                        </option>
-                    ))}
-                </Select>
-            </FormControl>
-            <FormControl margin={'normal'} fullWidth>
-                <InputLabel htmlFor="setting-1">{t('Theme')}</InputLabel>
-                <Select
-                    disabled={saving}
-                    inputProps={{id: 'setting-1'}}
-                    fullWidth
-                    value={settings.theme}
-                    onChange={(e) => {
-                        setSettings({variables: {settings: {...settings, theme: e.target.value as Theme}}})
-                            .then(() =>
-                                enqueueSnackbar(t('theme changed'), {
-                                    variant: 'success',
-                                })
-                            )
-                            .catch(handleError(t('set theme'), enqueueSnackbar));
-                    }}>
-                    {Object.values(Theme).map((type) => (
-                        <option key={type} value={type}>
-                            {t(type)}
-                        </option>
-                    ))}
-                </Select>
-            </FormControl>
-            <Typography variant="body2" color="text.secondary" sx={{mt: 1}}>
-                {t('Theme follows system appearance')}
-            </Typography>
-            <AISettingsSection />
-            <FormControl margin={'normal'} fullWidth>
-                <InputLabel htmlFor="setting-2">{t('First day of the week')}</InputLabel>
-                <Select
-                    disabled={saving}
-                    inputProps={{id: 'setting-2'}}
-                    fullWidth
-                    value={settings.firstDayOfTheWeek}
-                    onChange={(e) => {
-                        setSettings({
-                            variables: {
-                                settings: {
-                                    ...settings,
-                                    firstDayOfTheWeek: e.target.value as WeekDay,
-                                },
-                            },
-                        })
-                            .then(() =>
-                                enqueueSnackbar(t('first day of the week changed'), {
-                                    variant: 'success',
-                                })
-                            )
-                            .catch(handleError(t('set first day of the week'), enqueueSnackbar));
-                    }}>
-                    {[
-                        WeekDay.Sunday,
-                        WeekDay.Monday,
-                        WeekDay.Tuesday,
-                        WeekDay.Wednesday,
-                        WeekDay.Thursday,
-                        WeekDay.Friday,
-                        WeekDay.Saturday,
-                    ].map((type) => (
-                        <option key={type} value={type}>
-                            {t(type)}
-                        </option>
-                    ))}
-                </Select>
-            </FormControl>
-            <FormControl margin={'normal'} fullWidth>
-                <InputLabel htmlFor="setting-3">{t('Datetime input style')}</InputLabel>
-                <Select
-                    disabled={saving}
-                    inputProps={{id: 'setting-3'}}
-                    fullWidth
-                    value={settings.dateTimeInputStyle}
-                    onChange={(e) => {
-                        setSettings({
-                            variables: {
-                                settings: {
-                                    ...settings,
-                                    dateTimeInputStyle: e.target.value as DateTimeInputStyle,
-                                },
-                            },
-                        })
-                            .then(() =>
-                                enqueueSnackbar(t('datetime input style changed'), {
-                                    variant: 'success',
-                                })
-                            )
-                            .catch(handleError(t('set datetime input style'), enqueueSnackbar));
-                    }}>
-                    {[DateTimeInputStyle.Fancy, DateTimeInputStyle.Native].map((type) => (
-                        <option key={type} value={type}>
-                            {t(type)}
-                        </option>
-                    ))}
-                </Select>
-            </FormControl>
-            <WorkTargetSettings />
-        </Paper>
+            <Box
+                sx={{
+                    display: 'grid',
+                    gridTemplateColumns: {xs: 'minmax(0, 1fr)', lg: 'minmax(0, 1fr) minmax(0, 1fr)'},
+                    gap: 3,
+                    alignItems: 'start',
+                }}>
+                <Box sx={{display: 'grid', gap: 3, minWidth: 0}}>
+                    <SettingsPanel
+                        id="personal-settings-title"
+                        title={language === 'de' ? 'Persönliche Einstellungen' : 'Personal settings'}
+                        description={
+                            language === 'de'
+                                ? 'Gilt für dein Konto. Änderungen werden automatisch gespeichert.'
+                                : 'Applies to your account. Changes are saved automatically.'
+                        }>
+                        <Box
+                            sx={{
+                                display: 'grid',
+                                gridTemplateColumns: {xs: 'minmax(0, 1fr)', sm: 'repeat(2, minmax(0, 1fr))'},
+                                gap: 2.5,
+                            }}>
+                            <LanguageSwitcher formField />
+                            <TextField
+                                select
+                                fullWidth
+                                label={t('Theme')}
+                                value={settings.theme}
+                                disabled={disabled}
+                                SelectProps={{native: true}}
+                                onChange={(event) => change({theme: event.target.value as Theme}, 'theme changed', 'set theme')}>
+                                {Object.values(Theme).map((value) => (
+                                    <option key={value} value={value}>
+                                        {t(value)}
+                                    </option>
+                                ))}
+                            </TextField>
+                            <TextField
+                                select
+                                fullWidth
+                                label={t('Date Locale')}
+                                value={settings.dateLocale}
+                                disabled={disabled}
+                                SelectProps={{native: true}}
+                                onChange={(event) =>
+                                    change(
+                                        {dateLocale: event.target.value as DateLocale},
+                                        'date locale changed',
+                                        'set date locale'
+                                    )
+                                }>
+                                {Object.values(DateLocale).map((value) => (
+                                    <option key={value} value={value}>
+                                        {t(value)}
+                                    </option>
+                                ))}
+                            </TextField>
+                            <TextField
+                                select
+                                fullWidth
+                                label={t('First day of the week')}
+                                value={settings.firstDayOfTheWeek}
+                                disabled={disabled}
+                                SelectProps={{native: true}}
+                                onChange={(event) =>
+                                    change(
+                                        {firstDayOfTheWeek: event.target.value as WeekDay},
+                                        'first day of the week changed',
+                                        'set first day of the week'
+                                    )
+                                }>
+                                {[
+                                    WeekDay.Monday,
+                                    WeekDay.Tuesday,
+                                    WeekDay.Wednesday,
+                                    WeekDay.Thursday,
+                                    WeekDay.Friday,
+                                    WeekDay.Saturday,
+                                    WeekDay.Sunday,
+                                ].map((value) => (
+                                    <option key={value} value={value}>
+                                        {t(value)}
+                                    </option>
+                                ))}
+                            </TextField>
+                            <TextField
+                                select
+                                fullWidth
+                                label={t('Datetime input style')}
+                                value={settings.dateTimeInputStyle}
+                                disabled={disabled}
+                                SelectProps={{native: true}}
+                                onChange={(event) =>
+                                    change(
+                                        {dateTimeInputStyle: event.target.value as DateTimeInputStyle},
+                                        'datetime input style changed',
+                                        'set datetime input style'
+                                    )
+                                }>
+                                {[DateTimeInputStyle.Fancy, DateTimeInputStyle.Native].map((value) => (
+                                    <option key={value} value={value}>
+                                        {t(value)}
+                                    </option>
+                                ))}
+                            </TextField>
+                        </Box>
+                        {settings.theme === Theme.System && (
+                            <Typography variant="body2" color="text.secondary" sx={{mt: 2}}>
+                                {t('Theme follows system appearance')}
+                            </Typography>
+                        )}
+                    </SettingsPanel>
+                    <WorkTargetSettings />
+                </Box>
+                <AISettingsSection />
+            </Box>
+        </Box>
     );
 };

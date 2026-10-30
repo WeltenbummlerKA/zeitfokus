@@ -1,4 +1,5 @@
 import {gql, useQuery} from '@apollo/client';
+import {useMemo} from 'react';
 import {SettingsQuery as SettingsQueryResponse, DateLocale, Theme, WeekDay, DateTimeInputStyle} from './__generated__';
 import {stripTypename} from '../utils/strip';
 
@@ -39,11 +40,12 @@ const defaultSettings = {
 
 export const useSettings = (): {done: boolean} & Omit<SettingsQueryResponse['userSettings'], '__typename'> => {
     const data = useQuery<SettingsQueryResponse>(Settings);
+    const settings = useMemo(() => (data.data ? stripTypename(data.data.userSettings) : null), [data.data]);
 
-    if (data.loading || data.error || !data.data) {
+    if (data.loading || data.error || !settings) {
         return {...defaultSettings, done: false};
     }
-    return {done: true, ...stripTypename(data.data.userSettings)};
+    return {done: true, ...settings};
 };
 
 export const SetInterfaceLanguage = gql`
