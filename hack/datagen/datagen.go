@@ -220,5 +220,7 @@ func noErr(err error) {
 }
 
 func randInt(min int, max int) int {
+	// Synthetic fixture generation only; this value is never used for security.
+	// #nosec G404 -- deterministic test data does not require cryptographic randomness.
 	return min + rand.Intn(max-min)
 }

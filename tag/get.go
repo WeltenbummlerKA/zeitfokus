@@ -25,6 +25,6 @@ func (r *ResolverForTag) Tags(ctx context.Context) ([]*gqlmodel.TagDefinition, e
 		SubQuery()
 	find := r.DB.Select("tag_definitions.*, ? as usages", usages).Where("user_id = ?", userID).Order("usages desc").Find(&tags)
 	result := []*gqlmodel.TagDefinition{}
-	copier.Copy(&result, &tags)
+	if err := copier.Copy(&result, &tags); err != nil { return nil, err }
 	return result, find.Error
 }

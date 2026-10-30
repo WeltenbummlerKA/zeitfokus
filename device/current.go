@@ -15,6 +15,6 @@ func (r *ResolverForDevice) CurrentDevice(ctx context.Context) (*gqlmodel.Device
 		return nil, nil
 	}
 	var result gqlmodel.Device
-	copier.Copy(&result, device)
+	if err := copier.Copy(&result, device); err != nil { return nil, err }
 	return &result, nil
 }

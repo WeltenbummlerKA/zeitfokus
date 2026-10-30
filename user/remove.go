@@ -18,6 +18,6 @@ func (r *ResolverForUser) RemoveUser(ctx context.Context, id int) (*gqlmodel.Use
 
 	remove := r.DB.Delete(&user)
 	gqlUser := &gqlmodel.User{}
-	copier.Copy(gqlUser, &user)
+	if err := copier.Copy(gqlUser, &user); err != nil { return nil, err }
 	return gqlUser, remove.Error
 }

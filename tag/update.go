@@ -81,6 +81,6 @@ func (r *ResolverForTag) UpdateTag(ctx context.Context, key string, newKey *stri
 	update := tx.Commit()
 
 	gqlTag := &gqlmodel.TagDefinition{}
-	copier.Copy(gqlTag, &newValue)
+	if err := copier.Copy(gqlTag, &newValue); err != nil { return nil, err }
 	return gqlTag, update.Error
 }

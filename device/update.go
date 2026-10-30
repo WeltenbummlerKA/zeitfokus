@@ -24,6 +24,6 @@ func (r *ResolverForDevice) UpdateDevice(ctx context.Context, id int, name strin
 	}
 	update := r.DB.Save(device)
 	gqlDevice := &gqlmodel.Device{}
-	copier.Copy(gqlDevice, device)
+	if err := copier.Copy(gqlDevice, device); err != nil { return nil, err }
 	return gqlDevice, update.Error
 }

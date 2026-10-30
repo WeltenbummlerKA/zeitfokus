@@ -13,6 +13,6 @@ func (r *ResolverForUser) Users(ctx context.Context) ([]*gqlmodel.User, error) {
 	var users []model.User
 	find := r.DB.Find(&users)
 	var result []*gqlmodel.User
-	copier.Copy(&result, &users)
+	if err := copier.Copy(&result, &users); err != nil { return nil, err }
 	return result, find.Error
 }

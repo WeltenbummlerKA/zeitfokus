@@ -57,9 +57,9 @@ func main() {
 
 	go favorites.listen()
 
-	// The upstream-compatible image still places the server binary at this
-	// internal path; ZEITFOKUS_BINARY can override it for a fully renamed image.
-	cmd := exec.Command(envCompat("ZEITFOKUS_BINARY", "TRAGGO_BINARY", "/opt/zeitfokus/zeitfokus"), os.Args[1:]...)
+	// The server binary is fixed inside the image; command-line arguments are
+	// forwarded without allowing an environment variable to replace the binary.
+	cmd := exec.Command("/opt/zeitfokus/zeitfokus", os.Args[1:]...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Stdin = os.Stdin
@@ -215,7 +215,7 @@ func (s *FavoriteServer) saveLocked() error {
 		return errors.New("empty store path")
 	}
 
-	if err := os.MkdirAll(filepath.Dir(s.storePath), 0755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(s.storePath), 0750); err != nil {
 		return err
 	}
 
@@ -230,11 +230,11 @@ func (s *FavoriteServer) saveLocked() error {
 	}
 	defer os.Remove(f.Name())
 	if _, err = f.Write(data); err != nil {
-		f.Close()
+		_ = f.Close()
 		return err
 	}
 	if err = f.Sync(); err != nil {
-		f.Close()
+		_ = f.Close()
 		return err
 	}
 	if err = f.Close(); err != nil {

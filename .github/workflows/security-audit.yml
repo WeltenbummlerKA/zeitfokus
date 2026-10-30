@@ -57,7 +57,7 @@ jobs:
       - name: gosec
         run: |
           go install github.com/securego/gosec/v2/cmd/gosec@v2.22.8
-          "$(go env GOPATH)/bin/gosec" ./...
+          "$(go env GOPATH)/bin/gosec" -exclude-generated ./...
 
   frontend-security:
     name: Frontend dependency audit

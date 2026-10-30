@@ -14,6 +14,6 @@ func (r *ResolverForTag) SuggestTag(ctx context.Context, query string) ([]*gqlmo
 	var suggestions []model.TagDefinition
 	find := r.DB.Where("user_id = ?", auth.GetUser(ctx).ID).Where("Key LIKE ?", query+"%").Find(&suggestions)
 	var result []*gqlmodel.TagDefinition
-	copier.Copy(&result, &suggestions)
+	if err := copier.Copy(&result, &suggestions); err != nil { return nil, err }
 	return result, find.Error
 }

@@ -76,9 +76,9 @@ func (r *ResolverForDevice) createDeviceInternal(ctx context.Context, user *mode
 	create := r.DB.Create(device)
 
 	gqlUser := &gqlmodel.User{}
-	copier.Copy(gqlUser, user)
+	if err := copier.Copy(gqlUser, user); err != nil { return nil, err }
 	gqlDevice := &gqlmodel.Device{}
-	copier.Copy(gqlDevice, device)
+	if err := copier.Copy(gqlDevice, device); err != nil { return nil, err }
 	return &gqlmodel.Login{
 		User:   gqlUser,
 		Device: gqlDevice,

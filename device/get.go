@@ -15,6 +15,6 @@ func (r *ResolverForDevice) Devices(ctx context.Context) ([]*gqlmodel.Device, er
 	var devices []model.Device
 	find := r.DB.Where(&model.Device{UserID: user.ID}).Order("active_at DESC").Find(&devices)
 	var result []*gqlmodel.Device
-	copier.Copy(&result, &devices)
+	if err := copier.Copy(&result, &devices); err != nil { return nil, err }
 	return result, find.Error
 }
