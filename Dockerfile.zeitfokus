@@ -1,0 +1,15 @@
+ARG ZEITFOKUS_SERVER_IMAGE=zeitfokus-server-base:local
+FROM golang:1.27.3-alpine AS entrypoint
+WORKDIR /src
+COPY go.mod go.sum ./
+COPY cmd/zeitfokus-entrypoint ./cmd/zeitfokus-entrypoint
+RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /zeitfokus-entrypoint ./cmd/zeitfokus-entrypoint
+
+FROM ${ZEITFOKUS_SERVER_IMAGE}
+COPY --from=entrypoint /zeitfokus-entrypoint /usr/local/bin/zeitfokus-entrypoint
+ARG SOURCE_REVISION=unknown
+LABEL org.opencontainers.image.source="https://github.com/WeltenbummlerKA/zeitfokus" \
+      org.opencontainers.image.revision="${SOURCE_REVISION}"
+EXPOSE 3030 3031
+USER zeitfokus
+ENTRYPOINT ["/usr/local/bin/zeitfokus-entrypoint"]

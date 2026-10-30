@@ -19,6 +19,6 @@ func (r *ResolverForDevice) RemoveDevice(ctx context.Context, id int) (*gqlmodel
 
 	remove := r.DB.Delete(&device)
 	gqlDevice := &gqlmodel.Device{}
-	copier.Copy(gqlDevice, &device)
+	if err := copier.Copy(gqlDevice, &device); err != nil { return nil, err }
 	return gqlDevice, remove.Error
 }

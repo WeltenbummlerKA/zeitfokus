@@ -55,6 +55,6 @@ func (r *ResolverForTag) RemoveTag(ctx context.Context, key string) (*gqlmodel.T
 
 	remove := tx.Commit()
 	gqlTag := &gqlmodel.TagDefinition{}
-	copier.Copy(gqlTag, &tag)
+	if err := copier.Copy(gqlTag, &tag); err != nil { return nil, err }
 	return gqlTag, remove.Error
 }

@@ -40,6 +40,6 @@ func (r *ResolverForUser) UpdateUser(ctx context.Context, id int, name string, p
 		return nil, err
 	}
 	gqlUser := &gqlmodel.User{}
-	copier.Copy(gqlUser, user)
+	if err := copier.Copy(gqlUser, user); err != nil { return nil, err }
 	return gqlUser, nil
 }

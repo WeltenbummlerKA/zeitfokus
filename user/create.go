@@ -23,6 +23,6 @@ func (r *ResolverForUser) CreateUser(ctx context.Context, name string, pass stri
 
 	create := r.DB.Create(&newUser)
 	gqlUser := &gqlmodel.User{}
-	copier.Copy(gqlUser, newUser)
+	if err := copier.Copy(gqlUser, newUser); err != nil { return nil, err }
 	return gqlUser, create.Error
 }

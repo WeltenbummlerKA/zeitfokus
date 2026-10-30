@@ -15,6 +15,6 @@ func (r *ResolverForUser) CurrentUser(ctx context.Context) (*gqlmodel.User, erro
 		return nil, nil
 	}
 	var result gqlmodel.User
-	copier.Copy(&result, user)
+	if err := copier.Copy(&result, user); err != nil { return nil, err }
 	return &result, nil
 }

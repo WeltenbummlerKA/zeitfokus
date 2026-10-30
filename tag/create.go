@@ -33,6 +33,6 @@ func (r *ResolverForTag) CreateTag(ctx context.Context, key string, color string
 
 	create := r.DB.Create(&definition)
 	gqlTag := &gqlmodel.TagDefinition{}
-	copier.Copy(gqlTag, definition)
+	if err := copier.Copy(gqlTag, definition); err != nil { return nil, err }
 	return gqlTag, create.Error
 }

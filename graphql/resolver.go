@@ -78,7 +78,7 @@ func (r *resolver) RootQuery() gqlschema.RootQueryResolver {
 
 func (r *resolver) Version(ctx context.Context) (*gqlmodel.Version, error) {
 	gql := &gqlmodel.Version{}
-	copier.Copy(gql, r.version)
+	if err := copier.Copy(gql, r.version); err != nil { return nil, err }
 	return gql, nil
 }
 

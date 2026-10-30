@@ -11,7 +11,8 @@ permissions:
   contents: read
 jobs:
   validate:
-    runs-on: ubuntu-latest
+    # Keep the build stable across GitHub's future ubuntu-latest migrations.
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       packages: write
@@ -19,35 +20,51 @@ jobs:
       - uses: actions/checkout@v5
       - uses: actions/setup-go@v6
         with:
-          go-version: 1.25.14
+          go-version: 1.26.0
       - uses: actions/setup-node@v6
         with:
           node-version: '24'
       - run: npm install --global yarn@1.22.22
       - run: yarn install --frozen-lockfile --ignore-scripts && yarn generate
         working-directory: ui
-      - run: go install github.com/99designs/gqlgen@v0.17.85 && gqlgen generate
-      - uses: actions/setup-go@v6
-        with:
-          go-version: 1.27.3
+      - run: |
+          export GOFLAGS=-mod=mod
+          go install github.com/99designs/gqlgen@v0.17.85
+          "$(go env GOPATH)/bin/gqlgen" generate
+      - run: go mod tidy
       - run: yarn tsc --noEmit && yarn lint:check && yarn test && yarn build
         working-directory: ui
       - run: go test -race ./... && go vet ./...
       - run: go build -o /tmp/traggo-language-test . && python3 tests/interface_language.py --binary /tmp/traggo-language-test
       - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.hardened
+          load: true
+          tags: zeitfokus-server-base:local
+          build-args: SOURCE_REVISION=${{ github.sha }}
+      - run: docker build -f Dockerfile.zeitfokus --build-arg ZEITFOKUS_SERVER_IMAGE=zeitfokus-server-base:local --build-arg SOURCE_REVISION=${{ github.sha }} -t ghcr.io/weltenbummlerka/zeitfokus:sha-${{ github.sha }} -t ghcr.io/weltenbummlerka/zeitfokus:stable .
+      - run: python3 tests/container/container_smoke.py ghcr.io/weltenbummlerka/zeitfokus:sha-${{ github.sha }}
+      - name: Reject publish outside protected release refs
+        if: >-
+          github.event_name == 'workflow_dispatch' && inputs.publish &&
+          github.ref != 'refs/heads/main' && !startsWith(github.ref, 'refs/tags/v')
+        run: |
+          echo "Publishing is allowed only from main or a version tag (v*)."
+          exit 1
       - uses: docker/login-action@v3
-        if: github.event_name == 'workflow_dispatch' && inputs.publish
+        if: >-
+          github.event_name == 'workflow_dispatch' && inputs.publish &&
+          (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - uses: docker/build-push-action@v6
-        id: image
-        with:
-          context: .
-          file: Dockerfile.hardened
-          platforms: linux/amd64
-          push: ${{ github.event_name == 'workflow_dispatch' && inputs.publish }}
-          tags: ghcr.io/weltenbummlerka/traggo-server:sha-${{ github.sha }}
-          build-args: SOURCE_REVISION=${{ github.sha }}
-      - run: echo 'Image digest ${{ steps.image.outputs.digest }}' >> "$GITHUB_STEP_SUMMARY"
+      - name: Publish Zeitfokus image
+        if: >-
+          github.event_name == 'workflow_dispatch' && inputs.publish &&
+          (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
+        run: |
+          docker push ghcr.io/weltenbummlerka/zeitfokus:sha-${{ github.sha }}
+          docker push ghcr.io/weltenbummlerka/zeitfokus:stable

@@ -6,13 +6,14 @@ COPY schema.graphql /src/schema.graphql
 COPY ui/ ./
 RUN yarn generate && yarn build
 
-FROM golang:1.25.14-alpine AS generator
+FROM golang:1.26.0-alpine AS generator
 RUN apk add --no-cache gcc musl-dev git
 WORKDIR /src
 COPY go.mod go.sum ./
 RUN go mod download && go install github.com/99designs/gqlgen@v0.17.85
 COPY . .
-RUN gqlgen generate
+RUN GOFLAGS=-mod=mod /go/bin/gqlgen generate
+RUN go mod tidy
 
 FROM golang:1.27.3-alpine AS backend
 RUN apk add --no-cache gcc musl-dev
@@ -23,16 +24,24 @@ COPY --from=frontend /src/ui/build ./ui/build
 ARG SOURCE_REVISION=unknown
 RUN CGO_ENABLED=1 go build -trimpath -tags 'netgo osusergo sqlite_omit_load_extension' \
     -ldflags "-s -w -linkmode external -extldflags '-static' -X main.BuildMode=prod -X main.BuildVersion=hardened-candidate -X main.BuildCommit=${SOURCE_REVISION}" \
-    -o /traggo .
+    -o /zeitfokus .
 
 FROM alpine:3.22
-RUN apk add --no-cache ca-certificates tzdata && mkdir -p /opt/traggo/data
-WORKDIR /opt/traggo
-COPY --from=backend /traggo ./traggo
-COPY LICENSE /usr/share/licenses/traggo/LICENSE
+RUN apk add --no-cache ca-certificates tzdata \
+    && addgroup -S zeitfokus \
+    && adduser -S -D -H -G zeitfokus zeitfokus \
+    && mkdir -p /opt/zeitfokus/data \
+    && chown -R zeitfokus:zeitfokus /opt/zeitfokus
+WORKDIR /opt/zeitfokus
+COPY --from=backend /zeitfokus ./zeitfokus
+COPY LICENSE /usr/share/licenses/zeitfokus/LICENSE
+COPY NOTICE /usr/share/licenses/zeitfokus/NOTICE
 ARG SOURCE_REVISION=unknown
-LABEL org.opencontainers.image.source="https://github.com/WeltenbummlerKA/traggo-server" \
+LABEL org.opencontainers.image.source="https://github.com/WeltenbummlerKA/zeitfokus" \
       org.opencontainers.image.revision="${SOURCE_REVISION}" \
       org.opencontainers.image.licenses="GPL-3.0"
 EXPOSE 3030
-ENTRYPOINT ["/opt/traggo/traggo"]
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD wget -q -O /dev/null http://127.0.0.1:3030/ || exit 1
+USER zeitfokus
+ENTRYPOINT ["/opt/zeitfokus/zeitfokus"]
