@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {Box, Typography, Link} from '@mui/material';
+import {Alert, Box, Typography, Link} from '@mui/material';
 import {LoginForm} from './LoginForm';
 import {DefaultPaper} from '../common/DefaultPaper';
 import {LanguageSwitcher} from '../i18n/LanguageSwitcher';
@@ -19,6 +19,9 @@ export const LoginPage = () => {
                     {t('Your time, clearly organised.')}
                 </Typography>
                 <LoginForm />
+                <Alert severity="info" sx={{mt: 3, textAlign: 'left'}}>
+                    {t('First start password hint')}
+                </Alert>
             </DefaultPaper>
             <Box component="footer" sx={{display: 'flex', gap: 3, flexWrap: 'wrap', justifyContent: 'center'}}>
                 <Link href="https://github.com/WeltenbummlerKA/zeitfokus">{t('Source Code')}</Link>

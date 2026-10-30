@@ -580,6 +580,10 @@ export const messages: Record<string, {en: string; de: string}> = {
         en: 'Sign in to your workspace.',
         de: 'Melde dich in deinem Arbeitsbereich an.',
     },
+    'First start password hint': {
+        en: 'On a new database, set ZEITFOKUS_DEFAULT_USER_PASS (or legacy TRAGGO_DEFAULT_USER_PASS) to a unique password of at least 12 characters before the first start.',
+        de: 'Bei einer neuen Datenbank muss vor dem ersten Start ZEITFOKUS_DEFAULT_USER_PASS (oder der frühere Name TRAGGO_DEFAULT_USER_PASS) auf ein einzigartiges Passwort mit mindestens 12 Zeichen gesetzt werden.',
+    },
     'Username and password are required.': {
         en: 'Username and password are required.',
         de: 'Benutzername und Passwort sind erforderlich.',
