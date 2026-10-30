@@ -6,6 +6,7 @@ import secrets
 import subprocess
 import sys
 import tempfile
+from pathlib import Path
 import time
 import urllib.error
 import urllib.parse
@@ -60,6 +61,9 @@ with tempfile.TemporaryDirectory(prefix='zeitfokus-container-test-') as director
                 result = json.load(response)
                 assert not result.get('errors'), 'GraphQL operation failed'
                 return result['data'], response.headers
+        data, _ = gql('{version{name commit}}')
+        assert data['version']['name'] == Path('VERSION').read_text().strip(), 'incorrect image version'
+        assert re.fullmatch(r'[0-9a-f]{40}', data['version']['commit']), 'missing source revision'
         data, headers = gql('mutation($p:String!){login(username:"admin",pass:$p,deviceName:"container-test",type:LongExpiry,cookie:true){token}}', {'p': password})
         token = data['login']['token']
         data, _ = gql('mutation{setInterfaceLanguage(language:German){interfaceLanguage}}', token=token)

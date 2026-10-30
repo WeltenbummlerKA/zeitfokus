@@ -1,4 +1,5 @@
 export const messages: Record<string, {en: string; de: string}> = {
+    Version: {en: 'Version', de: 'Version'},
     hours: {en: 'hours', de: 'Stunden'},
     'Search all entries': {en: 'Search all entries', de: 'Alle Einträge durchsuchen'},
     'Description or tag': {en: 'Description or tag', de: 'Beschreibung oder Tag'},

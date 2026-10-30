@@ -23,7 +23,7 @@ COPY --from=generator /go/pkg/mod /go/pkg/mod
 COPY --from=frontend /src/ui/build ./ui/build
 ARG SOURCE_REVISION=unknown
 RUN CGO_ENABLED=1 go build -trimpath -tags 'netgo osusergo sqlite_omit_load_extension' \
-    -ldflags "-s -w -linkmode external -extldflags '-static' -X main.BuildMode=prod -X main.BuildVersion=Zeitfokus -X main.BuildCommit=${SOURCE_REVISION}" \
+    -ldflags "-s -w -linkmode external -extldflags '-static' -X main.BuildMode=prod -X main.BuildCommit=${SOURCE_REVISION}" \
     -o /zeitfokus .
 
 FROM alpine:3.22
@@ -37,8 +37,10 @@ COPY --from=backend /zeitfokus ./zeitfokus
 COPY LICENSE /usr/share/licenses/zeitfokus/LICENSE
 COPY NOTICE /usr/share/licenses/zeitfokus/NOTICE
 ARG SOURCE_REVISION=unknown
+ARG RELEASE_VERSION=unknown
 LABEL org.opencontainers.image.source="https://github.com/WeltenbummlerKA/zeitfokus" \
       org.opencontainers.image.revision="${SOURCE_REVISION}" \
+      org.opencontainers.image.version="${RELEASE_VERSION}" \
       org.opencontainers.image.licenses="GPL-3.0"
 EXPOSE 3030
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \

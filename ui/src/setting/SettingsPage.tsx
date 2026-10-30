@@ -1,6 +1,8 @@
 import * as React from 'react';
+import {Link as RouterLink} from 'react-router-dom';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import {useMutation} from '@apollo/client';
-import {Box, TextField, Typography} from '@mui/material';
+import {Box, Button, TextField, Typography} from '@mui/material';
 import {useSnackbar} from 'notistack';
 import {t, useI18n} from '../i18n';
 import {LanguageSwitcher} from '../i18n/LanguageSwitcher';
@@ -41,9 +43,16 @@ export const SettingsPage: React.FC = () => {
     const disabled = saving || !all.done;
     return (
         <Box sx={{maxWidth: 1200, mx: 'auto', width: '100%'}}>
-            <Typography color="text.secondary" sx={{mb: 3}}>
-                {language === 'de' ? 'Richte Zeitfokus für deinen Arbeitsalltag ein.' : 'Set up Zeitfokus for your working day.'}
-            </Typography>
+            <Box sx={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1, mb: 3}}>
+                <Typography color="text.secondary">
+                    {language === 'de'
+                        ? 'Richte Zeitfokus für deinen Arbeitsalltag ein.'
+                        : 'Set up Zeitfokus for your working day.'}
+                </Typography>
+                <Button component={RouterLink} to="/help#settings" startIcon={<HelpOutlineIcon />}>
+                    {language === 'de' ? 'Hilfe zu Einstellungen' : 'Settings help'}
+                </Button>
+            </Box>
             <Box
                 sx={{
                     display: 'grid',

@@ -1,7 +1,9 @@
 package main
 
 import (
+	_ "embed"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -21,18 +23,24 @@ import (
 	"github.com/traggo/server/user/password"
 )
 
+//go:embed VERSION
+var releaseVersion string
+
 var (
 	// BuildMode will be set via ldflags
 	BuildMode = mode.Dev
 	// BuildCommit will be set via ldflags
 	BuildCommit = "-"
 	// BuildVersion will be set via ldflags
-	BuildVersion = "develop"
+	BuildVersion = ""
 	// BuildDate will be set via ldflags
 	BuildDate = "unknown"
 )
 
 func main() {
+	if BuildVersion == "" {
+		BuildVersion = strings.TrimSpace(releaseVersion)
+	}
 	mode.Set(BuildMode)
 
 	version := model.Version{Commit: BuildCommit, BuildDate: BuildDate, Name: BuildVersion}
