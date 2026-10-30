@@ -50,6 +50,7 @@ type RootMutation {
     createFavorite(input: InputFavorite!): Favorite! @hasRole(role: USER)
     updateFavorite(id: Int!, input: InputFavorite!): Favorite! @hasRole(role: USER)
     removeFavorite(id: Int!): Favorite! @hasRole(role: USER)
+    analyzeTimeReport(input: InputAIAnalysis!): AIAnalysisResult! @hasRole(role: USER)
 }
 
 type RootQuery {
@@ -69,6 +70,21 @@ type RootQuery {
     dashboards: [Dashboard!] @hasRole(role: USER)
     userSettings: UserSettings!
     favorites: [Favorite!]! @hasRole(role: USER)
+}
+
+input InputAIAnalysis {
+    from: Time!
+    toExclusive: Time!
+}
+
+type AIAnalysisResult {
+    text: String!
+    from: Time!
+    to: Time!
+    completedEntries: Int!
+    totalSeconds: Float!
+    averageSeconds: Float!
+    daysWithActivity: Int!
 }
 
 input InputFavorite {

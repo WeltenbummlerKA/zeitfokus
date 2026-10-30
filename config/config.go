@@ -29,6 +29,10 @@ type Config struct {
 	PassStrength       int      `default:"10" split_words:"true"`
 	DatabaseDialect    string   `default:"sqlite3" split_words:"true"`
 	DatabaseConnection string   `default:"data/traggo.db" split_words:"true"`
+	AIProvider         string   `default:"disabled" split_words:"true"`
+	AIBaseURL          string   `default:"" split_words:"true"`
+	AIModel            string   `default:"" split_words:"true"`
+	AITimeoutSeconds   int      `default:"30" split_words:"true"`
 }
 
 // Get loads the application config.

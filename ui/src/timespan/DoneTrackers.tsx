@@ -1,6 +1,6 @@
 import {t, useI18n} from '../i18n';
 import * as React from 'react';
-import {NetworkStatus, useQuery} from '@apollo/client';
+import {NetworkStatus, useMutation, useQuery} from '@apollo/client';
 import {History} from '../gql/history';
 import * as gqlTag from '../gql/tags';
 import {TimeSpan, TimeSpanProps} from './TimeSpan';
@@ -11,8 +11,10 @@ import Refresh from '@mui/icons-material/Refresh';
 import {toGroupedTimeSpanProps} from './timespanutils';
 import {TagSelectorEntry} from '../tag/tagSelectorEntry';
 import {HistoryFilters} from './HistoryFilters';
-import {formatHistoryDuration, historyFilterFromDraft} from './historyFilterUtils';
+import {historyFilterFromDraft, formatHistoryDuration} from './historyFilterUtils';
 import {HistoryCsvExport} from '../history/HistoryCsvExport';
+import {AnalyzeTimeReport} from '../gql/aiAnalysis';
+import {Dialog, DialogActions, DialogContent, DialogTitle} from '@mui/material';
 
 interface DoneTrackersProps {
     addTagsToTracker?: (entries: TagSelectorEntry[]) => void;
@@ -22,6 +24,8 @@ export const DoneTrackers: React.FC<DoneTrackersProps> = ({addTagsToTracker}) =>
     useI18n();
     const [filter, setFilter] = React.useState<InputHistoryFilter>({});
     const [pageError, setPageError] = React.useState(false);
+    const [analysisOpen, setAnalysisOpen] = React.useState(false);
+    const [analyze, analysis] = useMutation(AnalyzeTimeReport);
     const history = useQuery<HistoryQuery, HistoryQueryVariables>(History, {
         variables: {filter, cursor: {pageSize: 30}},
         notifyOnNetworkStatusChange: true,
@@ -82,6 +86,17 @@ export const DoneTrackers: React.FC<DoneTrackersProps> = ({addTagsToTracker}) =>
                 />
                 <Box sx={{mt: 2}}>
                     <HistoryCsvExport filter={filter} disabled={!visible} />
+                    <Button
+                        sx={{ml: 1}}
+                        variant="outlined"
+                        disabled={!visible || !filter.from || !filter.toExclusive || analysis.loading}
+                        onClick={() => {
+                            const from = moment(filter.from, 'YYYY-MM-DD').startOf('day').toISOString();
+                            const toExclusive = moment(filter.toExclusive).startOf('day').toISOString();
+                            void analyze({variables: {input: {from, toExclusive}}}).then(() => setAnalysisOpen(true)).catch(() => setAnalysisOpen(true));
+                        }}>
+                        {analysis.loading ? t('Analyzing…') : t('Analyze with AI')}
+                    </Button>
                 </Box>
                 <Typography variant="body2" color="text.secondary" sx={{mt: 2}}>
                     {t(
@@ -109,6 +124,24 @@ export const DoneTrackers: React.FC<DoneTrackersProps> = ({addTagsToTracker}) =>
                     </Box>
                 )}
             </Paper>
+            <Dialog open={analysisOpen} onClose={() => setAnalysisOpen(false)} fullWidth maxWidth="sm">
+                <DialogTitle>{t('AI time report')}</DialogTitle>
+                <DialogContent dividers>
+                    {analysis.error && <Alert severity="error">{t('AI analysis failed. Check the server configuration.')}</Alert>}
+                    {analysis.data?.analyzeTimeReport && (
+                        <Stack spacing={2}>
+                            <Typography sx={{whiteSpace: 'pre-wrap'}}>{analysis.data.analyzeTimeReport.text}</Typography>
+                            <Typography variant="body2" color="text.secondary">
+                                {t('{count} completed entries, {duration} total', {
+                                    count: analysis.data.analyzeTimeReport.completedEntries,
+                                    duration: formatHistoryDuration(analysis.data.analyzeTimeReport.totalSeconds),
+                                })}
+                            </Typography>
+                        </Stack>
+                    )}
+                </DialogContent>
+                <DialogActions><Button onClick={() => setAnalysisOpen(false)}>{t('Close')}</Button></DialogActions>
+            </Dialog>
             {(history.error || tags.error) && (
                 <Alert
                     severity="error"

@@ -9,6 +9,7 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/traggo/server/auth"
+	"github.com/traggo/server/ai"
 	"github.com/traggo/server/config"
 	"github.com/traggo/server/config/mode"
 	"github.com/traggo/server/database"
@@ -66,7 +67,7 @@ func main() {
 func initRouter(db *gorm.DB, conf config.Config, version model.Version) *mux.Router {
 	gqlHandler := graphql.Handler(
 		"/graphql",
-		graphql.NewResolver(db, conf.PassStrength, version),
+		graphql.NewResolver(db, conf.PassStrength, version, ai.ProviderConfig{Provider: conf.AIProvider, BaseURL: conf.AIBaseURL, Model: conf.AIModel, Timeout: time.Duration(conf.AITimeoutSeconds) * time.Second}),
 		graphql.NewDirective(), auth.Middleware(db, conf.CookieSecure))
 
 	router := mux.NewRouter()
