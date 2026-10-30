@@ -1,9 +1,9 @@
 import * as React from 'react';
 import {useMutation, useQuery} from '@apollo/client';
-import {Alert, Box, Button, MenuItem, Stack, TextField, Typography} from '@mui/material';
+import {Alert, Box, Button, Stack, TextField, Typography} from '@mui/material';
 import {AISettings, SetAISettings} from '../gql/aiSettings';
 import {CurrentUser} from '../gql/user';
-import {AISettingsQuery, CurrentUserQuery, InputAISettings, SetAISettingsMutation, SetAISettingsMutationVariables} from '../gql/__generated__';
+import {AiSettingsQuery, CurrentUserQuery, InputAiSettings, SetAiSettingsMutation, SetAiSettingsMutationVariables} from '../gql/__generated__';
 import {useI18n} from '../i18n';
 
 const labels = {
@@ -33,7 +33,11 @@ const labels = {
     },
 };
 
-const initial: InputAISettings = {provider: 'disabled', baseURL: '', model: '', timeoutSeconds: 60};
+// The server accepts private-network HTTP endpoints only; the browser never contacts them.
+// eslint-disable-next-line sonarjs/no-clear-text-protocols
+const endpointExamples = {ollama: 'http://192.168.178.10:11434', lmstudio: 'http://192.168.178.10:1234/v1'};
+
+const initial: InputAiSettings = {provider: 'disabled', baseURL: '', model: '', timeoutSeconds: 60};
 
 export const AISettingsSection: React.FC = () => {
     const {language} = useI18n();
@@ -50,9 +54,9 @@ export const AISettingsSection: React.FC = () => {
 const AISettingsForm: React.FC = () => {
     const {language} = useI18n();
     const text = labels[language];
-    const query = useQuery<AISettingsQuery>(AISettings, {fetchPolicy: 'network-only'});
-    const [save, {loading: saving}] = useMutation<SetAISettingsMutation, SetAISettingsMutationVariables>(SetAISettings);
-    const [draft, setDraft] = React.useState<InputAISettings>(initial);
+    const query = useQuery<AiSettingsQuery>(AISettings, {fetchPolicy: 'network-only'});
+    const [save, {loading: saving}] = useMutation<SetAiSettingsMutation, SetAiSettingsMutationVariables>(SetAISettings);
+    const [draft, setDraft] = React.useState<InputAiSettings>(initial);
     const [status, setStatus] = React.useState<'saved' | 'error' | null>(null);
     React.useEffect(() => {
         const settings = query.data?.aiSettings;
@@ -60,7 +64,7 @@ const AISettingsForm: React.FC = () => {
             setDraft({provider: settings.provider, baseURL: settings.baseURL, model: settings.model, timeoutSeconds: settings.timeoutSeconds});
         }
     }, [query.data]);
-    const change = (patch: Partial<InputAISettings>) => {
+    const change = (patch: Partial<InputAiSettings>) => {
         setStatus(null);
         setDraft((previous) => ({...previous, ...patch}));
     };
@@ -81,19 +85,25 @@ const AISettingsForm: React.FC = () => {
                 return;
             }
             setStatus(null);
-            void save({variables: {settings: draft}}).then(() => setStatus('saved')).catch(() => setStatus('error'));
+            void save({variables: {settings: draft}}).then((result) => {
+                const stored = result.data?.setAISettings;
+                if (stored) {
+                    setDraft({provider: stored.provider, baseURL: stored.baseURL, model: stored.model, timeoutSeconds: stored.timeoutSeconds});
+                }
+                setStatus('saved');
+            }).catch(() => setStatus('error'));
         }}>
             <Typography variant="body2" color="text.secondary" sx={{mb: 2}}>{text.help}</Typography>
             <Stack spacing={2}>
-                <TextField select fullWidth label={text.provider} value={draft.provider} disabled={busy}
+                <TextField select SelectProps={{native: true}} fullWidth label={text.provider} value={draft.provider} disabled={busy}
                     onChange={(event) => change({provider: event.target.value})}>
-                    <MenuItem value="disabled">{text.disabled}</MenuItem>
-                    <MenuItem value="ollama">Ollama</MenuItem>
-                    <MenuItem value="lmstudio">LM Studio</MenuItem>
+                    <option value="disabled">{text.disabled}</option>
+                    <option value="ollama">Ollama</option>
+                    <option value="lmstudio">LM Studio</option>
                 </TextField>
                 {active && <>
                     <TextField fullWidth required label={text.endpoint} value={draft.baseURL} disabled={busy}
-                        placeholder={draft.provider === 'ollama' ? 'http://192.168.178.10:11434' : 'http://192.168.178.10:1234/v1'}
+                        placeholder={draft.provider === 'ollama' ? endpointExamples.ollama : endpointExamples.lmstudio}
                         helperText={text.addressHelp} inputProps={{maxLength: 2048, autoCapitalize: 'none', spellCheck: false}}
                         onChange={(event) => change({baseURL: event.target.value})} />
                     <TextField fullWidth required label={text.model} value={draft.model} disabled={busy}
