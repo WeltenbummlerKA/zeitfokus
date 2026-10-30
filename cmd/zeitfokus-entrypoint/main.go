@@ -32,6 +32,7 @@ type FavoriteServer struct {
 	storePath            string
 	token                string
 	allowUnauthenticated bool
+	corsOrigin           string
 	store                map[string]Payload
 }
 
@@ -42,6 +43,7 @@ func main() {
 		storePath:            envCompat("ZEITFOKUS_FAVORITES_STORE", "TRAGGO_FAVORITES_STORE", "/opt/zeitfokus/data/favorites.json"),
 		token:                envCompat("ZEITFOKUS_FAVORITES_TOKEN", "TRAGGO_FAVORITES_TOKEN", ""),
 		allowUnauthenticated: envBoolCompat("ZEITFOKUS_FAVORITES_ALLOW_UNAUTHENTICATED", "TRAGGO_FAVORITES_ALLOW_UNAUTHENTICATED", false),
+		corsOrigin:           envCompat("ZEITFOKUS_FAVORITES_CORS_ORIGIN", "TRAGGO_FAVORITES_CORS_ORIGIN", ""),
 		store:                map[string]Payload{},
 	}
 
@@ -93,14 +95,16 @@ func (s *FavoriteServer) listen() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/favorites", s.handleFavorites)
 
-	addr := envCompat("ZEITFOKUS_FAVORITES_ADDR", "TRAGGO_FAVORITES_ADDR", ":3031")
+	// Bind locally by default. A stack that deliberately exposes the
+	// authenticated sync endpoint must opt in with ZEITFOKUS_FAVORITES_ADDR.
+	addr := envCompat("ZEITFOKUS_FAVORITES_ADDR", "TRAGGO_FAVORITES_ADDR", "127.0.0.1:3031")
 	log.Printf("Zeitfokus favorites sync listening on %s", addr)
 	srv := &http.Server{Addr: addr, Handler: mux, ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 15 * time.Second, WriteTimeout: 15 * time.Second, IdleTimeout: 60 * time.Second, MaxHeaderBytes: 32 << 10}
 	log.Fatal(srv.ListenAndServe())
 }
 
 func (s *FavoriteServer) handleFavorites(w http.ResponseWriter, r *http.Request) {
-	addCORS(w)
+	s.addCORS(w)
 
 	if r.Method == http.MethodOptions {
 		w.WriteHeader(http.StatusNoContent)
@@ -244,8 +248,12 @@ func writeJSON(w http.ResponseWriter, value any) {
 	_ = json.NewEncoder(w).Encode(value)
 }
 
-func addCORS(w http.ResponseWriter) {
-	w.Header().Set("Access-Control-Allow-Origin", "*")
+func (s *FavoriteServer) addCORS(w http.ResponseWriter) {
+	if s.corsOrigin == "" {
+		return
+	}
+	w.Header().Set("Access-Control-Allow-Origin", s.corsOrigin)
+	w.Header().Add("Vary", "Origin")
 	w.Header().Set("Access-Control-Allow-Methods", "GET, PUT, OPTIONS")
 	w.Header().Set("Access-Control-Allow-Headers", "Authorization, Content-Type")
 }
