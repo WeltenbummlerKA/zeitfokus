@@ -105,7 +105,7 @@ export const Page: React.FC<React.PropsWithChildren> = ({children}) => {
         document.title = `${pageTitle} · Zeitfokus`;
     }, [pageTitle]);
     return (
-        <Box sx={{display: 'flex', minHeight: '100%'}}>
+        <Box sx={{display: 'flex', minHeight: '100dvh', alignItems: 'stretch'}}>
             <KeyboardShortcuts />
             <CssBaseline />
             <a className="skip-link" href="#main-content">
@@ -158,7 +158,17 @@ export const Page: React.FC<React.PropsWithChildren> = ({children}) => {
                     </Menu>
                 </Toolbar>
             </AppBar>
-            <Box component="nav" aria-label={t('Main navigation')} sx={{width: {md: drawerWidth}, flexShrink: {md: 0}}}>
+            <Box
+                component="nav"
+                aria-label={t('Main navigation')}
+                sx={{
+                    width: {md: drawerWidth},
+                    flexShrink: {md: 0},
+                    alignSelf: 'stretch',
+                    bgcolor: 'background.paper',
+                    borderRight: {xs: 0, md: 1},
+                    borderColor: 'divider',
+                }}>
                 <Drawer
                     variant="temporary"
                     open={mobileOpen}
@@ -173,7 +183,17 @@ export const Page: React.FC<React.PropsWithChildren> = ({children}) => {
                     variant="permanent"
                     sx={{
                         display: {xs: 'none', md: 'block'},
-                        '& .MuiDrawer-paper': {width: drawerWidth, borderRight: 0, overflow: 'hidden'},
+                        position: 'sticky',
+                        top: 0,
+                        width: '100%',
+                        height: '100dvh',
+                        '& .MuiDrawer-paper': {
+                            position: 'relative',
+                            height: '100dvh',
+                            width: '100%',
+                            borderRight: 0,
+                            overflow: 'hidden',
+                        },
                     }}
                     open>
                     {drawer}

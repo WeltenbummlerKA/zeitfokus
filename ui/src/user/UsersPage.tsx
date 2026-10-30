@@ -5,6 +5,7 @@ import {useMutation, useQuery} from '@apollo/client';
 import * as gqlUser from '../gql/user';
 import {CenteredSpinner} from '../common/CenteredSpinner';
 import Table from '@mui/material/Table';
+import TableContainer from '@mui/material/TableContainer';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
@@ -39,9 +40,9 @@ const useStyles = makeStyles((theme) => ({
         },
         paddingTop: theme.spacing(3),
         paddingBottom: theme.spacing(3),
-        textAlign: 'center',
-        maxWidth: 800,
-        margin: '0 auto',
+        textAlign: 'left',
+        width: '100%',
+        minWidth: 0,
     },
 }));
 
@@ -162,23 +163,24 @@ export const UsersPage = () => {
                 variant={'outlined'}
                 size="small"
                 onClick={() => setAddUser(true)}
-                fullWidth
                 style={{marginBottom: 10}}>
                 {t('Create User')}
             </Button>
             {addUser && <AddUserDialog open={true} close={() => setAddUser(false)} />}
-            <Table>
-                <TableHead>
-                    <TableRow>
-                        <TableCell>{t('ID')}</TableCell>
-                        <TableCell>{t('Name')}</TableCell>
-                        <TableCell>{t('Password')}</TableCell>
-                        <TableCell>{t('Admin')}</TableCell>
-                        <TableCell style={{width: 150}} />
-                    </TableRow>
-                </TableHead>
-                <TableBody>{users}</TableBody>
-            </Table>
+            <TableContainer>
+                <Table>
+                    <TableHead>
+                        <TableRow>
+                            <TableCell>{t('ID')}</TableCell>
+                            <TableCell>{t('Name')}</TableCell>
+                            <TableCell>{t('Password')}</TableCell>
+                            <TableCell>{t('Admin')}</TableCell>
+                            <TableCell style={{width: 150}} />
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>{users}</TableBody>
+                </Table>
+            </TableContainer>
             {removeUserConfirmation ? (
                 <ConfirmDialog
                     title={t('Delete user {name}?', {name: removeUserConfirmation[1]})}

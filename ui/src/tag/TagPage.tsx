@@ -7,6 +7,7 @@ import * as gqlTag from '../gql/tags';
 import * as gqlDashboard from '../gql/dashboard';
 import {CenteredSpinner} from '../common/CenteredSpinner';
 import Table from '@mui/material/Table';
+import TableContainer from '@mui/material/TableContainer';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
@@ -42,9 +43,9 @@ const useStyles = makeStyles((theme) => ({
         },
         paddingTop: theme.spacing(3),
         paddingBottom: theme.spacing(3),
-        textAlign: 'center',
-        maxWidth: 1200,
-        margin: '0 auto',
+        textAlign: 'left',
+        width: '100%',
+        minWidth: 0,
     },
 }));
 
@@ -141,33 +142,34 @@ export const TagPage = () => {
                 variant={'outlined'}
                 size="small"
                 onClick={() => setAddActive(true)}
-                fullWidth
                 style={{marginBottom: 10}}>
                 {t('Create Tag')}
             </Button>
-            <Table>
-                <TableHead>
-                    <TableRow>
-                        <TableCell>{t('Key')}</TableCell>
-                        <TableCell>{t('Color')}</TableCell>
-                        <TableCell style={{width: 100}}>{t('Usages')}</TableCell>
-                        <TableCell style={{width: 150}} />
-                    </TableRow>
-                </TableHead>
-                <TableBody>
-                    {addActive ? <AddTagDialog initialName={''} open={true} close={() => setAddActive(false)} /> : null}
-                    {tags}
-                    {removeTagConfirm ? (
-                        <ConfirmDialog
-                            title={t('Delete tag {name}?', {name: removeTagConfirm})}
-                            fClose={() => setRemoveTagConfirm('')}
-                            fOnSubmit={onClickDelete}>
-                            <b>{t('This operation cannot be undone.')}</b>{' '}
-                            {t('Deleting the tag will remove all references in time spans.')}
-                        </ConfirmDialog>
-                    ) : null}
-                </TableBody>
-            </Table>
+            <TableContainer>
+                <Table>
+                    <TableHead>
+                        <TableRow>
+                            <TableCell>{t('Key')}</TableCell>
+                            <TableCell>{t('Color')}</TableCell>
+                            <TableCell style={{width: 100}}>{t('Usages')}</TableCell>
+                            <TableCell style={{width: 150}} />
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {addActive ? <AddTagDialog initialName={''} open={true} close={() => setAddActive(false)} /> : null}
+                        {tags}
+                        {removeTagConfirm ? (
+                            <ConfirmDialog
+                                title={t('Delete tag {name}?', {name: removeTagConfirm})}
+                                fClose={() => setRemoveTagConfirm('')}
+                                fOnSubmit={onClickDelete}>
+                                <b>{t('This operation cannot be undone.')}</b>{' '}
+                                {t('Deleting the tag will remove all references in time spans.')}
+                            </ConfirmDialog>
+                        ) : null}
+                    </TableBody>
+                </Table>
+            </TableContainer>
         </Paper>
     );
 };

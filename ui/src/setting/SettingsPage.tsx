@@ -50,7 +50,7 @@ export const SettingsPage: React.FC = () => {
     };
     const disabled = saving || !all.done;
     return (
-        <Box sx={{maxWidth: 1200, mx: 'auto', width: '100%'}}>
+        <Box sx={{width: '100%', minWidth: 0}}>
             <Box sx={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1, mb: 3}}>
                 <Typography color="text.secondary">
                     {language === 'de'
@@ -61,117 +61,111 @@ export const SettingsPage: React.FC = () => {
             <Box
                 sx={{
                     display: 'grid',
-                    gridTemplateColumns: {xs: 'minmax(0, 1fr)', lg: 'minmax(0, 1fr) minmax(0, 1fr)'},
+                    gridTemplateColumns: {xs: 'minmax(0, 1fr)', lg: 'repeat(2, minmax(0, 1fr))', xl: 'repeat(3, minmax(0, 1fr))'},
                     gap: 3,
                     alignItems: 'start',
                 }}>
-                <Box sx={{display: 'grid', gap: 3, minWidth: 0}}>
-                    <SettingsPanel
-                        id="personal-settings-title"
-                        title={language === 'de' ? 'Persönliche Einstellungen' : 'Personal settings'}
-                        description={
-                            language === 'de'
-                                ? 'Gilt für dein Konto. Änderungen werden automatisch gespeichert.'
-                                : 'Applies to your account. Changes are saved automatically.'
-                        }>
-                        <Box
-                            sx={{
-                                display: 'grid',
-                                gridTemplateColumns: {xs: 'minmax(0, 1fr)', sm: 'repeat(2, minmax(0, 1fr))'},
-                                gap: 2.5,
-                            }}>
-                            <LanguageSwitcher formField />
-                            <TextField
-                                select
-                                fullWidth
-                                label={t('Theme')}
-                                value={settings.theme}
-                                disabled={disabled}
-                                SelectProps={{native: true}}
-                                onChange={(event) => change({theme: event.target.value as Theme}, 'theme changed', 'set theme')}>
-                                {Object.values(Theme).map((value) => (
-                                    <option key={value} value={value}>
-                                        {t(value)}
-                                    </option>
-                                ))}
-                            </TextField>
-                            <TextField
-                                select
-                                fullWidth
-                                label={t('Date Locale')}
-                                value={settings.dateLocale}
-                                disabled={disabled}
-                                SelectProps={{native: true}}
-                                onChange={(event) =>
-                                    change(
-                                        {dateLocale: event.target.value as DateLocale},
-                                        'date locale changed',
-                                        'set date locale'
-                                    )
-                                }>
-                                {Object.values(DateLocale).map((value) => (
-                                    <option key={value} value={value}>
-                                        {t(value)}
-                                    </option>
-                                ))}
-                            </TextField>
-                            <TextField
-                                select
-                                fullWidth
-                                label={t('First day of the week')}
-                                value={settings.firstDayOfTheWeek}
-                                disabled={disabled}
-                                SelectProps={{native: true}}
-                                onChange={(event) =>
-                                    change(
-                                        {firstDayOfTheWeek: event.target.value as WeekDay},
-                                        'first day of the week changed',
-                                        'set first day of the week'
-                                    )
-                                }>
-                                {[
-                                    WeekDay.Monday,
-                                    WeekDay.Tuesday,
-                                    WeekDay.Wednesday,
-                                    WeekDay.Thursday,
-                                    WeekDay.Friday,
-                                    WeekDay.Saturday,
-                                    WeekDay.Sunday,
-                                ].map((value) => (
-                                    <option key={value} value={value}>
-                                        {t(value)}
-                                    </option>
-                                ))}
-                            </TextField>
-                            <TextField
-                                select
-                                fullWidth
-                                label={t('Datetime input style')}
-                                value={settings.dateTimeInputStyle}
-                                disabled={disabled}
-                                SelectProps={{native: true}}
-                                onChange={(event) =>
-                                    change(
-                                        {dateTimeInputStyle: event.target.value as DateTimeInputStyle},
-                                        'datetime input style changed',
-                                        'set datetime input style'
-                                    )
-                                }>
-                                {[DateTimeInputStyle.Fancy, DateTimeInputStyle.Native].map((value) => (
-                                    <option key={value} value={value}>
-                                        {t(value)}
-                                    </option>
-                                ))}
-                            </TextField>
-                        </Box>
-                        {settings.theme === Theme.System && (
-                            <Typography variant="body2" color="text.secondary" sx={{mt: 2}}>
-                                {t('Theme follows system appearance')}
-                            </Typography>
-                        )}
-                    </SettingsPanel>
-                    <WorkTargetSettings />
-                </Box>
+                <SettingsPanel
+                    id="personal-settings-title"
+                    title={language === 'de' ? 'Persönliche Einstellungen' : 'Personal settings'}
+                    description={
+                        language === 'de'
+                            ? 'Gilt für dein Konto. Änderungen werden automatisch gespeichert.'
+                            : 'Applies to your account. Changes are saved automatically.'
+                    }>
+                    <Box
+                        sx={{
+                            display: 'grid',
+                            gridTemplateColumns: {xs: 'minmax(0, 1fr)', sm: 'repeat(2, minmax(0, 1fr))'},
+                            gap: 2.5,
+                        }}>
+                        <LanguageSwitcher formField />
+                        <TextField
+                            select
+                            fullWidth
+                            label={t('Theme')}
+                            value={settings.theme}
+                            disabled={disabled}
+                            SelectProps={{native: true}}
+                            onChange={(event) => change({theme: event.target.value as Theme}, 'theme changed', 'set theme')}>
+                            {Object.values(Theme).map((value) => (
+                                <option key={value} value={value}>
+                                    {t(value)}
+                                </option>
+                            ))}
+                        </TextField>
+                        <TextField
+                            select
+                            fullWidth
+                            label={t('Date Locale')}
+                            value={settings.dateLocale}
+                            disabled={disabled}
+                            SelectProps={{native: true}}
+                            onChange={(event) =>
+                                change({dateLocale: event.target.value as DateLocale}, 'date locale changed', 'set date locale')
+                            }>
+                            {Object.values(DateLocale).map((value) => (
+                                <option key={value} value={value}>
+                                    {t(value)}
+                                </option>
+                            ))}
+                        </TextField>
+                        <TextField
+                            select
+                            fullWidth
+                            label={t('First day of the week')}
+                            value={settings.firstDayOfTheWeek}
+                            disabled={disabled}
+                            SelectProps={{native: true}}
+                            onChange={(event) =>
+                                change(
+                                    {firstDayOfTheWeek: event.target.value as WeekDay},
+                                    'first day of the week changed',
+                                    'set first day of the week'
+                                )
+                            }>
+                            {[
+                                WeekDay.Monday,
+                                WeekDay.Tuesday,
+                                WeekDay.Wednesday,
+                                WeekDay.Thursday,
+                                WeekDay.Friday,
+                                WeekDay.Saturday,
+                                WeekDay.Sunday,
+                            ].map((value) => (
+                                <option key={value} value={value}>
+                                    {t(value)}
+                                </option>
+                            ))}
+                        </TextField>
+                        <TextField
+                            select
+                            fullWidth
+                            label={t('Datetime input style')}
+                            value={settings.dateTimeInputStyle}
+                            disabled={disabled}
+                            SelectProps={{native: true}}
+                            onChange={(event) =>
+                                change(
+                                    {dateTimeInputStyle: event.target.value as DateTimeInputStyle},
+                                    'datetime input style changed',
+                                    'set datetime input style'
+                                )
+                            }>
+                            {[DateTimeInputStyle.Fancy, DateTimeInputStyle.Native].map((value) => (
+                                <option key={value} value={value}>
+                                    {t(value)}
+                                </option>
+                            ))}
+                        </TextField>
+                    </Box>
+                    {settings.theme === Theme.System && (
+                        <Typography variant="body2" color="text.secondary" sx={{mt: 2}}>
+                            {t('Theme follows system appearance')}
+                        </Typography>
+                    )}
+                </SettingsPanel>
+                <WorkTargetSettings />
                 <AISettingsSection />
             </Box>
         </Box>

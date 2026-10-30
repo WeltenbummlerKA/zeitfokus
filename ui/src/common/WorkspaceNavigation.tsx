@@ -116,8 +116,6 @@ export const WorkspaceNavigation: React.FC<{
                 flexDirection: 'column',
                 bgcolor: 'background.paper',
                 color: 'text.primary',
-                borderRight: 1,
-                borderColor: 'divider',
                 '--nav-active': alpha(accent, 0.09),
                 '--nav-active-hover': alpha(accent, 0.14),
                 '--nav-hover': theme.palette.action.hover,
