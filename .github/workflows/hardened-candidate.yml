@@ -35,19 +35,23 @@ jobs:
       - run: go test -race ./... && go vet ./...
       - run: go build -o /tmp/traggo-language-test . && python3 tests/interface_language.py --binary /tmp/traggo-language-test
       - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.hardened
+          load: true
+          tags: zeitfokus-server-base:local
+          build-args: SOURCE_REVISION=${{ github.sha }}
+      - run: docker build --build-arg ZEITFOKUS_SERVER_IMAGE=zeitfokus-server-base:local --build-arg SOURCE_REVISION=${{ github.sha }} -t ghcr.io/weltenbummlerka/zeitfokus:sha-${{ github.sha }} -t ghcr.io/weltenbummlerka/zeitfokus:stable .
+      - run: python3 tests/container/container_smoke.py ghcr.io/weltenbummlerka/zeitfokus:sha-${{ github.sha }}
       - uses: docker/login-action@v3
         if: github.event_name == 'workflow_dispatch' && inputs.publish
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - uses: docker/build-push-action@v6
-        id: image
-        with:
-          context: .
-          file: Dockerfile.hardened
-          platforms: linux/amd64
-          push: ${{ github.event_name == 'workflow_dispatch' && inputs.publish }}
-          tags: ghcr.io/weltenbummlerka/traggo-server:sha-${{ github.sha }}
-          build-args: SOURCE_REVISION=${{ github.sha }}
-      - run: echo 'Image digest ${{ steps.image.outputs.digest }}' >> "$GITHUB_STEP_SUMMARY"
+      - name: Publish Zeitfokus image
+        if: github.event_name == 'workflow_dispatch' && inputs.publish
+        run: |
+          docker push ghcr.io/weltenbummlerka/zeitfokus:sha-${{ github.sha }}
+          docker push ghcr.io/weltenbummlerka/zeitfokus:stable
