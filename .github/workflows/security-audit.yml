@@ -44,7 +44,7 @@ jobs:
       - name: Generate gqlgen sources
         run: |
           go install github.com/99designs/gqlgen@v0.17.85
-          "$(go env GOPATH)/bin/gqlgen" generate 2>&1 | tee /tmp/gqlgen.log
+          "$(go env GOPATH)/bin/gqlgen" generate
       - name: Tidy Go modules
         run: go mod tidy
       - name: govulncheck
