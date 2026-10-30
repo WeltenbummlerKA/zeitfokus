@@ -45,7 +45,7 @@ func requireAIAdmin(ctx context.Context) error {
 	return nil
 }
 
-func (r *resolver) AISettings(ctx context.Context) (*gqlmodel.AISettings, error) {
+func (r *resolver) AiSettings(ctx context.Context) (*gqlmodel.AISettings, error) {
 	if err := requireAIAdmin(ctx); err != nil {
 		return nil, err
 	}
