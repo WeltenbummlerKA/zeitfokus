@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net"
 	"net/http"
 	"net/url"
@@ -36,18 +37,48 @@ func (c ProviderConfig) Validate() error {
 	if err != nil || u.Scheme != "http" || u.Host == "" || u.User != nil || u.RawQuery != "" || u.Fragment != "" {
 		return errors.New("AI endpoint must be an http URL without credentials or query parameters")
 	}
-	if !privateHost(u.Hostname()) {
+	if _, err := resolvePrivateIPs(context.Background(), u.Hostname()); err != nil {
 		return errors.New("AI endpoint must resolve to a private or local network address")
 	}
 	return nil
 }
 
 func privateHost(host string) bool {
-	if host == "localhost" || strings.HasSuffix(host, ".local") {
+	if strings.EqualFold(host, "localhost") {
 		return true
 	}
 	ip := net.ParseIP(host)
-	return ip != nil && (ip.IsLoopback() || ip.IsPrivate() || ip.IsLinkLocalUnicast())
+	return ip != nil && privateIP(ip)
+}
+
+func privateIP(ip net.IP) bool {
+	return !ip.IsUnspecified() && !ip.IsMulticast() &&
+		(ip.IsLoopback() || ip.IsPrivate() || ip.IsLinkLocalUnicast())
+}
+
+// resolvePrivateIPs resolves a configured hostname and rejects public answers.
+// The same check is repeated by the transport immediately before dialing to
+// prevent DNS rebinding between configuration validation and the request.
+func resolvePrivateIPs(ctx context.Context, host string) ([]net.IP, error) {
+	if ip := net.ParseIP(host); ip != nil {
+		if privateIP(ip) {
+			return []net.IP{ip}, nil
+		}
+		return nil, errors.New("AI endpoint resolved to a public or unsafe address")
+	}
+	if strings.EqualFold(host, "localhost") {
+		return []net.IP{net.IPv4(127, 0, 0, 1)}, nil
+	}
+	ips, err := net.DefaultResolver.LookupIP(ctx, "ip", host)
+	if err != nil || len(ips) == 0 {
+		return nil, errors.New("AI endpoint hostname could not be resolved")
+	}
+	for _, ip := range ips {
+		if !privateIP(ip) {
+			return nil, errors.New("AI endpoint resolved to a public or unsafe address")
+		}
+	}
+	return ips, nil
 }
 
 type ollamaRequest struct {
@@ -109,7 +140,38 @@ func Analyze(ctx context.Context, cfg ProviderConfig, summary Summary) (string, 
 		return "", err
 	}
 	req.Header.Set("Content-Type", "application/json")
-	resp, err := (&http.Client{Timeout: timeout}).Do(req)
+	transport := http.DefaultTransport.(*http.Transport).Clone()
+	// Do not allow environment proxies to bypass the private-address policy.
+	transport.Proxy = nil
+	transport.DialContext = func(dialCtx context.Context, network, address string) (net.Conn, error) {
+		host, port, err := net.SplitHostPort(address)
+		if err != nil {
+			return nil, err
+		}
+		ips, err := resolvePrivateIPs(dialCtx, host)
+		if err != nil {
+			return nil, err
+		}
+		dialer := &net.Dialer{}
+		var lastErr error
+		for _, ip := range ips {
+			conn, dialErr := dialer.DialContext(dialCtx, network, net.JoinHostPort(ip.String(), port))
+			if dialErr == nil {
+				return conn, nil
+			}
+			lastErr = dialErr
+		}
+		return nil, lastErr
+	}
+	client := &http.Client{
+		Timeout:   timeout,
+		Transport: transport,
+		CheckRedirect: func(_ *http.Request, _ []*http.Request) error {
+			return errors.New("AI provider redirects are not allowed")
+		},
+	}
+	defer transport.CloseIdleConnections()
+	resp, err := client.Do(req)
 	if err != nil {
 		return "", fmt.Errorf("AI provider unavailable: %w", err)
 	}
@@ -117,9 +179,16 @@ func Analyze(ctx context.Context, cfg ProviderConfig, summary Summary) (string, 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		return "", fmt.Errorf("AI provider returned HTTP %d", resp.StatusCode)
 	}
+	responseBody, err := io.ReadAll(io.LimitReader(resp.Body, 1<<20+1))
+	if err != nil {
+		return "", err
+	}
+	if len(responseBody) > 1<<20 {
+		return "", errors.New("AI provider response exceeds 1 MiB")
+	}
 	if kind == "ollama" {
 		var out ollamaResponse
-		if err := json.NewDecoder(resp.Body).Decode(&out); err != nil {
+		if err := json.Unmarshal(responseBody, &out); err != nil {
 			return "", err
 		}
 		if out.Error != "" {
@@ -128,7 +197,7 @@ func Analyze(ctx context.Context, cfg ProviderConfig, summary Summary) (string, 
 		return out.Message.Content, nil
 	}
 	var out openAIResponse
-	if err := json.NewDecoder(resp.Body).Decode(&out); err != nil {
+	if err := json.Unmarshal(responseBody, &out); err != nil {
 		return "", err
 	}
 	if len(out.Choices) == 0 {
