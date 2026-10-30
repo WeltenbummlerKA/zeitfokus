@@ -854,7 +854,7 @@ export const messages: Record<string, {en: string; de: string}> = {
     },
     'Your time, clearly organised.': {
         en: 'Your time, clearly organised.',
-        de: 'Deine Zeit. Klar im Blick.',
+        de: 'Deine Zeit im Fokus.',
     },
     'Timer options': {
         en: 'Timer options',

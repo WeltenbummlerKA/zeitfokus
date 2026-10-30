@@ -1,5 +1,7 @@
 # Zeitfokus
 
+Deine Zeit im Fokus.
+
 Zeitfokus ist eine selbst gehostete, tagbasierte Zeiterfassung mit Kalender-, Verlaufs-, Statistik- und KI-Auswertung. Die Daten bleiben auf dem eigenen Server.
 
 ## Funktionen

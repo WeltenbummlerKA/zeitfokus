@@ -112,13 +112,13 @@ export const Page: React.FC<React.PropsWithChildren> = ({children}) => {
                 <HrefLink href="https://github.com/WeltenbummlerKA/zeitfokus" underline="none" target="_blank">
                     <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1.25}}>
                         <Box component="img" src="/zeitfokus.svg" alt="" aria-hidden="true" sx={{width: 30, height: 30}} />
-                        <Typography variant="h5" align="center" color="textPrimary">
+                        <Typography variant="h5" align="center" sx={{color: 'text.primary'}}>
                             Zeitfokus
                         </Typography>
                     </Box>
                 </HrefLink>
                 <HrefLink href="https://github.com/WeltenbummlerKA/zeitfokus/releases" underline="none" target="_blank">
-                    <Typography variant="caption" align="center" color="textPrimary">
+                    <Typography variant="caption" align="center" sx={{color: 'text.secondary'}}>
                         {version.name}@{version.commit.slice(0, 8)}
                     </Typography>
                 </HrefLink>

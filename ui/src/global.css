@@ -135,7 +135,8 @@ input:focus-visible {
 /* Recording workspace: the live timer is the single visual focal point. */
 .workspace-navigation {
     padding: 8px 12px 24px;
-    background: linear-gradient(180deg, #f8faff 0%, #f3f6fb 100%);
+    background: transparent;
+    color: inherit;
 }
 .workspace-navigation > .MuiDivider-root {
     display: none;
