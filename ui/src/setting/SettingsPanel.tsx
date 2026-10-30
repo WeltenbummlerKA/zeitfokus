@@ -9,7 +9,11 @@ interface SettingsPanelProps extends React.PropsWithChildren {
 }
 
 export const SettingsPanel: React.FC<SettingsPanelProps> = ({id, title, description, badge, children}) => (
-    <Paper component="section" aria-labelledby={id} sx={{p: {xs: 2, sm: 3}, minWidth: 0}}>
+    <Paper
+        id={`${id}-panel`}
+        component="section"
+        aria-labelledby={id}
+        sx={{p: {xs: 2, sm: 3}, minWidth: 0, scrollMarginTop: 150}}>
         <Box sx={{display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1, mb: description ? 1 : 2.5}}>
             <Typography id={id} component="h2" variant="h6" sx={{flexGrow: 1}}>
                 {title}

@@ -1,5 +1,26 @@
 export const helpTopics = [
     {
+        id: 'dashboards',
+        de: {
+            title: 'Wozu dienen die Übersichten?',
+            steps: [
+                'Übersichten sind gespeicherte Auswertungen deiner erfassten Zeiten, zum Beispiel Wochenstunden pro Projekt oder der Vergleich zweier Monate. Für Timer, Verlauf und CSV-Export brauchst du keine Übersicht.',
+                'Lege unter „Übersichten“ eine Auswertung mit einem verständlichen Namen an. Öffne sie und wähle „Übersicht bearbeiten“, dann „Eintrag hinzufügen“. Wähle einen Diagrammtyp, Zeitraum und passende Tags.',
+                'Mit gemeinsamen Zeiträumen können mehrere Diagramme dieselben Datumsgrenzen verwenden. now/w bedeutet diese Woche, now-1w/w die letzte Woche. Solche relativen Zeiträume wechseln automatisch mit dem Kalender.',
+                'Beende den Bearbeitungsmodus, um die gespeicherte Auswertung zu betrachten. Das Verschieben oder Bearbeiten eines Diagramms verändert deine Zeiteinträge nicht.',
+            ],
+        },
+        en: {
+            title: 'What are dashboards for?',
+            steps: [
+                'Dashboards are saved reports on tracked time, such as weekly hours per project or a comparison of two months. Timers, history and CSV export work without a dashboard.',
+                'Create a dashboard with a meaningful name, open it and select Edit dashboard, then Add entry. Choose a chart type, period and relevant tags.',
+                'Shared date ranges let multiple charts use the same boundaries. now/w means this week; now-1w/w means last week. Relative ranges move with the calendar.',
+                'Finish editing to view the saved report. Moving or editing a chart never changes your time entries.',
+            ],
+        },
+    },
+    {
         id: 'recording',
         de: {
             title: 'Zeit erfassen',
@@ -101,7 +122,7 @@ export const helpTopics = [
             steps: [
                 'Als Administrator wählst du unter „Einstellungen → KI-Auswertung“ Ollama oder LM Studio. Trage eine lokale Serveradresse und den exakten Namen eines dort verfügbaren Modells ein und speichere. Die Verbindung gilt für alle Konten und bleibt bei Updates erhalten.',
                 'Ollama verwendet üblicherweise Port 11434, LM Studio Port 1234. Bei LM Studio darf die Adresse mit /v1 enden. Die Adresse muss vom Zeitfokus-Server erreichbar sein; localhost bezeichnet dessen Container, nicht deinen Mac oder PC. Zugangsdaten in der Adresse werden nicht unterstützt.',
-                'Wähle im Verlauf zunächst einen Zeitraum und starte dann „Mit KI auswerten“. Erst dadurch werden Zeit-Summen und Tags deines Kontos übertragen; Notizen bleiben ausgeschlossen. KI-Ergebnisse können falsch sein und ändern keine Einträge.',
+                'Öffne den Reiter „KI“, wähle einen Zeitraum und starte „Mit KI auswerten“. Die Auswertung ist auch im Verlauf verfügbar. Erst dadurch werden Zeit-Summen und Tags deines Kontos übertragen; Notizen bleiben ausgeschlossen. KI-Ergebnisse können falsch sein und ändern keine Einträge.',
                 'Bei einer fehlgeschlagenen Auswertung prüfe, ob der Modellserver läuft, das Modell verfügbar und die Adresse erreichbar ist. Mit „Deaktiviert“ und anschließendem Speichern schaltest du KI-Anfragen aus; die normale Zeiterfassung bleibt nutzbar.',
             ],
         },
@@ -110,7 +131,7 @@ export const helpTopics = [
             steps: [
                 'As an administrator, choose Ollama or LM Studio under Settings → AI analysis. Enter a local server address and the exact name of an available model, then save. The connection applies to all accounts and survives updates.',
                 'Ollama typically uses port 11434; LM Studio uses port 1234. An LM Studio address may end in /v1. The address must be reachable from the Zeitfokus server; localhost means its container, not your Mac or PC. Credentials in the address are unsupported.',
-                'Select a date range in history, then start Analyze with AI. Only this action sends your account’s time totals and tags; notes are excluded. AI results may be wrong and never change entries.',
+                'Open AI, select a date range and start Analyze with AI. Analysis is also available in history. Only this action sends your account’s time totals and tags; notes are excluded. AI results may be wrong and never change entries.',
                 'If analysis fails, check that the model server is running, the model is available and the address is reachable. Select Disabled and save to turn off AI requests; time tracking remains available.',
             ],
         },

@@ -3,6 +3,7 @@ import {TextField} from '@mui/material';
 import {parseRelativeTime} from '../utils/time';
 import Typography from '@mui/material/Typography';
 import {useTimeout} from '../utils/hooks';
+import {t, useI18n} from '../i18n';
 
 interface RelativeDateTimeSelectorProps {
     value: string;
@@ -25,6 +26,7 @@ export const RelativeDateTimeSelector: React.FC<RelativeDateTimeSelectorProps> =
     disableUnderline = false,
     disabled = false,
 }) => {
+    useI18n();
     const [errVisible, setErrVisible] = React.useState(false);
     const [error, setError] = React.useState('');
     const {start, stop} = useTimeout(() => setErrVisible(true), 200);
@@ -36,7 +38,7 @@ export const RelativeDateTimeSelector: React.FC<RelativeDateTimeSelectorProps> =
     } else if (errVisible) {
         helperText = (
             <Typography color={'secondary'} variant={'caption'}>
-                {error}
+                {t('Enter a valid date or relative expression, e.g. now/w.')}
             </Typography>
         );
     } else {

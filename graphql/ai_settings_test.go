@@ -42,6 +42,11 @@ func TestAISettingsAuthorizationPersistenceAndAnalysis(t *testing.T) {
 		require.NoError(t, json.Unmarshal(response.Body.Bytes(), &result))
 		return result
 	}
+	statusQuery := `{aiStatus{enabled provider}}`
+	require.NotEmpty(t, execute(context.Background(), statusQuery, nil)["errors"])
+	publicStatus := execute(fake.UserWithPerm(1, false), statusQuery, nil)
+	require.Empty(t, publicStatus["errors"])
+	require.Equal(t, map[string]interface{}{"enabled": true, "provider": "ollama"}, publicStatus["data"].(map[string]interface{})["aiStatus"])
 	query := `{aiSettings{provider baseURL model timeoutSeconds}}`
 	mutation := `mutation($settings:InputAISettings!){setAISettings(settings:$settings){provider baseURL model timeoutSeconds}}`
 	input := map[string]interface{}{"settings": map[string]interface{}{
@@ -79,6 +84,9 @@ func TestAISettingsAuthorizationPersistenceAndAnalysis(t *testing.T) {
 	require.Empty(t, execute(fake.User(1), mutation, disabled)["errors"])
 	require.NotEmpty(t, execute(fake.User(1), `mutation{analyzeTimeReport(input:{from:"2026-10-01T00:00:00Z",toExclusive:"2026-10-02T00:00:00Z"}){text}}`, nil)["errors"])
 	require.Equal(t, int32(1), requests.Load())
+	publicStatus = execute(fake.UserWithPerm(1, false), statusQuery, nil)
+	require.Empty(t, publicStatus["errors"])
+	require.Equal(t, map[string]interface{}{"enabled": false, "provider": "disabled"}, publicStatus["data"].(map[string]interface{})["aiStatus"])
 }
 
 func TestAISettingsDoNotExposeCredentialsFromInvalidEnvironment(t *testing.T) {

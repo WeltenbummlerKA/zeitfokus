@@ -70,8 +70,14 @@ type RootQuery {
     version: Version!
     dashboards: [Dashboard!] @hasRole(role: USER)
     userSettings: UserSettings!
+    aiStatus: AIStatus! @hasRole(role: USER)
     aiSettings: AISettings! @hasRole(role: ADMIN)
     favorites: [Favorite!]! @hasRole(role: USER)
+}
+
+type AIStatus {
+    enabled: Boolean!
+    provider: String!
 }
 
 type AISettings {

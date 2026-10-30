@@ -20,11 +20,12 @@ import {EditGlass} from './Entry/EditGlass';
 import {Fade} from '../common/Fade';
 import {CenteredSpinner} from '../common/CenteredSpinner';
 import {AddPopup} from './Entry/AddPopup';
-import {Paper} from '@mui/material';
+import {Box, Link, Paper, Typography} from '@mui/material';
 import {Center} from '../common/Center';
-import {useNavigate, useParams} from 'react-router-dom';
+import {Link as RouterLink, useNavigate, useParams} from 'react-router-dom';
 import {useSnackbar} from 'notistack';
 import {DateRanges} from './DateRanges';
+import {displayRangeName} from './rangeLabels';
 import {Range} from '../utils/range';
 import {useStateAndDelegateWithDelayOnChange} from '../utils/hooks';
 
@@ -148,7 +149,7 @@ export const DashboardPage: React.FC = () => {
 
     const rangeToName = () =>
         dashboard.ranges.reduce(
-            (a, range) => ({...a, [range.id]: `${range.name} (${range.range.from} - ${range.range.to})`}),
+            (a, range) => ({...a, [range.id]: `${displayRangeName(range.name)} (${range.range.from} - ${range.range.to})`}),
             {}
         );
 
@@ -165,7 +166,17 @@ export const DashboardPage: React.FC = () => {
 
     return (
         <>
-            <div style={{display: 'flex'}}>
+            <Box sx={{mb: 3, maxWidth: 900}}>
+                <Typography color="text.secondary">
+                    {t(
+                        'Saved charts compare your working time by project, tag or period. Time tracking works without a dashboard.'
+                    )}
+                </Typography>
+                <Link component={RouterLink} to="/help#dashboards" sx={{display: 'inline-block', mt: 1}}>
+                    {t('How to use reports')}
+                </Link>
+            </Box>
+            <div style={{display: 'flex', flexWrap: 'wrap', gap: 16}}>
                 <div style={{flex: 1}}>
                     <DateRanges setRanges={setRanges} ranges={ranges} changeMode={changeMode} dashboard={dashboard} />
                 </div>
@@ -175,7 +186,7 @@ export const DashboardPage: React.FC = () => {
                             onClick={() => setViewType(viewType === ViewType.Desktop ? ViewType.Mobile : ViewType.Desktop)}
                             variant={'outlined'}
                             style={{marginRight: 10}}>
-                            {viewType === ViewType.Mobile ? 'Desktop View' : 'Mobile View'}
+                            {viewType === ViewType.Mobile ? t('Desktop view') : t('Mobile view')}
                         </Button>
                     ) : null}
                     {changeMode ? (
@@ -197,7 +208,7 @@ export const DashboardPage: React.FC = () => {
                         variant={'outlined'}
                         color={'primary'}
                         style={{marginRight: 10}}>
-                        {changeMode ? 'Exit Editing' : 'Edit Dashboard'}
+                        {changeMode ? t('Finish editing') : t('Edit dashboard')}
                     </Button>
                 </div>
             </div>

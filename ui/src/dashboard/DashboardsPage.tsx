@@ -15,7 +15,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import IconButton from '@mui/material/IconButton';
 import {useSnackbar} from 'notistack';
 import * as gqlDashboard from '../gql/dashboard';
-import {TextField} from '@mui/material';
+import {Link, Typography, TextField} from '@mui/material';
 import Button from '@mui/material/Button';
 import {
     DashboardsQuery,
@@ -27,6 +27,7 @@ import {
 import {AddDashboardDialog} from './AddDashboardDialog';
 import makeStyles from '@mui/styles/makeStyles';
 import {ConfirmDialog} from '../common/ConfirmDialog';
+import {Link as RouterLink} from 'react-router-dom';
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -101,7 +102,9 @@ export const DashboardsPage = () => {
                             onSubmit={onClickSubmit}
                         />
                     ) : (
-                        dashboard.name
+                        <Link component={RouterLink} to={`/dashboard/${dashboard.id}/${encodeURIComponent(dashboard.name)}`}>
+                            {dashboard.name}
+                        </Link>
                     )}
                 </TableCell>
                 <TableCell align="right">
@@ -134,6 +137,15 @@ export const DashboardsPage = () => {
 
     return (
         <Paper elevation={1} square={true} className={classes.root}>
+            <Typography component="h2" variant="h4" sx={{textAlign: 'left', mb: 2}}>
+                {t('Saved reports')}
+            </Typography>
+            <Typography color="text.secondary" sx={{textAlign: 'left', mb: 2}}>
+                {t('Save a weekly project overview or compare periods with charts. Your time entries stay unchanged.')}
+            </Typography>
+            <Link component={RouterLink} to="/help#dashboards" sx={{display: 'block', textAlign: 'left', mb: 3}}>
+                {t('How to use reports')}
+            </Link>
             <Button
                 color={'primary'}
                 variant={'outlined'}

@@ -2,35 +2,20 @@ import {t, useI18n} from '../i18n';
 import * as React from 'react';
 import AppBar from '@mui/material/AppBar';
 import CssBaseline from '@mui/material/CssBaseline';
-import Divider from '@mui/material/Divider';
 import Drawer from '@mui/material/Drawer';
 import Box from '@mui/material/Box';
-import ListItemButton from '@mui/material/ListItemButton';
 import {LanguageSwitcher} from '../i18n/LanguageSwitcher';
 import IconButton from '@mui/material/IconButton';
-import UsersIcon from '@mui/icons-material/SupervisorAccount';
-import List from '@mui/material/List';
 
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import DashboardIcon from '@mui/icons-material/Dashboard';
 import MenuIcon from '@mui/icons-material/Menu';
-import SettingsIcon from '@mui/icons-material/Settings';
-import DevicesIcon from '@mui/icons-material/DevicesOther';
-import LabelIcon from '@mui/icons-material/Label';
-import DashboardManageIcon from '@mui/icons-material/ListAlt';
-import TimeLineIcon from '@mui/icons-material/Timeline';
-import CalendarIcon from '@mui/icons-material/CalendarToday';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
-import {ListSubheader, Menu} from '@mui/material';
-import HrefLink from '@mui/material/Link';
+import {Menu} from '@mui/material';
 import * as gqlUser from '../gql/user';
 import * as gqlVersion from '../gql/version';
 import Button from '@mui/material/Button';
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import {NavLink, matchPath, useLocation} from 'react-router-dom';
 import MenuItem from '@mui/material/MenuItem';
 import {useMutation, useQuery} from '@apollo/client';
@@ -39,8 +24,9 @@ import * as gqlDashboard from '../gql/dashboard';
 import {Dashboard} from '../gql/types';
 import {KeyboardShortcuts} from '../keyboard/KeyboardShortcuts';
 import {shortcutAria, shortcutLabel} from '../keyboard/shortcuts';
+import {WorkspaceNavigation} from './WorkspaceNavigation';
 
-const drawerWidth = 240;
+const drawerWidth = 272;
 
 // MUI's `component` prop isn't polymorphism-typed against an arbitrary forwardRef component.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -49,6 +35,7 @@ const routerLink = (to: string): any => {
 };
 
 const staticPageTitles: Array<{path: string; title: string}> = [
+    {path: '/ai', title: 'AI analysis'},
     {path: '/help', title: 'Help'},
     {path: '/about', title: 'About'},
     {path: '/timesheet/list', title: 'Time tracking'},
@@ -108,117 +95,12 @@ export const Page: React.FC<React.PropsWithChildren> = ({children}) => {
     const pageTitle = getPageTitle(location.pathname, dashboards);
 
     const drawer = (
-        <div className="workspace-navigation">
-            <Box sx={{p: 3, minHeight: 104}}>
-                <HrefLink href="https://github.com/WeltenbummlerKA/zeitfokus" underline="none" target="_blank">
-                    <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1.25}}>
-                        <Box component="img" src="/zeitfokus-icon.png" alt="" aria-hidden="true" sx={{width: 30, height: 30}} />
-                        <Typography variant="h5" align="center" sx={{color: 'text.primary'}}>
-                            Zeitfokus
-                        </Typography>
-                    </Box>
-                </HrefLink>
-                <HrefLink
-                    component={NavLink}
-                    to="/about"
-                    underline="hover"
-                    sx={{display: 'block', textAlign: 'center', mt: 1, color: 'text.secondary'}}>
-                    <Typography component="span" variant="caption">
-                        {t('Version')} {version.name}
-                    </Typography>
-                </HrefLink>
-            </Box>
-            <Divider />
-            <List subheader={<ListSubheader>{t('Timesheet')}</ListSubheader>} dense={true}>
-                <ListItemButton role="link" onClick={() => setMobileOpen(false)} component={routerLink('/timesheet/list')}>
-                    <ListItemIcon>
-                        <TimeLineIcon />
-                    </ListItemIcon>
-                    <ListItemText primary={t('List')} />
-                </ListItemButton>
-                <ListItemButton role="link" onClick={() => setMobileOpen(false)} component={routerLink('/timesheet/calendar')}>
-                    <ListItemIcon>
-                        <CalendarIcon />
-                    </ListItemIcon>
-                    <ListItemText primary={t('Calendar')} />
-                </ListItemButton>
-            </List>
-            <Divider />
-            <List subheader={<ListSubheader>{t('Dashboards')}</ListSubheader>} dense={true}>
-                {dashboards.map(({id, name}) => (
-                    <ListItemButton
-                        role="link"
-                        key={id}
-                        onClick={() => setMobileOpen(false)}
-                        component={routerLink(`/dashboard/${id}/${encodeURIComponent(name)}`)}>
-                        <ListItemIcon>
-                            <DashboardIcon />
-                        </ListItemIcon>
-                        <ListItemText primary={name} />
-                    </ListItemButton>
-                ))}
-                {dashboards.length === 0 ? (
-                    <ListItemButton disabled={true}>
-                        <ListItemText primary={t('no dashboards added')} />
-                    </ListItemButton>
-                ) : null}
-                <ListItemButton role="link" onClick={() => setMobileOpen(false)} component={routerLink(`/dashboards`)}>
-                    <ListItemIcon>
-                        <DashboardManageIcon />
-                    </ListItemIcon>
-                    <ListItemText primary={t('Manage')} />
-                </ListItemButton>
-            </List>
-            <Divider />
-            <List subheader={<ListSubheader>{t('User')}</ListSubheader>} dense={true}>
-                <ListItemButton role="link" onClick={() => setMobileOpen(false)} component={routerLink('/user/tags')}>
-                    <ListItemIcon>
-                        <LabelIcon />
-                    </ListItemIcon>
-                    <ListItemText primary={t('Tags')} />
-                </ListItemButton>
-                <ListItemButton role="link" onClick={() => setMobileOpen(false)} component={routerLink('/user/devices')}>
-                    <ListItemIcon>
-                        <DevicesIcon />
-                    </ListItemIcon>
-                    <ListItemText primary={t('Devices')} />
-                </ListItemButton>
-                <ListItemButton role="link" onClick={() => setMobileOpen(false)} component={routerLink('/user/settings')}>
-                    <ListItemIcon>
-                        <SettingsIcon />
-                    </ListItemIcon>
-                    <ListItemText primary={t('Settings')} />
-                </ListItemButton>
-            </List>
-            {admin ? (
-                <>
-                    <Divider />
-                    <List subheader={<ListSubheader>{t('Admin')}</ListSubheader>} dense={true}>
-                        <ListItemButton role="link" onClick={() => setMobileOpen(false)} component={routerLink('/admin/users')}>
-                            <ListItemIcon>
-                                <UsersIcon />
-                            </ListItemIcon>
-                            <ListItemText primary={t('Users')} />
-                        </ListItemButton>
-                    </List>
-                </>
-            ) : null}
-            <Divider />
-            <List aria-label={t('Help')} dense>
-                <ListItemButton component={routerLink('/help')} onClick={() => setMobileOpen(false)}>
-                    <ListItemIcon>
-                        <HelpOutlineIcon />
-                    </ListItemIcon>
-                    <ListItemText primary={t('Help')} />
-                </ListItemButton>
-                <ListItemButton component={routerLink('/about')} onClick={() => setMobileOpen(false)}>
-                    <ListItemIcon>
-                        <InfoOutlinedIcon />
-                    </ListItemIcon>
-                    <ListItemText primary={t('About')} />
-                </ListItemButton>
-            </List>
-        </div>
+        <WorkspaceNavigation
+            dashboards={dashboards}
+            admin={!!admin}
+            version={version.name}
+            onNavigate={() => setMobileOpen(false)}
+        />
     );
 
     React.useEffect(() => {
@@ -295,12 +177,18 @@ export const Page: React.FC<React.PropsWithChildren> = ({children}) => {
                     variant="temporary"
                     open={mobileOpen}
                     onClose={() => setMobileOpen(false)}
-                    sx={{display: {xs: 'block', md: 'none'}, '& .MuiDrawer-paper': {width: drawerWidth}}}>
+                    sx={{
+                        display: {xs: 'block', md: 'none'},
+                        '& .MuiDrawer-paper': {width: drawerWidth, borderRight: 0, overflow: 'hidden'},
+                    }}>
                     {drawer}
                 </Drawer>
                 <Drawer
                     variant="permanent"
-                    sx={{display: {xs: 'none', md: 'block'}, '& .MuiDrawer-paper': {width: drawerWidth}}}
+                    sx={{
+                        display: {xs: 'none', md: 'block'},
+                        '& .MuiDrawer-paper': {width: drawerWidth, borderRight: 0, overflow: 'hidden'},
+                    }}
                     open>
                     {drawer}
                 </Drawer>
