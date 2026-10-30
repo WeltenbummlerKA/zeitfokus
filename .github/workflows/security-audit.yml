@@ -41,6 +41,8 @@ jobs:
       - uses: actions/setup-go@v6
         with:
           go-version: '1.27.3'
+      - name: Tidy Go modules
+        run: go mod tidy
       - name: Generate gqlgen sources
         run: |
           go install github.com/99designs/gqlgen@v0.17.85
