@@ -80,3 +80,14 @@ func TestAISettingsAuthorizationPersistenceAndAnalysis(t *testing.T) {
 	require.NotEmpty(t, execute(fake.User(1), `mutation{analyzeTimeReport(input:{from:"2026-10-01T00:00:00Z",toExclusive:"2026-10-02T00:00:00Z"}){text}}`, nil)["errors"])
 	require.Equal(t, int32(1), requests.Load())
 }
+
+func TestAISettingsDoNotExposeCredentialsFromInvalidEnvironment(t *testing.T) {
+	for _, endpoint := range []string{
+		"http://user:secret@127.0.0.1:11434",
+		"http://127.0.0.1:11434?token=secret",
+		"http://127.0.0.1:11434#secret",
+	} {
+		settings := externalAISettings(ai.ProviderConfig{Provider: "ollama", BaseURL: endpoint})
+		require.Empty(t, settings.BaseURL)
+	}
+}

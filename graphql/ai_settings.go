@@ -3,6 +3,7 @@ package graphql
 import (
 	"context"
 	"errors"
+	"net/url"
 	"strings"
 	"time"
 
@@ -34,7 +35,13 @@ func externalAISettings(cfg ai.ProviderConfig) *gqlmodel.AISettings {
 	if timeout <= 0 {
 		timeout = 60
 	}
-	return &gqlmodel.AISettings{Provider: provider, BaseURL: cfg.BaseURL, Model: cfg.Model, TimeoutSeconds: timeout}
+	// Invalid legacy ENV values must not expose embedded credentials to the browser.
+	endpoint := cfg.BaseURL
+	parsed, err := url.Parse(endpoint)
+	if err != nil || parsed.User != nil || parsed.RawQuery != "" || parsed.Fragment != "" {
+		endpoint = ""
+	}
+	return &gqlmodel.AISettings{Provider: provider, BaseURL: endpoint, Model: cfg.Model, TimeoutSeconds: timeout}
 }
 
 func requireAIAdmin(ctx context.Context) error {
